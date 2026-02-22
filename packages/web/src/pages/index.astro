@@ -1,0 +1,67 @@
+---
+import Base from "../layouts/Base.astro";
+import SearchBox from "../components/SearchBox.astro";
+---
+
+<Base title="Website Age Certification">
+  <div class="max-w-5xl mx-auto px-4 py-16">
+    <!-- Hero -->
+    <section class="text-center mb-16">
+      <h1 class="text-4xl sm:text-5xl font-bold mb-4 tracking-tight">
+        How Old Is Your Website?
+      </h1>
+      <p class="text-lg text-gray-600 mb-8 max-w-2xl mx-auto">
+        Discover when any website first appeared on the internet.
+        Get a certified age badge powered by the Wayback Machine.
+      </p>
+      <SearchBox />
+    </section>
+
+    <!-- Features -->
+    <section class="grid sm:grid-cols-3 gap-8 mb-16">
+      <div class="text-center p-6">
+        <div class="w-12 h-12 bg-blue-100 text-blue-600 rounded-lg flex items-center justify-center mx-auto mb-4">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+          </svg>
+        </div>
+        <h3 class="font-semibold mb-2">Instant Lookup</h3>
+        <p class="text-sm text-gray-600">
+          Enter any domain and we'll trace its origins through the Wayback Machine archives.
+        </p>
+      </div>
+      <div class="text-center p-6">
+        <div class="w-12 h-12 bg-yellow-100 text-yellow-600 rounded-lg flex items-center justify-center mx-auto mb-4">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
+          </svg>
+        </div>
+        <h3 class="font-semibold mb-2">Verified Badges</h3>
+        <p class="text-sm text-gray-600">
+          Claim your domain and earn a gold-verified badge to embed on your site.
+        </p>
+      </div>
+      <div class="text-center p-6">
+        <div class="w-12 h-12 bg-green-100 text-green-600 rounded-lg flex items-center justify-center mx-auto mb-4">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+          </svg>
+        </div>
+        <h3 class="font-semibold mb-2">Embeddable Badge</h3>
+        <p class="text-sm text-gray-600">
+          Show your website's longevity with a beautiful SVG badge, just like shields.io.
+        </p>
+      </div>
+    </section>
+
+    <!-- Example badge -->
+    <section class="text-center">
+      <p class="text-sm text-gray-500 mb-3">Example badges</p>
+      <div class="flex items-center justify-center gap-4 flex-wrap">
+        <img src="https://img.shields.io/badge/SiteAge-Since%202005-blue" alt="Example badge" class="h-5" />
+        <img src="https://img.shields.io/badge/SiteAge-Established%202001-gold" alt="Verified badge" class="h-5" />
+        <img src="https://img.shields.io/badge/SiteAge-R.I.P%20(2010--2023)-lightgrey" alt="Tombstone badge" class="h-5" />
+      </div>
+    </section>
+  </div>
+</Base>

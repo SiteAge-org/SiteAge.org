@@ -1,0 +1,142 @@
+---
+import Base from "../../layouts/Base.astro";
+import { isValidDomain } from "@siteage/shared";
+
+const { domain } = Astro.params;
+
+if (!domain || !isValidDomain(domain)) {
+  return Astro.redirect("/");
+}
+---
+
+<Base title={`Verify ${domain}`}>
+  <div class="max-w-2xl mx-auto px-4 py-12">
+    <h1 class="text-2xl font-bold mb-6">Verify Ownership of {domain}</h1>
+
+    <div class="bg-white rounded-lg border border-gray-200 p-6">
+      <!-- Step 1: Email -->
+      <div id="step-email">
+        <h2 class="text-lg font-semibold mb-4">Step 1: Enter your email</h2>
+        <div class="space-y-4">
+          <input
+            type="email"
+            id="verify-email"
+            placeholder="you@example.com"
+            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+          />
+          <div>
+            <label class="text-sm font-medium text-gray-700 block mb-2">Verification method</label>
+            <div class="space-y-2">
+              <label class="flex items-center gap-2">
+                <input type="radio" name="method" value="dns_txt" checked class="text-blue-600" />
+                <span class="text-sm">DNS TXT Record</span>
+              </label>
+              <label class="flex items-center gap-2">
+                <input type="radio" name="method" value="meta_tag" class="text-blue-600" />
+                <span class="text-sm">HTML Meta Tag</span>
+              </label>
+            </div>
+          </div>
+          <button
+            id="btn-init"
+            class="px-6 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors"
+          >
+            Start Verification
+          </button>
+        </div>
+      </div>
+
+      <!-- Step 2: Instructions (hidden by default) -->
+      <div id="step-instructions" class="hidden">
+        <h2 class="text-lg font-semibold mb-4">Step 2: Add verification record</h2>
+        <div id="instructions-content" class="bg-gray-50 rounded-lg p-4 text-sm mb-4"></div>
+        <p class="text-sm text-gray-500 mb-4">After adding the record, click verify below.</p>
+        <button
+          id="btn-verify"
+          class="px-6 py-2 bg-green-600 text-white rounded-lg font-medium hover:bg-green-700 transition-colors"
+        >
+          Verify Now
+        </button>
+      </div>
+
+      <!-- Result -->
+      <div id="step-result" class="hidden">
+        <div id="result-content"></div>
+      </div>
+
+      <!-- Resend section for already-verified domains -->
+      <div class="mt-6 pt-6 border-t border-gray-200">
+        <p class="text-sm text-gray-500 mb-2">Already verified? Lost your management link?</p>
+        <button
+          id="btn-resend"
+          class="text-sm text-blue-600 hover:underline"
+        >
+          Resend Magic Link
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script define:vars={{ domain }}>
+    const API = import.meta.env.PUBLIC_API_URL || "https://api.siteage.org";
+    let token = "";
+
+    document.getElementById("btn-init")?.addEventListener("click", async () => {
+      const email = document.getElementById("verify-email").value;
+      const method = document.querySelector('input[name="method"]:checked')?.value;
+      if (!email) return alert("Please enter your email");
+
+      try {
+        const resp = await fetch(`${API}/verify/init`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ domain, email, method }),
+        });
+        const data = await resp.json();
+        if (!resp.ok) throw new Error(data.message);
+
+        token = data.token;
+        document.getElementById("instructions-content").textContent = data.instructions;
+        document.getElementById("step-email").classList.add("hidden");
+        document.getElementById("step-instructions").classList.remove("hidden");
+      } catch (e) {
+        alert(e.message || "Failed to initialize verification");
+      }
+    });
+
+    document.getElementById("btn-verify")?.addEventListener("click", async () => {
+      try {
+        const resp = await fetch(`${API}/verify/check`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ domain, token }),
+        });
+        const data = await resp.json();
+        document.getElementById("step-instructions").classList.add("hidden");
+        document.getElementById("step-result").classList.remove("hidden");
+        document.getElementById("result-content").innerHTML = data.verified
+          ? '<p class="text-green-600 font-semibold">Verification successful! Check your email for the management link.</p>'
+          : `<p class="text-red-600">Verification failed: ${data.message}</p>`;
+      } catch (e) {
+        alert("Verification check failed");
+      }
+    });
+
+    document.getElementById("btn-resend")?.addEventListener("click", async () => {
+      const email = document.getElementById("verify-email").value;
+      if (!email) return alert("Please enter your email first");
+
+      try {
+        const resp = await fetch(`${API}/verify/resend`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ domain, email }),
+        });
+        const data = await resp.json();
+        alert(resp.ok ? "Magic Link sent to your email!" : data.message);
+      } catch (e) {
+        alert("Failed to resend");
+      }
+    });
+  </script>
+</Base>

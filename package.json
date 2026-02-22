@@ -1,0 +1,28 @@
+{
+  "name": "siteage-org",
+  "private": true,
+  "scripts": {
+    "dev": "pnpm --parallel -r dev",
+    "dev:api": "pnpm --filter @siteage/api dev",
+    "dev:badge": "pnpm --filter @siteage/badge dev",
+    "dev:web": "pnpm --filter @siteage/web dev",
+    "build": "pnpm -r build",
+    "build:shared": "pnpm --filter @siteage/shared build",
+    "typecheck": "pnpm -r typecheck",
+    "deploy:api": "pnpm --filter @siteage/api deploy",
+    "deploy:badge": "pnpm --filter @siteage/badge deploy",
+    "deploy:web": "pnpm --filter @siteage/web deploy"
+  },
+  "devDependencies": {
+    "typescript": "^5.7.3",
+    "wrangler": "^4.6.0"
+  },
+  "engines": {
+    "node": ">=20",
+    "pnpm": ">=9"
+  },
+  "packageManager": "pnpm@9.15.4",
+  "pnpm": {
+    "onlyBuiltDependencies": ["esbuild", "sharp", "workerd"]
+  }
+}

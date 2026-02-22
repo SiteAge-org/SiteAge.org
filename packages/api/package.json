@@ -1,0 +1,23 @@
+{
+  "name": "@siteage/api",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "typecheck": "tsc --noEmit",
+    "db:migrate": "wrangler d1 migrations apply siteage-db --local",
+    "db:migrate:prod": "wrangler d1 migrations apply siteage-db --remote"
+  },
+  "dependencies": {
+    "hono": "^4.7.4",
+    "resend": "^4.1.2",
+    "@siteage/shared": "workspace:*"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^4.20250214.0",
+    "typescript": "^5.7.3",
+    "wrangler": "^4.6.0"
+  }
+}

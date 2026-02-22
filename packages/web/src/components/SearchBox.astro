@@ -1,0 +1,40 @@
+---
+---
+
+<form id="search-form" class="w-full max-w-xl mx-auto" action="/" method="get">
+  <div class="flex rounded-lg shadow-sm border border-gray-300 bg-white overflow-hidden focus-within:ring-2 focus-within:ring-blue-500 focus-within:border-blue-500 transition-all">
+    <input
+      type="text"
+      name="q"
+      id="domain-input"
+      placeholder="Enter a domain (e.g., example.com)"
+      class="flex-1 px-4 py-3 text-base outline-none bg-transparent"
+      autocomplete="off"
+      spellcheck="false"
+      required
+    />
+    <button
+      type="submit"
+      class="px-6 py-3 bg-blue-600 text-white font-medium hover:bg-blue-700 transition-colors"
+    >
+      Look Up
+    </button>
+  </div>
+</form>
+
+<script>
+  const form = document.getElementById("search-form") as HTMLFormElement;
+  const input = document.getElementById("domain-input") as HTMLInputElement;
+
+  form.addEventListener("submit", (e) => {
+    e.preventDefault();
+    let domain = input.value.trim().toLowerCase();
+    // Strip protocol and www
+    domain = domain.replace(/^https?:\/\//, "").replace(/^www\./, "");
+    // Strip path/query/hash/port
+    domain = domain.split("/")[0].split("?")[0].split("#")[0].split(":")[0];
+    if (domain) {
+      window.location.href = `/${domain}`;
+    }
+  });
+</script>

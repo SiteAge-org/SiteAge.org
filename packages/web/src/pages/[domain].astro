@@ -1,0 +1,89 @@
+---
+import Base from "../layouts/Base.astro";
+import CertificateCard from "../components/CertificateCard.astro";
+import TombstoneCard from "../components/TombstoneCard.astro";
+import AgeDisplay from "../components/AgeDisplay.astro";
+import RankingBar from "../components/RankingBar.astro";
+import BadgePreview from "../components/BadgePreview.astro";
+import Timeline from "../components/Timeline.astro";
+import { API_BASE_URL, isValidDomain } from "@siteage/shared";
+import type { DomainDetail, LookupResponse } from "@siteage/shared";
+
+const { domain } = Astro.params;
+
+if (!domain || !isValidDomain(domain)) {
+  return Astro.redirect("/");
+}
+
+// Fetch domain data from API
+let data: DomainDetail | null = null;
+let error: string | null = null;
+
+try {
+  let resp = await fetch(`${API_BASE_URL}/${domain}`);
+
+  if (resp.status === 404) {
+    // Domain not yet looked up, trigger lookup
+    resp = await fetch(`${API_BASE_URL}/lookup`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ url: domain }),
+    });
+
+    if (resp.ok) {
+      // Re-fetch full detail
+      resp = await fetch(`${API_BASE_URL}/${domain}`);
+    }
+  }
+
+  if (resp.ok) {
+    data = await resp.json() as DomainDetail;
+  } else {
+    const err = await resp.json().catch(() => null);
+    error = (err as any)?.message || "Failed to load domain data";
+  }
+} catch (e) {
+  error = "Unable to connect to the API";
+}
+---
+
+<Base title={domain}>
+  <div class="max-w-4xl mx-auto px-4 py-8">
+    {error && (
+      <div class="text-center py-12">
+        <p class="text-red-600 mb-4">{error}</p>
+        <a href="/" class="text-blue-600 hover:underline">Go back to search</a>
+      </div>
+    )}
+
+    {data && data.status === "dead" && (
+      <TombstoneCard data={data} />
+    )}
+
+    {data && data.status !== "dead" && (
+      <CertificateCard data={data} />
+    )}
+
+    {data && (
+      <div class="mt-8 space-y-8">
+        <AgeDisplay data={data} />
+        {data.rank_percentile !== null && <RankingBar percentile={data.rank_percentile} />}
+        <BadgePreview domain={data.domain} />
+        <Timeline domain={data.domain} firstSnapshotUrl={data.first_snapshot_url} birthAt={data.verified_birth_at || data.birth_at} />
+
+        <!-- Claim section -->
+        {data.verification_status !== "verified" && (
+          <div class="text-center pt-4 border-t border-gray-200">
+            <p class="text-gray-600 mb-3">Own this website?</p>
+            <a
+              href={`/verify/${data.domain}`}
+              class="inline-block px-6 py-2 bg-yellow-500 text-white rounded-lg font-medium hover:bg-yellow-600 transition-colors"
+            >
+              Claim & Verify
+            </a>
+          </div>
+        )}
+      </div>
+    )}
+  </div>
+</Base>

@@ -1,0 +1,25 @@
+---
+interface Props {
+  percentile: number;
+}
+
+const { percentile } = Astro.props;
+---
+
+<div class="bg-white rounded-lg border border-gray-200 p-6">
+  <h2 class="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3">Longevity Ranking</h2>
+  <div class="flex items-center gap-4">
+    <div class="flex-1 bg-gray-100 rounded-full h-4 overflow-hidden">
+      <div
+        class="h-full bg-blue-500 rounded-full transition-all"
+        style={`width: ${percentile}%`}
+      ></div>
+    </div>
+    <span class="text-sm font-semibold text-gray-700 whitespace-nowrap">
+      Top {100 - percentile}%
+    </span>
+  </div>
+  <p class="text-xs text-gray-400 mt-2">
+    Older than {percentile}% of websites in our database
+  </p>
+</div>

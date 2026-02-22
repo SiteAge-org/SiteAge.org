@@ -1,0 +1,160 @@
+---
+import Base from "../../layouts/Base.astro";
+import { API_BASE_URL, isValidDomain } from "@siteage/shared";
+import type { ManageData } from "@siteage/shared";
+
+const { domain } = Astro.params;
+const key = Astro.url.searchParams.get("key");
+
+if (!domain || !isValidDomain(domain) || !key) {
+  return Astro.redirect("/");
+}
+
+let data: ManageData | null = null;
+let error: string | null = null;
+
+try {
+  const resp = await fetch(`${API_BASE_URL}/manage/${domain}?key=${key}`);
+  if (resp.ok) {
+    data = await resp.json() as ManageData;
+  } else {
+    const err = await resp.json().catch(() => null);
+    error = (err as any)?.message || "Invalid or expired management link";
+  }
+} catch {
+  error = "Unable to connect to the API";
+}
+---
+
+<Base title={`Manage ${domain}`}>
+  <div class="max-w-2xl mx-auto px-4 py-12">
+    <h1 class="text-2xl font-bold mb-6">Manage {domain}</h1>
+
+    {error && (
+      <div class="bg-red-50 border border-red-200 rounded-lg p-4 text-red-700">
+        {error}
+      </div>
+    )}
+
+    {data && (
+      <div class="space-y-6">
+        <!-- Status -->
+        <div class="bg-white rounded-lg border border-gray-200 p-6">
+          <h2 class="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3">Status</h2>
+          <div class="grid grid-cols-2 gap-4 text-sm">
+            <div>
+              <span class="text-gray-500">Domain:</span>
+              <span class="font-medium ml-2">{data.domain}</span>
+            </div>
+            <div>
+              <span class="text-gray-500">Status:</span>
+              <span class="font-medium ml-2">{data.status}</span>
+            </div>
+            <div>
+              <span class="text-gray-500">Birth date:</span>
+              <span class="font-medium ml-2">{data.verified_birth_at || data.birth_at || "Unknown"}</span>
+            </div>
+            <div>
+              <span class="text-gray-500">Verification:</span>
+              <span class="font-medium ml-2">{data.verification_status}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Submit evidence -->
+        <div class="bg-white rounded-lg border border-gray-200 p-6">
+          <h2 class="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3">Submit Earlier Birth Date Evidence</h2>
+          <p class="text-sm text-gray-500 mb-4">
+            If you believe your site existed before the detected date, submit evidence for admin review.
+          </p>
+          <form id="evidence-form" class="space-y-4">
+            <div>
+              <label class="text-sm font-medium text-gray-700 block mb-1">Evidence type</label>
+              <select id="ev-type" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
+                <option value="whois">WHOIS Record</option>
+                <option value="git_history">Git History</option>
+                <option value="dns_record">DNS Record</option>
+                <option value="other">Other</option>
+              </select>
+            </div>
+            <div>
+              <label class="text-sm font-medium text-gray-700 block mb-1">Claimed birth date</label>
+              <input type="datetime-local" id="ev-claimed" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm" required />
+            </div>
+            <div>
+              <label class="text-sm font-medium text-gray-700 block mb-1">Evidence URL (optional)</label>
+              <input type="url" id="ev-url" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm" placeholder="https://..." />
+            </div>
+            <div>
+              <label class="text-sm font-medium text-gray-700 block mb-1">Description</label>
+              <textarea id="ev-desc" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm" rows="3" placeholder="Explain why you believe the earlier date..."></textarea>
+            </div>
+            <button type="submit" class="px-6 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors">
+              Submit Evidence
+            </button>
+          </form>
+          <div id="ev-result" class="mt-4 hidden"></div>
+        </div>
+
+        <!-- Previous evidence -->
+        {data.evidence && data.evidence.length > 0 && (
+          <div class="bg-white rounded-lg border border-gray-200 p-6">
+            <h2 class="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3">Your Evidence Submissions</h2>
+            <div class="space-y-3">
+              {data.evidence.map((ev) => (
+                <div class="flex items-center justify-between text-sm border-b border-gray-100 pb-2">
+                  <div>
+                    <span class="font-medium">{ev.type}</span>
+                    <span class="text-gray-400 ml-2">claimed: {ev.claimed_at}</span>
+                  </div>
+                  <span class={`px-2 py-0.5 rounded-full text-xs ${
+                    ev.status === "approved" ? "bg-green-100 text-green-700" :
+                    ev.status === "rejected" ? "bg-red-100 text-red-700" :
+                    "bg-yellow-100 text-yellow-700"
+                  }`}>
+                    {ev.status}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+    )}
+  </div>
+
+  <script define:vars={{ domain, key }}>
+    const API = import.meta.env.PUBLIC_API_URL || "https://api.siteage.org";
+
+    document.getElementById("evidence-form")?.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const type = document.getElementById("ev-type").value;
+      const claimed = document.getElementById("ev-claimed").value;
+      const url = document.getElementById("ev-url").value;
+      const description = document.getElementById("ev-desc").value;
+
+      try {
+        const resp = await fetch(`${API}/evidence/submit`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            domain,
+            key,
+            type,
+            claimed_at: new Date(claimed).toISOString(),
+            url: url || undefined,
+            description: description || undefined,
+          }),
+        });
+        const data = await resp.json();
+        const resultEl = document.getElementById("ev-result");
+        resultEl.classList.remove("hidden");
+        resultEl.innerHTML = resp.ok
+          ? '<p class="text-green-600">Evidence submitted successfully! An admin will review it.</p>'
+          : `<p class="text-red-600">${data.message || "Submission failed"}</p>`;
+      } catch {
+        alert("Failed to submit evidence");
+      }
+    });
+  </script>
+</Base>

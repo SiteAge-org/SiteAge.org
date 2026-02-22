@@ -1,0 +1,43 @@
+---
+import { formatAge, birthYear } from "@siteage/shared";
+import type { DomainDetail } from "@siteage/shared";
+
+interface Props {
+  data: DomainDetail;
+}
+
+const { data } = Astro.props;
+const birth = data.verified_birth_at || data.birth_at;
+const deathYear = data.death_at ? birthYear(data.death_at) : "?";
+---
+
+<div class="bg-gray-100 border-2 border-gray-300 rounded-xl p-8 shadow-sm max-w-2xl mx-auto relative overflow-hidden">
+  <div class="absolute inset-0 border-8 border-double border-gray-200 rounded-xl pointer-events-none"></div>
+
+  <div class="relative text-center">
+    <div class="mb-6">
+      <p class="text-xs uppercase tracking-widest text-gray-400 mb-1">In Memoriam</p>
+      <div class="w-16 h-0.5 bg-gray-300 mx-auto"></div>
+    </div>
+
+    <h1 class="text-3xl font-bold text-gray-500 mb-4">{data.domain}</h1>
+
+    <div class="my-6">
+      <p class="text-4xl font-light text-gray-400">R.I.P</p>
+      {birth && (
+        <p class="text-xl text-gray-500 mt-2">
+          {birthYear(birth)} &mdash; {deathYear}
+        </p>
+      )}
+      {birth && (
+        <p class="text-sm text-gray-400 mt-2">
+          Survived for {formatAge(birth, data.death_at || undefined)}
+        </p>
+      )}
+    </div>
+
+    <div class="mt-8 pt-4 border-t border-gray-200">
+      <p class="text-xs text-gray-400">Remembered by SiteAge.org &middot; Data from Internet Archive Wayback Machine</p>
+    </div>
+  </div>
+</div>

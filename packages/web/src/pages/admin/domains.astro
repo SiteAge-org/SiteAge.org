@@ -1,0 +1,130 @@
+---
+import Base from "../../layouts/Base.astro";
+---
+
+<Base title="Admin - Domains">
+  <div class="max-w-5xl mx-auto px-4 py-12">
+    <div class="flex items-center justify-between mb-6">
+      <h1 class="text-2xl font-bold">Domain Management</h1>
+      <a href="/admin" class="text-sm text-blue-600 hover:underline">&larr; Dashboard</a>
+    </div>
+
+    <!-- Filters -->
+    <div class="flex gap-3 mb-4">
+      <select id="filter-status" class="px-3 py-1.5 border border-gray-300 rounded-lg text-sm">
+        <option value="">All statuses</option>
+        <option value="active">Active</option>
+        <option value="unreachable">Unreachable</option>
+        <option value="dead">Dead</option>
+        <option value="unknown">Unknown</option>
+      </select>
+      <input type="text" id="filter-search" placeholder="Search domain..." class="px-3 py-1.5 border border-gray-300 rounded-lg text-sm flex-1 max-w-xs" />
+      <button id="btn-search" class="px-4 py-1.5 bg-blue-600 text-white rounded-lg text-sm hover:bg-blue-700">Search</button>
+    </div>
+
+    <div id="domains-table" class="bg-white rounded-lg border border-gray-200 overflow-hidden">
+      <p class="p-4 text-gray-500">Loading...</p>
+    </div>
+
+    <div class="flex items-center justify-between mt-4">
+      <button id="btn-prev" class="px-3 py-1 border border-gray-300 rounded text-sm disabled:opacity-50" disabled>Previous</button>
+      <span id="page-info" class="text-sm text-gray-500"></span>
+      <button id="btn-next" class="px-3 py-1 border border-gray-300 rounded text-sm disabled:opacity-50" disabled>Next</button>
+    </div>
+  </div>
+
+  <script>
+    const API = import.meta.env.PUBLIC_API_URL || "https://api.siteage.org";
+    const key = localStorage.getItem("admin_key");
+    if (!key) window.location.href = "/admin";
+
+    let page = 1;
+    const limit = 20;
+
+    async function load() {
+      const status = (document.getElementById("filter-status") as HTMLSelectElement).value;
+      const search = (document.getElementById("filter-search") as HTMLInputElement).value;
+
+      try {
+        const params = new URLSearchParams({ page: String(page), limit: String(limit) });
+        if (status) params.set("status", status);
+        if (search) params.set("search", search);
+
+        const resp = await fetch(`${API}/admin/domains?${params}`, {
+          headers: { "X-Admin-Key": key! },
+        });
+        if (!resp.ok) throw new Error("Failed");
+        const data = await resp.json();
+
+        const table = document.getElementById("domains-table")!;
+        if (!data.domains?.length) {
+          table.innerHTML = '<p class="p-4 text-gray-500">No domains found</p>';
+          return;
+        }
+
+        table.innerHTML = `
+          <table class="w-full text-sm">
+            <thead class="bg-gray-50 text-left">
+              <tr>
+                <th class="px-4 py-2 font-medium text-gray-500">Domain</th>
+                <th class="px-4 py-2 font-medium text-gray-500">Status</th>
+                <th class="px-4 py-2 font-medium text-gray-500">Birth</th>
+                <th class="px-4 py-2 font-medium text-gray-500">Verified</th>
+                <th class="px-4 py-2 font-medium text-gray-500">Actions</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-100">
+              ${data.domains.map((d: any) => `
+                <tr>
+                  <td class="px-4 py-2"><a href="/${d.domain}" class="text-blue-600 hover:underline">${d.domain}</a></td>
+                  <td class="px-4 py-2"><span class="px-2 py-0.5 rounded-full text-xs ${
+                    d.status === "active" ? "bg-green-100 text-green-700" :
+                    d.status === "dead" ? "bg-gray-100 text-gray-700" :
+                    d.status === "unreachable" ? "bg-yellow-100 text-yellow-700" :
+                    "bg-orange-100 text-orange-700"
+                  }">${d.status}</span></td>
+                  <td class="px-4 py-2 text-gray-500">${d.birth_at ? new Date(d.birth_at).toLocaleDateString() : "-"}</td>
+                  <td class="px-4 py-2">${d.verification_status === "verified" ? "Yes" : "No"}</td>
+                  <td class="px-4 py-2">
+                    <select onchange="updateStatus(${d.id}, this.value)" class="text-xs border border-gray-200 rounded px-1 py-0.5">
+                      <option value="">Change...</option>
+                      <option value="active">Active</option>
+                      <option value="dead">Dead</option>
+                      <option value="unknown">Unknown</option>
+                    </select>
+                  </td>
+                </tr>
+              `).join("")}
+            </tbody>
+          </table>
+        `;
+
+        document.getElementById("page-info")!.textContent = `Page ${page} of ${Math.ceil(data.total / limit)}`;
+        (document.getElementById("btn-prev") as HTMLButtonElement).disabled = page <= 1;
+        (document.getElementById("btn-next") as HTMLButtonElement).disabled = page >= Math.ceil(data.total / limit);
+      } catch {
+        document.getElementById("domains-table")!.innerHTML = '<p class="p-4 text-red-600">Failed to load</p>';
+      }
+    }
+
+    (window as any).updateStatus = async (id: number, status: string) => {
+      if (!status) return;
+      try {
+        await fetch(`${API}/admin/domains/${id}`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json", "X-Admin-Key": key! },
+          body: JSON.stringify({ status }),
+        });
+        load();
+      } catch {
+        alert("Failed to update");
+      }
+    };
+
+    document.getElementById("btn-search")?.addEventListener("click", () => { page = 1; load(); });
+    document.getElementById("btn-prev")?.addEventListener("click", () => { page--; load(); });
+    document.getElementById("btn-next")?.addEventListener("click", () => { page++; load(); });
+
+    load();
+  </script>
+</Base>

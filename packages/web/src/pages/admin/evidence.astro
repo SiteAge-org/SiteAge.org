@@ -1,0 +1,81 @@
+---
+import Base from "../../layouts/Base.astro";
+---
+
+<Base title="Admin - Evidence Review">
+  <div class="max-w-4xl mx-auto px-4 py-12">
+    <div class="flex items-center justify-between mb-6">
+      <h1 class="text-2xl font-bold">Evidence Review</h1>
+      <a href="/admin" class="text-sm text-blue-600 hover:underline">&larr; Dashboard</a>
+    </div>
+
+    <div id="evidence-list" class="space-y-4">
+      <p class="text-gray-500">Loading...</p>
+    </div>
+  </div>
+
+  <script>
+    const API = import.meta.env.PUBLIC_API_URL || "https://api.siteage.org";
+    const key = localStorage.getItem("admin_key");
+
+    if (!key) {
+      window.location.href = "/admin";
+    }
+
+    async function load() {
+      try {
+        const resp = await fetch(`${API}/admin/evidence`, {
+          headers: { "X-Admin-Key": key! },
+        });
+        if (!resp.ok) throw new Error("Failed to load");
+        const data = await resp.json();
+        const list = document.getElementById("evidence-list")!;
+
+        if (!data.length) {
+          list.innerHTML = '<p class="text-gray-500">No pending evidence to review.</p>';
+          return;
+        }
+
+        list.innerHTML = data.map((ev: any) => `
+          <div class="bg-white rounded-lg border border-gray-200 p-4" id="ev-${ev.id}">
+            <div class="flex justify-between items-start mb-2">
+              <div>
+                <span class="font-semibold">${ev.domain}</span>
+                <span class="text-sm text-gray-400 ml-2">${ev.type}</span>
+              </div>
+              <span class="text-xs text-gray-400">${ev.created_at}</span>
+            </div>
+            <p class="text-sm text-gray-600 mb-1">Claimed: ${ev.claimed_at}</p>
+            ${ev.url ? `<a href="${ev.url}" target="_blank" class="text-sm text-blue-600 hover:underline">${ev.url}</a>` : ""}
+            ${ev.description ? `<p class="text-sm text-gray-500 mt-1">${ev.description}</p>` : ""}
+            <div class="flex gap-2 mt-3">
+              <button onclick="review(${ev.id}, 'approved')" class="px-3 py-1 bg-green-600 text-white rounded text-sm hover:bg-green-700">Approve</button>
+              <button onclick="review(${ev.id}, 'rejected')" class="px-3 py-1 bg-red-600 text-white rounded text-sm hover:bg-red-700">Reject</button>
+            </div>
+          </div>
+        `).join("");
+      } catch {
+        document.getElementById("evidence-list")!.innerHTML = '<p class="text-red-600">Failed to load evidence</p>';
+      }
+    }
+
+    (window as any).review = async (id: number, action: string) => {
+      try {
+        const resp = await fetch(`${API}/admin/evidence/${id}/review`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json", "X-Admin-Key": key! },
+          body: JSON.stringify({ action }),
+        });
+        if (resp.ok) {
+          document.getElementById(`ev-${id}`)?.remove();
+        } else {
+          alert("Failed to review");
+        }
+      } catch {
+        alert("Error reviewing evidence");
+      }
+    };
+
+    load();
+  </script>
+</Base>
