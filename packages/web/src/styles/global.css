@@ -1,1 +1,87 @@
 @import "tailwindcss";
+
+@theme {
+  --color-ink: #1a1d2e;
+  --color-ink-light: #2d3148;
+  --color-ink-muted: #6b7094;
+  --color-parchment: #faf8f4;
+  --color-parchment-dark: #f0ece4;
+  --color-seal: #c8a44e;
+  --color-seal-dark: #a8872e;
+  --color-seal-light: #f0dfa0;
+  --color-azure: #2b5ea7;
+  --color-azure-light: #3d75c4;
+  --color-azure-muted: #8aaad4;
+  --color-tombstone: #8a8a8a;
+  --color-divider: #e2ddd3;
+
+  --font-display: "DM Serif Display", "Georgia", serif;
+  --font-body: "IBM Plex Sans", "Helvetica Neue", sans-serif;
+  --font-mono: "IBM Plex Mono", "Menlo", monospace;
+}
+
+@keyframes fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes draw-line {
+  from { stroke-dashoffset: 200; }
+  to { stroke-dashoffset: 0; }
+}
+
+@keyframes pulse-seal {
+  0%, 100% { transform: scale(1); opacity: 0.6; }
+  50% { transform: scale(1.05); opacity: 0.8; }
+}
+
+.animate-fade-up {
+  animation: fade-up 0.7s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.animate-fade-in {
+  animation: fade-in 0.6s ease both;
+}
+
+.delay-100 { animation-delay: 100ms; }
+.delay-200 { animation-delay: 200ms; }
+.delay-300 { animation-delay: 300ms; }
+.delay-400 { animation-delay: 400ms; }
+.delay-500 { animation-delay: 500ms; }
+.delay-600 { animation-delay: 600ms; }
+.delay-700 { animation-delay: 700ms; }
+
+/* Engraving-style decorative line */
+.ornament-line {
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    var(--color-divider) 15%,
+    var(--color-seal) 40%,
+    var(--color-seal) 60%,
+    var(--color-divider) 85%,
+    transparent 100%
+  );
+  height: 1px;
+}
+
+/* Subtle noise texture overlay */
+.noise-overlay::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  opacity: 0.03;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  pointer-events: none;
+}

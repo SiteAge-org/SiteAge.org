@@ -1,5 +1,5 @@
 ---
-import { formatAge, ageDays } from "@siteage/shared";
+import { formatAge } from "@siteage/shared";
 import type { DomainDetail } from "@siteage/shared";
 
 interface Props {
@@ -12,11 +12,11 @@ const days = data.age_days || 0;
 ---
 
 {birth && (
-  <div class="bg-white rounded-lg border border-gray-200 p-6">
-    <h2 class="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3">Age</h2>
+  <div class="bg-white/60 border border-divider p-6 sm:p-8">
+    <h2 class="text-[10px] tracking-[0.3em] uppercase text-seal-dark font-medium mb-4">Age</h2>
     <div class="flex items-baseline gap-3">
-      <span class="text-3xl font-bold">{formatAge(birth, data.death_at || undefined)}</span>
-      <span class="text-gray-400 text-sm">({days.toLocaleString()} days)</span>
+      <span class="font-display text-2xl sm:text-3xl text-ink">{formatAge(birth, data.death_at || undefined)}</span>
+      <span class="text-ink-muted text-sm font-light">({days.toLocaleString()} days)</span>
     </div>
   </div>
 )}

@@ -10,39 +10,39 @@ const badgeUrl = `${BADGE_BASE_URL}/${domain}`;
 const linkUrl = `${WEB_BASE_URL}/${domain}`;
 ---
 
-<div class="bg-white rounded-lg border border-gray-200 p-6">
-  <h2 class="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-4">Badge</h2>
+<div class="bg-white/60 border border-divider p-6 sm:p-8">
+  <h2 class="text-[10px] tracking-[0.3em] uppercase text-seal-dark font-medium mb-6">Badge</h2>
 
   <!-- Preview -->
-  <div class="flex flex-col gap-4 mb-6">
+  <div class="flex flex-col gap-5 mb-8">
     <div>
-      <p class="text-xs text-gray-400 mb-2">Flat</p>
+      <p class="text-[10px] tracking-[0.15em] uppercase text-ink-muted/50 mb-2">Flat</p>
       <img src={`${badgeUrl}?style=flat`} alt="SiteAge badge" class="h-5" />
     </div>
     <div>
-      <p class="text-xs text-gray-400 mb-2">Flat Square</p>
+      <p class="text-[10px] tracking-[0.15em] uppercase text-ink-muted/50 mb-2">Flat Square</p>
       <img src={`${badgeUrl}?style=flat-square`} alt="SiteAge badge" class="h-5" />
     </div>
     <div>
-      <p class="text-xs text-gray-400 mb-2">For the Badge</p>
+      <p class="text-[10px] tracking-[0.15em] uppercase text-ink-muted/50 mb-2">For the Badge</p>
       <img src={`${badgeUrl}?style=for-the-badge`} alt="SiteAge badge" class="h-7" />
     </div>
   </div>
 
   <!-- Embed codes -->
-  <div class="space-y-3">
+  <div class="space-y-4">
     <div>
-      <label class="text-xs font-medium text-gray-500 block mb-1">HTML</label>
+      <label class="text-[10px] tracking-[0.15em] uppercase text-ink-muted/50 font-medium block mb-2">HTML</label>
       <div class="relative">
-        <code class="block bg-gray-50 rounded px-3 py-2 text-xs text-gray-700 overflow-x-auto" id="html-code">{`<a href="${linkUrl}"><img src="${badgeUrl}" alt="SiteAge badge"></a>`}</code>
-        <button data-copy="html-code" class="copy-btn absolute top-1 right-1 text-xs px-2 py-1 bg-white border border-gray-200 rounded text-gray-500 hover:text-gray-700">Copy</button>
+        <code class="block bg-parchment-dark rounded px-4 py-3 text-xs text-ink-muted font-mono overflow-x-auto" id="html-code">{`<a href="${linkUrl}"><img src="${badgeUrl}" alt="SiteAge badge"></a>`}</code>
+        <button data-copy="html-code" class="copy-btn absolute top-2 right-2 text-[10px] tracking-[0.1em] uppercase px-2 py-1 bg-white border border-divider text-ink-muted hover:text-ink transition-colors">Copy</button>
       </div>
     </div>
     <div>
-      <label class="text-xs font-medium text-gray-500 block mb-1">Markdown</label>
+      <label class="text-[10px] tracking-[0.15em] uppercase text-ink-muted/50 font-medium block mb-2">Markdown</label>
       <div class="relative">
-        <code class="block bg-gray-50 rounded px-3 py-2 text-xs text-gray-700 overflow-x-auto" id="md-code">{`[![SiteAge](${badgeUrl})](${linkUrl})`}</code>
-        <button data-copy="md-code" class="copy-btn absolute top-1 right-1 text-xs px-2 py-1 bg-white border border-gray-200 rounded text-gray-500 hover:text-gray-700">Copy</button>
+        <code class="block bg-parchment-dark rounded px-4 py-3 text-xs text-ink-muted font-mono overflow-x-auto" id="md-code">{`[![SiteAge](${badgeUrl})](${linkUrl})`}</code>
+        <button data-copy="md-code" class="copy-btn absolute top-2 right-2 text-[10px] tracking-[0.1em] uppercase px-2 py-1 bg-white border border-divider text-ink-muted hover:text-ink transition-colors">Copy</button>
       </div>
     </div>
   </div>

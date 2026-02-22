@@ -11,33 +11,39 @@ const birth = data.verified_birth_at || data.birth_at;
 const deathYear = data.death_at ? birthYear(data.death_at) : "?";
 ---
 
-<div class="bg-gray-100 border-2 border-gray-300 rounded-xl p-8 shadow-sm max-w-2xl mx-auto relative overflow-hidden">
-  <div class="absolute inset-0 border-8 border-double border-gray-200 rounded-xl pointer-events-none"></div>
+<div class="relative bg-parchment-dark/50 border border-divider p-10 sm:p-14 max-w-2xl mx-auto overflow-hidden noise-overlay">
+  <!-- Corner ornaments (muted) -->
+  <div class="absolute top-3 left-3 w-10 h-10 border-t-2 border-l-2 border-tombstone/20"></div>
+  <div class="absolute top-3 right-3 w-10 h-10 border-t-2 border-r-2 border-tombstone/20"></div>
+  <div class="absolute bottom-3 left-3 w-10 h-10 border-b-2 border-l-2 border-tombstone/20"></div>
+  <div class="absolute bottom-3 right-3 w-10 h-10 border-b-2 border-r-2 border-tombstone/20"></div>
+
+  <div class="absolute inset-6 border border-tombstone/10 pointer-events-none"></div>
 
   <div class="relative text-center">
-    <div class="mb-6">
-      <p class="text-xs uppercase tracking-widest text-gray-400 mb-1">In Memoriam</p>
-      <div class="w-16 h-0.5 bg-gray-300 mx-auto"></div>
+    <div class="mb-8">
+      <p class="text-[10px] tracking-[0.4em] uppercase text-tombstone font-medium mb-2">In Memoriam</p>
+      <div class="h-px max-w-48 mx-auto bg-gradient-to-r from-transparent via-tombstone/40 to-transparent"></div>
     </div>
 
-    <h1 class="text-3xl font-bold text-gray-500 mb-4">{data.domain}</h1>
+    <h1 class="font-display text-3xl sm:text-4xl mb-6 text-tombstone">{data.domain}</h1>
 
-    <div class="my-6">
-      <p class="text-4xl font-light text-gray-400">R.I.P</p>
+    <div class="my-8">
+      <p class="font-display text-5xl text-tombstone/70 leading-none mb-3">R.I.P</p>
       {birth && (
-        <p class="text-xl text-gray-500 mt-2">
+        <p class="font-display text-2xl text-tombstone/50 mt-4">
           {birthYear(birth)} &mdash; {deathYear}
         </p>
       )}
       {birth && (
-        <p class="text-sm text-gray-400 mt-2">
+        <p class="text-sm text-tombstone/40 mt-3 font-light">
           Survived for {formatAge(birth, data.death_at || undefined)}
         </p>
       )}
     </div>
 
-    <div class="mt-8 pt-4 border-t border-gray-200">
-      <p class="text-xs text-gray-400">Remembered by SiteAge.org &middot; Data from Internet Archive Wayback Machine</p>
+    <div class="pt-6 border-t border-tombstone/10">
+      <p class="text-[10px] text-tombstone/30 tracking-[0.15em] uppercase">Remembered by SiteAge.org &middot; Data from Internet Archive</p>
     </div>
   </div>
 </div>

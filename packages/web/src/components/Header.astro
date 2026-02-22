@@ -1,17 +1,22 @@
 ---
 ---
 
-<header class="border-b border-gray-200 bg-white">
-  <div class="max-w-5xl mx-auto px-4 py-4 flex items-center justify-between">
-    <a href="/" class="flex items-center gap-2 text-xl font-bold text-gray-900 hover:text-blue-600 transition-colors">
-      <svg width="28" height="28" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-        <circle cx="14" cy="14" r="13" stroke="currentColor" stroke-width="2"/>
-        <path d="M14 4 L14 14 L20 14" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-      </svg>
-      SiteAge
+<header class="border-b border-divider bg-parchment/80 backdrop-blur-sm sticky top-0 z-50">
+  <div class="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
+    <a href="/" class="flex items-center gap-2.5 group">
+      <!-- Seal-style logo mark -->
+      <div class="relative w-9 h-9">
+        <svg width="36" height="36" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg" class="transition-transform duration-300 group-hover:rotate-[15deg]">
+          <circle cx="18" cy="18" r="16" stroke="currentColor" stroke-width="1.5" class="text-ink"/>
+          <circle cx="18" cy="18" r="13" stroke="currentColor" stroke-width="0.75" class="text-ink-muted"/>
+          <path d="M18 7 L18 18 L25 18" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="text-seal-dark"/>
+          <circle cx="18" cy="18" r="2" fill="currentColor" class="text-seal"/>
+        </svg>
+      </div>
+      <span class="font-display text-xl tracking-wide text-ink">SiteAge</span>
     </a>
-    <nav class="flex items-center gap-6 text-sm">
-      <a href="/about" class="text-gray-600 hover:text-gray-900 transition-colors">About</a>
+    <nav class="flex items-center gap-8">
+      <a href="/about" class="text-sm text-ink-muted hover:text-ink transition-colors duration-200 tracking-wide uppercase font-medium">About</a>
     </nav>
   </div>
 </header>

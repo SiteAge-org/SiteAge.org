@@ -6,20 +6,20 @@ interface Props {
 const { percentile } = Astro.props;
 ---
 
-<div class="bg-white rounded-lg border border-gray-200 p-6">
-  <h2 class="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3">Longevity Ranking</h2>
+<div class="bg-white/60 border border-divider p-6 sm:p-8">
+  <h2 class="text-[10px] tracking-[0.3em] uppercase text-seal-dark font-medium mb-4">Longevity Ranking</h2>
   <div class="flex items-center gap-4">
-    <div class="flex-1 bg-gray-100 rounded-full h-4 overflow-hidden">
+    <div class="flex-1 bg-parchment-dark h-3 overflow-hidden">
       <div
-        class="h-full bg-blue-500 rounded-full transition-all"
+        class="h-full bg-gradient-to-r from-azure to-azure-light transition-all duration-700"
         style={`width: ${percentile}%`}
       ></div>
     </div>
-    <span class="text-sm font-semibold text-gray-700 whitespace-nowrap">
+    <span class="text-sm font-medium text-ink whitespace-nowrap font-display">
       Top {100 - percentile}%
     </span>
   </div>
-  <p class="text-xs text-gray-400 mt-2">
+  <p class="text-xs text-ink-muted/60 mt-3 font-light">
     Older than {percentile}% of websites in our database
   </p>
 </div>
