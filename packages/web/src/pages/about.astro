@@ -3,37 +3,46 @@ import Base from "../layouts/Base.astro";
 ---
 
 <Base title="About">
-  <div class="max-w-3xl mx-auto px-4 py-12">
-    <h1 class="text-3xl font-bold mb-6">About SiteAge.org</h1>
+  <div class="max-w-3xl mx-auto px-6 py-12 sm:py-20">
+    <div class="text-center mb-12">
+      <span class="text-xs tracking-[0.3em] uppercase text-seal-dark font-medium">About</span>
+      <h1 class="font-display text-3xl sm:text-4xl mt-4">SiteAge.org</h1>
+    </div>
 
-    <div class="prose prose-gray max-w-none space-y-4">
-      <p class="text-gray-600 text-lg">
+    <div class="space-y-8 text-ink-muted font-light leading-relaxed">
+      <p class="text-lg">
         SiteAge.org is a website age certification platform. We trace the origins of websites
         using the Internet Archive's Wayback Machine and generate verifiable age badges.
       </p>
 
-      <h2 class="text-xl font-semibold mt-8 mb-3">How It Works</h2>
-      <ol class="list-decimal list-inside space-y-2 text-gray-600">
-        <li>Enter a domain name to look up</li>
-        <li>We query the Wayback Machine CDX API for the earliest archived snapshot</li>
-        <li>The earliest successful snapshot date becomes the "birth date"</li>
-        <li>You get a certificate page and an embeddable SVG badge</li>
-      </ol>
+      <div>
+        <h2 class="font-display text-xl text-ink mb-4">How It Works</h2>
+        <ol class="list-decimal list-inside space-y-3">
+          <li>Enter a domain name to look up</li>
+          <li>We query the Wayback Machine CDX API for the earliest archived snapshot</li>
+          <li>The earliest successful snapshot date becomes the "birth date"</li>
+          <li>You receive a certificate page and an embeddable SVG badge</li>
+        </ol>
+      </div>
 
-      <h2 class="text-xl font-semibold mt-8 mb-3">Verification</h2>
-      <p class="text-gray-600">
-        Website owners can claim their domain through DNS TXT record or meta tag verification.
-        Verified domains receive a gold "Established" badge and can submit evidence for an
-        earlier birth date if the Wayback Machine didn't capture the earliest version.
-      </p>
+      <div>
+        <h2 class="font-display text-xl text-ink mb-4">Verification</h2>
+        <p>
+          Website owners can claim their domain through DNS TXT record or meta tag verification.
+          Verified domains receive a gold "Established" badge and can submit evidence for an
+          earlier birth date if the Wayback Machine didn't capture the earliest version.
+        </p>
+      </div>
 
-      <h2 class="text-xl font-semibold mt-8 mb-3">Open Source</h2>
-      <p class="text-gray-600">
-        SiteAge.org is open source under the MIT license.
-        <a href="https://github.com/user/siteage.org" class="text-blue-600 hover:underline" target="_blank" rel="noopener noreferrer">
-          View on GitHub
-        </a>.
-      </p>
+      <div>
+        <h2 class="font-display text-xl text-ink mb-4">Open Source</h2>
+        <p>
+          SiteAge.org is open source under the MIT license.
+          <a href="https://github.com/user/siteage.org" class="text-azure hover:text-azure-light transition-colors" target="_blank" rel="noopener noreferrer">
+            View on GitHub
+          </a>.
+        </p>
+      </div>
     </div>
   </div>
 </Base>
