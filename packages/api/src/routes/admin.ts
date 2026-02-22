@@ -1,5 +1,6 @@
 import { Hono } from "hono";
 import type { Env } from "../env.js";
+import type { AdminDashboard, GlobalStats } from "@siteage/shared";
 
 export const adminRoutes = new Hono<{ Bindings: Env }>();
 
@@ -14,25 +15,170 @@ adminRoutes.use("*", async (c, next) => {
 
 // GET /admin/dashboard
 adminRoutes.get("/dashboard", async (c) => {
-  return c.json({ error: "not_implemented", message: "Coming in Step 7" }, 501);
+  const total = await c.env.DB.prepare("SELECT COUNT(*) as count FROM domains").first();
+  const active = await c.env.DB.prepare("SELECT COUNT(*) as count FROM domains WHERE status = 'active'").first();
+  const dead = await c.env.DB.prepare("SELECT COUNT(*) as count FROM domains WHERE status = 'dead'").first();
+  const verified = await c.env.DB.prepare("SELECT COUNT(*) as count FROM domains WHERE verification_status = 'verified'").first();
+  const oldest = await c.env.DB.prepare(
+    "SELECT domain, COALESCE(verified_birth_at, birth_at) as birth FROM domains WHERE birth_at IS NOT NULL ORDER BY birth ASC LIMIT 1"
+  ).first();
+  const pendingEvidence = await c.env.DB.prepare("SELECT COUNT(*) as count FROM evidence WHERE status = 'pending'").first();
+
+  const stats: GlobalStats = {
+    total_domains: (total?.count as number) || 0,
+    active_domains: (active?.count as number) || 0,
+    dead_domains: (dead?.count as number) || 0,
+    verified_domains: (verified?.count as number) || 0,
+    oldest_domain: (oldest?.domain as string) || null,
+    oldest_birth_at: (oldest?.birth as string) || null,
+  };
+
+  const dashboard: AdminDashboard = {
+    stats,
+    pending_evidence_count: (pendingEvidence?.count as number) || 0,
+  };
+
+  return c.json(dashboard);
 });
 
-// GET /admin/evidence
+// GET /admin/evidence - List pending evidence
 adminRoutes.get("/evidence", async (c) => {
-  return c.json({ error: "not_implemented", message: "Coming in Step 7" }, 501);
+  const rows = await c.env.DB.prepare(
+    `SELECT e.*, d.domain
+     FROM evidence e
+     JOIN domains d ON e.domain_id = d.id
+     WHERE e.status = 'pending'
+     ORDER BY e.created_at ASC`
+  ).all();
+
+  return c.json(rows.results || []);
 });
 
-// POST /admin/evidence/:id/review
+// POST /admin/evidence/:id/review - Approve or reject evidence
 adminRoutes.post("/evidence/:id/review", async (c) => {
-  return c.json({ error: "not_implemented", message: "Coming in Step 7" }, 501);
+  const id = parseInt(c.req.param("id"), 10);
+  const body = await c.req.json<{ action: "approved" | "rejected" }>();
+
+  if (!["approved", "rejected"].includes(body.action)) {
+    return c.json({ error: "bad_request", message: "action must be 'approved' or 'rejected'" }, 400);
+  }
+
+  const evidence = await c.env.DB.prepare(
+    "SELECT * FROM evidence WHERE id = ? AND status = 'pending'"
+  ).bind(id).first();
+
+  if (!evidence) {
+    return c.json({ error: "not_found", message: "Evidence not found or already reviewed" }, 404);
+  }
+
+  await c.env.DB.prepare(
+    "UPDATE evidence SET status = ?, reviewed_at = datetime('now') WHERE id = ?"
+  ).bind(body.action, id).run();
+
+  // If approved, update domain's verified_birth_at
+  if (body.action === "approved") {
+    const domainId = evidence.domain_id as number;
+    const claimedAt = evidence.claimed_at as string;
+
+    // Only update if claimed date is earlier
+    const domain = await c.env.DB.prepare("SELECT * FROM domains WHERE id = ?").bind(domainId).first();
+    const currentBirth = (domain?.verified_birth_at || domain?.birth_at) as string | null;
+
+    if (!currentBirth || new Date(claimedAt) < new Date(currentBirth)) {
+      await c.env.DB.prepare(
+        "UPDATE domains SET verified_birth_at = ?, updated_at = datetime('now') WHERE id = ?"
+      ).bind(claimedAt, domainId).run();
+
+      // Clear caches
+      const domainName = domain?.domain as string;
+      await c.env.API_CACHE.delete(`lookup:${domainName}`);
+      await c.env.API_CACHE.delete(`domain:${domainName}`);
+    }
+  }
+
+  return c.json({ success: true, message: `Evidence ${body.action}` });
 });
 
-// GET /admin/domains
+// GET /admin/domains - List domains with pagination and filtering
 adminRoutes.get("/domains", async (c) => {
-  return c.json({ error: "not_implemented", message: "Coming in Step 7" }, 501);
+  const page = parseInt(c.req.query("page") || "1", 10);
+  const limit = Math.min(parseInt(c.req.query("limit") || "20", 10), 100);
+  const status = c.req.query("status");
+  const search = c.req.query("search");
+  const offset = (page - 1) * limit;
+
+  let where = "WHERE 1=1";
+  const params: unknown[] = [];
+
+  if (status) {
+    where += " AND status = ?";
+    params.push(status);
+  }
+  if (search) {
+    where += " AND domain LIKE ?";
+    params.push(`%${search}%`);
+  }
+
+  const countQuery = `SELECT COUNT(*) as count FROM domains ${where}`;
+  const countStmt = c.env.DB.prepare(countQuery);
+  const countResult = await (params.length > 0 ? countStmt.bind(...params) : countStmt).first();
+  const total = (countResult?.count as number) || 0;
+
+  const dataQuery = `SELECT id, domain, birth_at, verified_birth_at, status, verification_status, consecutive_failures, badge_embedded, last_checked_at, created_at FROM domains ${where} ORDER BY created_at DESC LIMIT ? OFFSET ?`;
+  const dataStmt = c.env.DB.prepare(dataQuery);
+  const dataResult = await dataStmt.bind(...params, limit, offset).all();
+
+  return c.json({
+    domains: dataResult.results || [],
+    total,
+    page,
+    limit,
+  });
 });
 
-// POST /admin/domains/:id
+// POST /admin/domains/:id - Update domain status manually
 adminRoutes.post("/domains/:id", async (c) => {
-  return c.json({ error: "not_implemented", message: "Coming in Step 7" }, 501);
+  const id = parseInt(c.req.param("id"), 10);
+  const body = await c.req.json<{ status?: string; birth_at?: string; verified_birth_at?: string }>();
+
+  const updates: string[] = [];
+  const params: unknown[] = [];
+
+  if (body.status && ["active", "unreachable", "dead", "unknown"].includes(body.status)) {
+    updates.push("status = ?");
+    params.push(body.status);
+
+    if (body.status === "dead") {
+      updates.push("death_at = datetime('now')");
+    } else if (body.status === "active") {
+      updates.push("death_at = NULL");
+      updates.push("consecutive_failures = 0");
+    }
+  }
+
+  if (body.verified_birth_at) {
+    updates.push("verified_birth_at = ?");
+    params.push(body.verified_birth_at);
+  }
+
+  if (updates.length === 0) {
+    return c.json({ error: "bad_request", message: "No valid fields to update" }, 400);
+  }
+
+  updates.push("updated_at = datetime('now')");
+  params.push(id);
+
+  await c.env.DB.prepare(
+    `UPDATE domains SET ${updates.join(", ")} WHERE id = ?`
+  ).bind(...params).run();
+
+  // Clear caches
+  const domain = await c.env.DB.prepare("SELECT domain FROM domains WHERE id = ?").bind(id).first();
+  if (domain) {
+    const name = domain.domain as string;
+    await c.env.API_CACHE.delete(`lookup:${name}`);
+    await c.env.API_CACHE.delete(`domain:${name}`);
+  }
+
+  return c.json({ success: true });
 });

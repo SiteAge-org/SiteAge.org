@@ -7,6 +7,7 @@ import { domainRoutes } from "./routes/domain.js";
 import { verifyRoutes } from "./routes/verify.js";
 import { evidenceRoutes } from "./routes/evidence.js";
 import { statsRoutes } from "./routes/stats.js";
+import { manageRoutes } from "./routes/manage.js";
 import { adminRoutes } from "./routes/admin.js";
 import { handleScheduled } from "./cron/scheduler.js";
 
@@ -20,6 +21,7 @@ app.route("/", domainRoutes);
 app.route("/verify", verifyRoutes);
 app.route("/evidence", evidenceRoutes);
 app.route("/", statsRoutes);
+app.route("/manage", manageRoutes);
 app.route("/admin", adminRoutes);
 
 app.get("/health", (c) => c.json({ status: "ok", timestamp: new Date().toISOString() }));
