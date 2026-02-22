@@ -213,7 +213,7 @@ async function sendMagicLinkEmail(env: Env, email: string, domain: string, magic
   const manageUrl = `https://siteage.org/manage/${domain}?key=${magicKey}`;
 
   try {
-    await fetch("https://api.resend.com/emails", {
+    const resp = await fetch("https://api.resend.com/emails", {
       method: "POST",
       headers: {
         Authorization: `Bearer ${env.RESEND_API_KEY}`,
@@ -235,6 +235,11 @@ async function sendMagicLinkEmail(env: Env, email: string, domain: string, magic
         `,
       }),
     });
+
+    if (!resp.ok) {
+      const body = await resp.text().catch(() => "unknown error");
+      console.error(`Resend API returned ${resp.status}: ${body}`);
+    }
   } catch (err) {
     console.error("Failed to send magic link email:", err);
   }

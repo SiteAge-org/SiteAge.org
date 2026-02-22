@@ -57,16 +57,21 @@ export async function archaeologyService(env: Env, domain: string): Promise<Arch
     console.error(`CDX query failed for ${domain}:`, err);
   }
 
-  // 4. Insert into D1
+  // 4. Insert into D1 (use INSERT OR IGNORE to handle concurrent requests)
   await env.DB.prepare(
-    "INSERT INTO domains (domain, birth_at, status) VALUES (?, ?, ?)"
+    "INSERT OR IGNORE INTO domains (domain, birth_at, status) VALUES (?, ?, ?)"
   ).bind(domain, birthAt, status).run();
 
+  // Re-query to get the actual stored record (may differ if another request won the race)
+  const inserted = await env.DB.prepare(
+    "SELECT domain, birth_at, status, verification_status FROM domains WHERE domain = ?"
+  ).bind(domain).first();
+
   const result: ArchaeologyResult = {
-    domain,
-    birth_at: birthAt,
-    status,
-    verification_status: "detected",
+    domain: inserted?.domain as string ?? domain,
+    birth_at: inserted?.birth_at as string | null ?? birthAt,
+    status: inserted?.status as string ?? status,
+    verification_status: inserted?.verification_status as string ?? "detected",
   };
 
   // 5. Cache result

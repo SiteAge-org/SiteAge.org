@@ -33,17 +33,18 @@ export async function queryCdx(domain: string): Promise<CdxResult> {
 
   const earliest = data[1][0]; // timestamp is first field
 
-  // Get total snapshot count with a separate query
-  const countUrl = `${CDX_API_BASE}?url=${encodeURIComponent(domain)}&output=json&filter=statuscode:200&limit=0&showNumPages=true`;
+  // Get total snapshot count with a matchType=exact query (no limit)
+  const countUrl = `${CDX_API_BASE}?url=${encodeURIComponent(domain)}&output=json&filter=statuscode:200&matchType=exact&fl=timestamp&limit=-1`;
   let snapshotCount = 1;
   try {
     const countResp = await fetch(countUrl, {
       headers: { "User-Agent": "SiteAge.org/1.0 (https://siteage.org)" },
-      signal: AbortSignal.timeout(10000),
+      signal: AbortSignal.timeout(15000),
     });
     if (countResp.ok) {
-      const countData = await countResp.text();
-      snapshotCount = parseInt(countData.trim(), 10) || 1;
+      const countData = await countResp.json() as string[][];
+      // First row is header, remaining rows are snapshots
+      snapshotCount = Math.max(1, (countData?.length ?? 1) - 1);
     }
   } catch {
     // Non-critical, keep default count

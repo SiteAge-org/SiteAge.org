@@ -32,14 +32,25 @@ export async function runPriorityChecks(env: Env): Promise<void> {
 
   const priorityIds = new Set((priorityRows.results || []).map((r) => r.id as number));
 
-  // Random pool: exclude priority domains
-  const placeholders = priorityIds.size > 0 ? Array.from(priorityIds).join(",") : "0";
-  const randomRows = await env.DB.prepare(
-    `SELECT id, domain FROM domains
-     WHERE status != 'dead' AND id NOT IN (${placeholders})
-     ORDER BY RANDOM()
-     LIMIT ?`
-  ).bind(randomCount).all();
+  // Random pool: exclude priority domains using parameterized query
+  let randomRows: { results: Record<string, unknown>[] | null };
+  if (priorityIds.size > 0) {
+    const ids = Array.from(priorityIds);
+    const placeholders = ids.map(() => "?").join(",");
+    randomRows = await env.DB.prepare(
+      `SELECT id, domain FROM domains
+       WHERE status != 'dead' AND id NOT IN (${placeholders})
+       ORDER BY RANDOM()
+       LIMIT ?`
+    ).bind(...ids, randomCount).all();
+  } else {
+    randomRows = await env.DB.prepare(
+      `SELECT id, domain FROM domains
+       WHERE status != 'dead'
+       ORDER BY RANDOM()
+       LIMIT ?`
+    ).bind(randomCount).all();
+  }
 
   // Combine and check all domains
   const allDomains = [
