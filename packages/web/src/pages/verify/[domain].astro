@@ -19,9 +19,30 @@ if (!domain || !isValidDomain(domain)) {
       <div class="ornament-line max-w-32 mx-auto mt-4"></div>
     </div>
 
+    <!-- Step progress indicator -->
+    <div class="flex items-center justify-center gap-0 mb-10" id="progress-bar">
+      <div class="flex items-center gap-2" id="prog-step1">
+        <span class="step-dot active" data-step="1">1</span>
+        <span class="step-label active">Email</span>
+      </div>
+      <div class="step-connector" id="conn-1-2"></div>
+      <div class="flex items-center gap-2" id="prog-step2">
+        <span class="step-dot" data-step="2">2</span>
+        <span class="step-label">Verify</span>
+      </div>
+      <div class="step-connector" id="conn-2-3"></div>
+      <div class="flex items-center gap-2" id="prog-step3">
+        <span class="step-dot" data-step="3">3</span>
+        <span class="step-label">Done</span>
+      </div>
+    </div>
+
+    <!-- Inline alert area -->
+    <div id="alert-container" class="mb-6 hidden"></div>
+
     <div class="card-base p-8 sm:p-10 relative decorative-frame noise-overlay overflow-hidden">
       <div class="relative">
-        <!-- Step 1: Email -->
+        <!-- Step 1: Email & Method -->
         <div id="step-email">
           <h2 class="card-title">Step 1: Enter your email</h2>
           <div class="space-y-5">
@@ -42,36 +63,189 @@ if (!domain || !isValidDomain(domain)) {
                   <input type="radio" name="method" value="meta_tag" class="accent-seal" />
                   <span class="text-sm text-ink">HTML Meta Tag</span>
                 </label>
+                <label class="flex items-center gap-2 cursor-pointer">
+                  <input type="radio" name="method" value="well_known" class="accent-seal" />
+                  <span class="text-sm text-ink">Verification File</span>
+                  <span class="text-[10px] tracking-wider uppercase text-seal-dark bg-seal-glow px-1.5 py-0.5">Simple</span>
+                </label>
               </div>
             </div>
-            <button
-              id="btn-init"
-              class="btn-primary"
-            >
-              Start Verification
+            <button id="btn-init" class="btn-primary">
+              <span id="btn-init-text">Start Verification</span>
+              <svg id="btn-init-spinner" class="hidden animate-spin h-4 w-4" viewBox="0 0 24 24" fill="none">
+                <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3" class="opacity-25"></circle>
+                <path d="M4 12a8 8 0 018-8" stroke="currentColor" stroke-width="3" stroke-linecap="round" class="opacity-75"></path>
+              </svg>
             </button>
           </div>
         </div>
 
-        <!-- Step 2: Instructions (hidden by default) -->
+        <!-- Step 2: Instructions -->
         <div id="step-instructions" class="hidden">
           <h2 class="card-title">Step 2: Add verification record</h2>
-          <div id="instructions-content" class="bg-parchment-dark/60 p-4 text-sm text-ink-muted font-mono mb-4"></div>
-          <p class="text-sm text-ink-muted font-light mb-5">After adding the record, click verify below.</p>
-          <button
-            id="btn-verify"
-            class="btn-seal"
-          >
-            Verify Now
-          </button>
+
+          <!-- Method-specific instruction blocks -->
+          <div id="instr-dns" class="hidden instruction-block">
+            <p class="text-sm text-ink-muted font-light mb-3">Add a DNS TXT record to <strong class="text-ink">{domain}</strong>:</p>
+            <div class="relative">
+              <div class="bg-parchment-dark/60 p-4 text-sm font-mono text-ink break-all">
+                <div class="text-ink-muted text-xs mb-1">Name: @ (or {domain})</div>
+                <div>Value: <span id="dns-value"></span></div>
+              </div>
+              <button class="copy-btn" data-target="dns-value" title="Copy to clipboard">
+                <span class="copy-icon">Copy</span>
+                <span class="copied-icon hidden">Copied!</span>
+              </button>
+            </div>
+            <p class="text-xs text-ink-muted font-light mt-2">DNS records usually take effect within a few minutes, but can take up to 24 hours in rare cases. Token expires in 24 hours.</p>
+
+            <!-- DNS provider help guide -->
+            <details class="mt-4">
+              <summary class="dns-help-summary">
+                Need help adding DNS records?
+                <svg class="dns-help-arrow" width="12" height="12" viewBox="0 0 12 12" fill="none">
+                  <path d="M3 4.5L6 7.5L9 4.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </summary>
+
+              <div class="mt-3">
+                <p class="text-xs text-ink-muted font-light mb-2">Select your DNS provider:</p>
+                <div class="flex flex-wrap gap-2 mb-3">
+                  <button class="dns-chip" data-provider="cloudflare">Cloudflare</button>
+                  <button class="dns-chip" data-provider="namecheap">Namecheap</button>
+                  <button class="dns-chip" data-provider="godaddy">GoDaddy</button>
+                  <button class="dns-chip" data-provider="squarespace">Squarespace</button>
+                  <button class="dns-chip" data-provider="namecom">Name.com</button>
+                  <button class="dns-chip" data-provider="vercel">Vercel</button>
+                  <button class="dns-chip" data-provider="other">Other</button>
+                </div>
+
+                <div class="dns-guide hidden" data-guide="cloudflare">
+                  <ol class="dns-steps">
+                    <li>Go to your <a href="https://dash.cloudflare.com/" target="_blank" rel="noopener noreferrer" class="dns-link">Cloudflare dashboard</a> and select <strong>{domain}</strong></li>
+                    <li>Navigate to <strong>DNS → Records</strong> and click <strong>Add record</strong></li>
+                    <li>Set Type to <strong>TXT</strong>, Name to <strong>@</strong>, and paste the value above into Content</li>
+                    <li>Click <strong>Save</strong>, then come back here and click <strong>Verify Now</strong></li>
+                  </ol>
+                </div>
+
+                <div class="dns-guide hidden" data-guide="namecheap">
+                  <ol class="dns-steps">
+                    <li>Go to your <a href={`https://ap.www.namecheap.com/Domains/DomainControlPanel/${domain}/advancedns`} target="_blank" rel="noopener noreferrer" class="dns-link">Namecheap DNS settings for {domain}</a></li>
+                    <li>Under <strong>Host Records</strong>, click <strong>Add New Record</strong></li>
+                    <li>Set Type to <strong>TXT Record</strong>, Host to <strong>@</strong>, and paste the value above</li>
+                    <li>Click the <strong>checkmark</strong> to save, then come back here and click <strong>Verify Now</strong></li>
+                  </ol>
+                </div>
+
+                <div class="dns-guide hidden" data-guide="godaddy">
+                  <ol class="dns-steps">
+                    <li>Go to your <a href={`https://dcc.godaddy.com/manage/${domain}/dns`} target="_blank" rel="noopener noreferrer" class="dns-link">GoDaddy DNS management for {domain}</a></li>
+                    <li>Scroll to <strong>DNS Records</strong> and click <strong>Add</strong></li>
+                    <li>Set Type to <strong>TXT</strong>, Name to <strong>@</strong>, Value to the verification string above, TTL to <strong>1 Hour</strong></li>
+                    <li>Click <strong>Save</strong>, then come back here and click <strong>Verify Now</strong></li>
+                  </ol>
+                </div>
+
+                <div class="dns-guide hidden" data-guide="squarespace">
+                  <ol class="dns-steps">
+                    <li>Go to <a href="https://domains.squarespace.com/" target="_blank" rel="noopener noreferrer" class="dns-link">Squarespace Domains</a> (formerly Google Domains) and select <strong>{domain}</strong></li>
+                    <li>Click <strong>DNS</strong> in the left menu, then <strong>Custom records → Manage</strong></li>
+                    <li>Click <strong>Create new record</strong>, set Type to <strong>TXT</strong>, leave Host blank, and paste the value above</li>
+                    <li>Click <strong>Save</strong>, then come back here and click <strong>Verify Now</strong></li>
+                  </ol>
+                </div>
+
+                <div class="dns-guide hidden" data-guide="namecom">
+                  <ol class="dns-steps">
+                    <li>Go to your <a href={`https://www.name.com/account/domain/details/${domain}#dns`} target="_blank" rel="noopener noreferrer" class="dns-link">Name.com DNS settings for {domain}</a></li>
+                    <li>Click <strong>Add Record</strong> in the DNS Records section</li>
+                    <li>Set Type to <strong>TXT</strong>, leave Host blank, and paste the value above into Answer</li>
+                    <li>Click <strong>Add Record</strong> to save, then come back here and click <strong>Verify Now</strong></li>
+                  </ol>
+                </div>
+
+                <div class="dns-guide hidden" data-guide="vercel">
+                  <ol class="dns-steps">
+                    <li>Go to your <a href={`https://vercel.com/dashboard/domains/${domain}`} target="_blank" rel="noopener noreferrer" class="dns-link">Vercel domain settings for {domain}</a></li>
+                    <li>Scroll to the <strong>DNS Records</strong> section</li>
+                    <li>Set Type to <strong>TXT</strong>, Name to <strong>@</strong>, and paste the value above</li>
+                    <li>Click <strong>Add</strong>, then come back here and click <strong>Verify Now</strong></li>
+                  </ol>
+                </div>
+
+                <div class="dns-guide hidden" data-guide="other">
+                  <ol class="dns-steps">
+                    <li>Log in to your domain registrar or DNS hosting provider</li>
+                    <li>Find the <strong>DNS management</strong> or <strong>DNS records</strong> section for <strong>{domain}</strong></li>
+                    <li>Add a new <strong>TXT</strong> record with Name/Host set to <strong>@</strong> and the value from above</li>
+                    <li>Save the record, then come back here and click <strong>Verify Now</strong></li>
+                  </ol>
+                </div>
+              </div>
+            </details>
+          </div>
+
+          <div id="instr-meta" class="hidden instruction-block">
+            <p class="text-sm text-ink-muted font-light mb-3">Add this meta tag to the <code class="text-xs bg-parchment-dark/80 px-1.5 py-0.5">&lt;head&gt;</code> of your homepage:</p>
+            <div class="relative">
+              <div class="bg-parchment-dark/60 p-4 text-sm font-mono text-ink break-all" id="meta-value"></div>
+              <button class="copy-btn" data-target="meta-value" title="Copy to clipboard">
+                <span class="copy-icon">Copy</span>
+                <span class="copied-icon hidden">Copied!</span>
+              </button>
+            </div>
+            <p class="text-xs text-ink-muted font-light mt-2">Token expires in 24 hours.</p>
+          </div>
+
+          <div id="instr-file" class="hidden instruction-block">
+            <p class="text-sm text-ink-muted font-light mb-3">Create a file at the following URL:</p>
+            <div class="bg-parchment-dark/60 p-3 text-sm font-mono text-ink mb-3 break-all">
+              https://{domain}/.well-known/siteage-verify.txt
+            </div>
+            <p class="text-sm text-ink-muted font-light mb-2">With this content:</p>
+            <div class="relative">
+              <div class="bg-parchment-dark/60 p-4 text-sm font-mono text-ink break-all" id="file-value"></div>
+              <button class="copy-btn" data-target="file-value" title="Copy to clipboard">
+                <span class="copy-icon">Copy</span>
+                <span class="copied-icon hidden">Copied!</span>
+              </button>
+            </div>
+            <p class="text-xs text-ink-muted font-light mt-2">The file must be publicly accessible. Token expires in 24 hours.</p>
+          </div>
+
+          <div class="mt-6 flex items-center gap-3">
+            <button id="btn-verify" class="btn-seal">
+              <span id="btn-verify-text">Verify Now</span>
+              <svg id="btn-verify-spinner" class="hidden animate-spin h-4 w-4" viewBox="0 0 24 24" fill="none">
+                <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3" class="opacity-25"></circle>
+                <path d="M4 12a8 8 0 018-8" stroke="currentColor" stroke-width="3" stroke-linecap="round" class="opacity-75"></path>
+              </svg>
+            </button>
+            <button id="btn-back" class="text-sm text-ink-muted hover:text-ink transition-colors tracking-wide">
+              Back
+            </button>
+          </div>
         </div>
 
-        <!-- Result -->
+        <!-- Step 3: Result -->
         <div id="step-result" class="hidden">
-          <div id="result-content"></div>
+          <!-- Success state -->
+          <div id="result-success" class="hidden text-center py-4">
+            <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-seal-glow mb-4 animate-fade-in">
+              <svg class="w-8 h-8 text-seal-dark" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+              </svg>
+            </div>
+            <h2 class="font-display text-xl text-ink mb-2 animate-fade-in delay-100">Verification Successful</h2>
+            <p class="text-sm text-ink-muted font-light mb-1 animate-fade-in delay-200">Redirecting to management page...</p>
+            <p class="text-xs text-ink-muted font-light animate-fade-in delay-300">A backup management link has also been sent to your email.</p>
+          </div>
+          <!-- Failure state -->
+          <div id="result-failure" class="hidden"></div>
         </div>
 
-        <!-- Resend section for already-verified domains -->
+        <!-- Resend section -->
         <div class="mt-8 pt-6">
           <div class="ornament-line mb-6"></div>
           <p class="text-sm text-ink-muted font-light mb-2">Already verified? Lost your management link?</p>
@@ -86,14 +260,317 @@ if (!domain || !isValidDomain(domain)) {
     </div>
   </div>
 
+  <style>
+    .step-dot {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 1.75rem;
+      height: 1.75rem;
+      border-radius: 50%;
+      font-size: 0.75rem;
+      font-weight: 500;
+      border: 1.5px solid var(--color-divider);
+      color: var(--color-ink-muted);
+      background: transparent;
+      transition: all 0.3s ease;
+    }
+    .step-dot.active {
+      border-color: var(--color-seal);
+      background: var(--color-seal-glow);
+      color: var(--color-seal-dark);
+    }
+    .step-dot.completed {
+      border-color: var(--color-seal);
+      background: var(--color-seal);
+      color: white;
+    }
+    .step-label {
+      font-size: 0.7rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--color-ink-muted);
+      transition: color 0.3s ease;
+    }
+    .step-label.active {
+      color: var(--color-seal-dark);
+    }
+    .step-connector {
+      width: 2.5rem;
+      height: 1.5px;
+      background: var(--color-divider);
+      margin: 0 0.5rem;
+      transition: background 0.3s ease;
+    }
+    .step-connector.active {
+      background: var(--color-seal);
+    }
+
+    .copy-btn {
+      position: absolute;
+      top: 0.5rem;
+      right: 0.5rem;
+      padding: 0.25rem 0.625rem;
+      font-size: 0.7rem;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      font-weight: 500;
+      color: var(--color-ink-muted);
+      background: rgba(255, 255, 255, 0.7);
+      border: 1px solid var(--color-divider);
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    .copy-btn:hover {
+      border-color: var(--color-seal);
+      color: var(--color-seal-dark);
+    }
+    .copy-btn.copied {
+      border-color: var(--color-seal);
+      color: var(--color-seal-dark);
+      background: var(--color-seal-glow);
+    }
+
+    .inline-alert {
+      padding: 0.75rem 1rem;
+      font-size: 0.875rem;
+      border: 1px solid;
+      animation: fade-up 0.3s ease both;
+    }
+    .inline-alert.alert-error {
+      background: rgba(168, 50, 50, 0.06);
+      border-color: rgba(168, 50, 50, 0.2);
+      color: #8b3030;
+    }
+    .inline-alert.alert-success {
+      background: var(--color-seal-glow);
+      border-color: rgba(200, 164, 78, 0.3);
+      color: var(--color-seal-dark);
+    }
+    .inline-alert.alert-info {
+      background: rgba(43, 94, 167, 0.06);
+      border-color: rgba(43, 94, 167, 0.2);
+      color: var(--color-azure);
+    }
+
+    /* DNS provider help guide */
+    .dns-help-summary {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.25rem;
+      font-size: 0.8rem;
+      color: var(--color-azure);
+      cursor: pointer;
+      font-weight: 500;
+      list-style: none;
+    }
+    .dns-help-summary::-webkit-details-marker { display: none; }
+    .dns-help-summary::marker { content: ""; }
+    .dns-help-summary:hover { color: var(--color-azure-light); }
+    .dns-help-arrow {
+      transition: transform 0.2s ease;
+    }
+    details[open] .dns-help-arrow {
+      transform: rotate(180deg);
+    }
+
+    .dns-chip {
+      padding: 0.25rem 0.625rem;
+      font-size: 0.7rem;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      font-weight: 500;
+      color: var(--color-ink-muted);
+      background: rgba(255, 255, 255, 0.7);
+      border: 1px solid var(--color-divider);
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    .dns-chip:hover {
+      border-color: var(--color-azure);
+      color: var(--color-azure);
+    }
+    .dns-chip.active {
+      border-color: var(--color-azure);
+      color: var(--color-azure);
+      background: rgba(43, 94, 167, 0.08);
+    }
+
+    .dns-guide {
+      background: var(--color-parchment-dark);
+      border: 1px solid var(--color-divider);
+      padding: 0.875rem 1rem;
+      animation: fade-up 0.2s ease both;
+    }
+    .dns-steps {
+      list-style: none;
+      counter-reset: dns-step;
+      padding: 0;
+      margin: 0;
+    }
+    .dns-steps li {
+      counter-increment: dns-step;
+      position: relative;
+      padding-left: 1.75rem;
+      font-size: 0.8rem;
+      color: var(--color-ink);
+      line-height: 1.5;
+      font-weight: 300;
+    }
+    .dns-steps li + li {
+      margin-top: 0.5rem;
+    }
+    .dns-steps li::before {
+      content: counter(dns-step);
+      position: absolute;
+      left: 0;
+      top: 0.05rem;
+      width: 1.15rem;
+      height: 1.15rem;
+      border-radius: 50%;
+      background: var(--color-seal-glow);
+      border: 1px solid var(--color-seal);
+      color: var(--color-seal-dark);
+      font-size: 0.6rem;
+      font-weight: 600;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .dns-link {
+      color: var(--color-azure);
+      text-decoration: underline;
+      text-underline-offset: 2px;
+    }
+    .dns-link:hover {
+      color: var(--color-azure-light);
+    }
+  </style>
+
   <script define:vars={{ domain, apiBase }}>
     const API = apiBase;
-    let token = "";
+    let currentToken = "";
+    let currentMethod = "";
+    let verifyAttempts = 0;
 
-    document.getElementById("btn-init")?.addEventListener("click", async () => {
-      const email = document.getElementById("verify-email").value;
+    // --- Utility functions ---
+
+    function showAlert(message, type = "error") {
+      const container = document.getElementById("alert-container");
+      container.innerHTML = `<div class="inline-alert alert-${type}">${message}</div>`;
+      container.classList.remove("hidden");
+      // Auto-hide after 8 seconds for non-error alerts
+      if (type !== "error") {
+        setTimeout(() => { container.classList.add("hidden"); }, 8000);
+      }
+    }
+
+    function hideAlert() {
+      document.getElementById("alert-container").classList.add("hidden");
+    }
+
+    function setButtonLoading(btnId, loading) {
+      const btn = document.getElementById(btnId);
+      const text = document.getElementById(`${btnId}-text`);
+      const spinner = document.getElementById(`${btnId}-spinner`);
+      if (loading) {
+        btn.disabled = true;
+        btn.style.opacity = "0.7";
+        btn.style.cursor = "wait";
+        text.textContent = "Please wait...";
+        spinner.classList.remove("hidden");
+      } else {
+        btn.disabled = false;
+        btn.style.opacity = "";
+        btn.style.cursor = "";
+        spinner.classList.add("hidden");
+      }
+    }
+
+    function setProgress(step) {
+      // Reset all
+      for (let i = 1; i <= 3; i++) {
+        const dot = document.querySelector(`.step-dot[data-step="${i}"]`);
+        const label = document.querySelector(`#prog-step${i} .step-label`);
+        dot.classList.remove("active", "completed");
+        label.classList.remove("active");
+      }
+      document.getElementById("conn-1-2").classList.remove("active");
+      document.getElementById("conn-2-3").classList.remove("active");
+
+      // Set completed steps
+      for (let i = 1; i < step; i++) {
+        const dot = document.querySelector(`.step-dot[data-step="${i}"]`);
+        const label = document.querySelector(`#prog-step${i} .step-label`);
+        dot.classList.add("completed");
+        dot.textContent = "\u2713";
+        label.classList.add("active");
+      }
+      // Set active step
+      const activeDot = document.querySelector(`.step-dot[data-step="${step}"]`);
+      const activeLabel = document.querySelector(`#prog-step${step} .step-label`);
+      if (activeDot) {
+        activeDot.classList.add("active");
+        activeLabel.classList.add("active");
+      }
+      // Set connectors
+      if (step >= 2) document.getElementById("conn-1-2").classList.add("active");
+      if (step >= 3) document.getElementById("conn-2-3").classList.add("active");
+    }
+
+    function showStep(stepId) {
+      document.getElementById("step-email").classList.add("hidden");
+      document.getElementById("step-instructions").classList.add("hidden");
+      document.getElementById("step-result").classList.add("hidden");
+      document.getElementById(stepId).classList.remove("hidden");
+    }
+
+    // --- Copy button handler ---
+    document.querySelectorAll(".copy-btn").forEach((btn) => {
+      btn.addEventListener("click", async () => {
+        const targetId = btn.getAttribute("data-target");
+        const targetEl = document.getElementById(targetId);
+        const text = targetEl.textContent.trim();
+
+        try {
+          await navigator.clipboard.writeText(text);
+          btn.classList.add("copied");
+          btn.querySelector(".copy-icon").classList.add("hidden");
+          btn.querySelector(".copied-icon").classList.remove("hidden");
+          setTimeout(() => {
+            btn.classList.remove("copied");
+            btn.querySelector(".copy-icon").classList.remove("hidden");
+            btn.querySelector(".copied-icon").classList.add("hidden");
+          }, 2000);
+        } catch {
+          // Fallback: select text
+          const range = document.createRange();
+          range.selectNodeContents(targetEl);
+          const sel = window.getSelection();
+          sel.removeAllRanges();
+          sel.addRange(range);
+        }
+      });
+    });
+
+    // --- Step 1: Init verification ---
+    document.getElementById("btn-init").addEventListener("click", async () => {
+      hideAlert();
+      const email = document.getElementById("verify-email").value.trim();
       const method = document.querySelector('input[name="method"]:checked')?.value;
-      if (!email) return alert("Please enter your email");
+
+      if (!email) {
+        showAlert("Please enter your email address.");
+        return;
+      }
+
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(email)) {
+        showAlert("Please enter a valid email address.");
+        return;
+      }
+
+      setButtonLoading("btn-init", true);
 
       try {
         const resp = await fetch(`${API}/verify/init`, {
@@ -102,38 +579,105 @@ if (!domain || !isValidDomain(domain)) {
           body: JSON.stringify({ domain, email, method }),
         });
         const data = await resp.json();
-        if (!resp.ok) throw new Error(data.message);
+        if (!resp.ok) throw new Error(data.message || "Failed to initialize verification");
 
-        token = data.token;
-        document.getElementById("instructions-content").textContent = data.instructions;
-        document.getElementById("step-email").classList.add("hidden");
-        document.getElementById("step-instructions").classList.remove("hidden");
+        currentToken = data.token;
+        currentMethod = method;
+
+        // Show method-specific instructions
+        document.querySelectorAll(".instruction-block").forEach(el => el.classList.add("hidden"));
+        if (method === "dns_txt") {
+          document.getElementById("dns-value").textContent = `siteage-verify=${data.token}`;
+          document.getElementById("instr-dns").classList.remove("hidden");
+        } else if (method === "meta_tag") {
+          document.getElementById("meta-value").textContent = `<meta name="siteage-verify" content="${data.token}">`;
+          document.getElementById("instr-meta").classList.remove("hidden");
+        } else if (method === "well_known") {
+          document.getElementById("file-value").textContent = data.token;
+          document.getElementById("instr-file").classList.remove("hidden");
+        }
+
+        showStep("step-instructions");
+        setProgress(2);
       } catch (e) {
-        alert(e.message || "Failed to initialize verification");
+        showAlert(e.message || "Failed to initialize verification");
+      } finally {
+        setButtonLoading("btn-init", false);
+        document.getElementById("btn-init-text").textContent = "Start Verification";
       }
     });
 
-    document.getElementById("btn-verify")?.addEventListener("click", async () => {
+    // --- Step 2: Check verification ---
+    document.getElementById("btn-verify").addEventListener("click", async () => {
+      hideAlert();
+      setButtonLoading("btn-verify", true);
+
       try {
         const resp = await fetch(`${API}/verify/check`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ domain, token }),
+          body: JSON.stringify({ domain, token: currentToken }),
         });
         const data = await resp.json();
-        document.getElementById("step-instructions").classList.add("hidden");
-        document.getElementById("step-result").classList.remove("hidden");
-        document.getElementById("result-content").innerHTML = data.verified
-          ? '<p class="text-seal-dark font-medium tracking-wide">Verification successful! Check your email for the management link.</p>'
-          : `<p class="text-ink-muted">Verification failed: ${data.message}</p>`;
+
+        if (data.verified) {
+          // Success - show result and redirect
+          showStep("step-result");
+          setProgress(3);
+          document.getElementById("result-success").classList.remove("hidden");
+          document.getElementById("result-failure").classList.add("hidden");
+
+          // Auto-redirect after 1.5 seconds
+          if (data.magicKey) {
+            setTimeout(() => {
+              location.replace(`/manage/${domain}?key=${data.magicKey}`);
+            }, 1500);
+          }
+        } else {
+          // Failure - show progressive hints based on attempt count
+          verifyAttempts++;
+          let msg;
+          if (currentMethod === "dns_txt") {
+            if (verifyAttempts === 1) {
+              msg = "DNS record not detected yet — this is normal. DNS changes usually take a few minutes to propagate. Please wait a moment and try again.";
+            } else if (verifyAttempts === 2) {
+              msg = "Still not detected. Please double-check that the record type is <strong>TXT</strong>, the name is <strong>@</strong>, and the value matches exactly.";
+            } else {
+              msg = "Still not detected. Some DNS providers may take longer to propagate. You can try again in a few minutes, or verify that the record is visible using a <a href=\"https://toolbox.googleapps.com/apps/dig/#TXT/\" target=\"_blank\" rel=\"noopener noreferrer\" style=\"color:var(--color-azure);text-decoration:underline\">DNS lookup tool</a>.";
+            }
+          } else {
+            if (verifyAttempts === 1) {
+              msg = data.message || "Verification record not detected yet. Please make sure it's in place and try again.";
+            } else {
+              msg = data.message || "Still not detected. Please double-check that the record is publicly accessible and matches exactly.";
+            }
+          }
+          showAlert(msg);
+        }
       } catch (e) {
-        alert("Verification check failed");
+        showAlert("Verification check failed. Please try again.");
+      } finally {
+        setButtonLoading("btn-verify", false);
+        document.getElementById("btn-verify-text").textContent = "Verify Now";
       }
     });
 
-    document.getElementById("btn-resend")?.addEventListener("click", async () => {
-      const email = document.getElementById("verify-email").value;
-      if (!email) return alert("Please enter your email first");
+    // --- Back button ---
+    document.getElementById("btn-back").addEventListener("click", () => {
+      hideAlert();
+      verifyAttempts = 0;
+      showStep("step-email");
+      setProgress(1);
+    });
+
+    // --- Resend magic link ---
+    document.getElementById("btn-resend").addEventListener("click", async () => {
+      hideAlert();
+      const email = document.getElementById("verify-email").value.trim();
+      if (!email) {
+        showAlert("Please enter your email address first.");
+        return;
+      }
 
       try {
         const resp = await fetch(`${API}/verify/resend`, {
@@ -142,10 +686,44 @@ if (!domain || !isValidDomain(domain)) {
           body: JSON.stringify({ domain, email }),
         });
         const data = await resp.json();
-        alert(resp.ok ? "Magic Link sent to your email!" : data.message);
+        if (resp.ok) {
+          showAlert("Magic link sent to your email!", "success");
+        } else {
+          showAlert(data.message || "Failed to resend magic link.");
+        }
       } catch (e) {
-        alert("Failed to resend");
+        showAlert("Failed to resend. Please try again.");
       }
     });
+
+    // --- DNS provider external links: force open in new tab ---
+    document.querySelectorAll(".dns-link").forEach((link) => {
+      link.addEventListener("click", (e) => {
+        e.preventDefault();
+        window.open(link.href, "_blank", "noopener,noreferrer");
+      });
+    });
+
+    // --- DNS provider chip toggle ---
+    document.querySelectorAll(".dns-chip").forEach((chip) => {
+      chip.addEventListener("click", () => {
+        const provider = chip.getAttribute("data-provider");
+        const wasActive = chip.classList.contains("active");
+
+        // Deactivate all chips and hide all guides
+        document.querySelectorAll(".dns-chip").forEach(c => c.classList.remove("active"));
+        document.querySelectorAll(".dns-guide").forEach(g => g.classList.add("hidden"));
+
+        // If clicking a different chip, activate it
+        if (!wasActive) {
+          chip.classList.add("active");
+          const guide = document.querySelector(`.dns-guide[data-guide="${provider}"]`);
+          if (guide) guide.classList.remove("hidden");
+        }
+      });
+    });
+
+    // Initialize progress
+    setProgress(1);
   </script>
 </Base>
