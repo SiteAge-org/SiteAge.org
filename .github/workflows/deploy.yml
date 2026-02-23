@@ -110,6 +110,14 @@ jobs:
           path: packages/shared/dist
       - name: Build Astro site
         run: pnpm --filter @siteage/web build
+      - name: Create Pages project if not exists
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          workingDirectory: packages/web
+          command: pages project create siteage-web --production-branch main
+        continue-on-error: true
       - name: Deploy to Cloudflare Pages
         uses: cloudflare/wrangler-action@v3
         with:
