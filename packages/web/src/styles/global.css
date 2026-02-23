@@ -76,6 +76,57 @@
   height: 1px;
 }
 
+/* Skeleton shimmer effect */
+@keyframes skeleton-shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+.skeleton {
+  background: linear-gradient(
+    90deg,
+    var(--color-parchment-dark) 25%,
+    #e8e4dc 37%,
+    var(--color-parchment-dark) 63%
+  );
+  background-size: 200% 100%;
+  animation: skeleton-shimmer 1.8s ease-in-out infinite;
+  border-radius: 4px;
+}
+
+/* Indeterminate progress bar */
+@keyframes progress-indeterminate {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(250%); }
+}
+
+.progress-bar-indeterminate {
+  overflow: hidden;
+  position: relative;
+  background: var(--color-parchment-dark);
+  height: 3px;
+}
+
+.progress-bar-indeterminate::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  width: 40%;
+  background: linear-gradient(90deg, transparent, var(--color-seal), transparent);
+  animation: progress-indeterminate 1.5s ease-in-out infinite;
+}
+
+/* Loading text fade transition */
+.loading-text-fade {
+  transition: opacity 0.4s ease;
+}
+
+/* Clock hand rotation */
+@keyframes clock-tick {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
 /* Subtle noise texture overlay */
 .noise-overlay::before {
   content: "";

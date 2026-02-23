@@ -6,8 +6,9 @@ import AgeDisplay from "../components/AgeDisplay.astro";
 import RankingBar from "../components/RankingBar.astro";
 import BadgePreview from "../components/BadgePreview.astro";
 import Timeline from "../components/Timeline.astro";
+import LookupLoading from "../components/LookupLoading.astro";
 import { API_BASE_URL, isValidDomain } from "@siteage/shared";
-import type { DomainDetail, LookupResponse } from "@siteage/shared";
+import type { DomainDetail } from "@siteage/shared";
 
 const apiBase = import.meta.env.PUBLIC_API_URL || API_BASE_URL;
 const { domain } = Astro.params;
@@ -17,25 +18,16 @@ if (!domain || !isValidDomain(domain)) {
 }
 
 let data: DomainDetail | null = null;
+let needsLookup = false;
 let error: string | null = null;
 
 try {
-  let resp = await fetch(`${apiBase}/${domain}`);
-
-  if (resp.status === 404) {
-    resp = await fetch(`${apiBase}/lookup`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ url: domain }),
-    });
-
-    if (resp.ok) {
-      resp = await fetch(`${apiBase}/${domain}`);
-    }
-  }
+  const resp = await fetch(`${apiBase}/${domain}`);
 
   if (resp.ok) {
     data = await resp.json() as DomainDetail;
+  } else if (resp.status === 404) {
+    needsLookup = true;
   } else {
     const err = await resp.json().catch(() => null);
     error = (err as any)?.message || "Failed to load domain data";
@@ -46,6 +38,11 @@ try {
 ---
 
 <Base title={domain}>
+  {needsLookup && (
+    <LookupLoading domain={domain} apiBase={apiBase} />
+  )}
+
+  {!needsLookup && (
   <div class="max-w-4xl mx-auto px-6 py-10 sm:py-16">
     {error && (
       <div class="text-center py-16">
@@ -105,4 +102,5 @@ try {
       </div>
     )}
   </div>
+  )}
 </Base>

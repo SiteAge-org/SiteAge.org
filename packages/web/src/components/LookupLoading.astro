@@ -1,0 +1,248 @@
+---
+interface Props {
+  domain: string;
+  apiBase: string;
+}
+
+const { domain, apiBase } = Astro.props;
+---
+
+<div class="max-w-4xl mx-auto px-6 py-10 sm:py-16" id="lookup-loading" data-domain={domain} data-api-base={apiBase}>
+  <!-- Loading state -->
+  <div id="loading-state">
+    <!-- Certificate skeleton -->
+    <div class="animate-fade-up">
+      <div class="relative bg-white border border-divider p-10 sm:p-14 max-w-2xl mx-auto overflow-hidden noise-overlay">
+        <!-- Corner ornaments -->
+        <div class="absolute top-3 left-3 w-10 h-10 border-t-2 border-l-2 border-seal/30"></div>
+        <div class="absolute top-3 right-3 w-10 h-10 border-t-2 border-r-2 border-seal/30"></div>
+        <div class="absolute bottom-3 left-3 w-10 h-10 border-b-2 border-l-2 border-seal/30"></div>
+        <div class="absolute bottom-3 right-3 w-10 h-10 border-b-2 border-r-2 border-seal/30"></div>
+
+        <!-- Inner decorative border -->
+        <div class="absolute inset-6 border border-divider/50 pointer-events-none"></div>
+
+        <div class="relative text-center">
+          <!-- Header -->
+          <div class="mb-8">
+            <p class="text-[10px] tracking-[0.4em] uppercase text-seal-dark font-medium mb-2">Certificate of Website Longevity</p>
+            <div class="ornament-line max-w-48 mx-auto"></div>
+          </div>
+
+          <!-- Domain (known data) -->
+          <h1 class="font-display text-3xl sm:text-4xl mb-3 text-ink">{domain}</h1>
+
+          <!-- Loading animation area -->
+          <div class="my-10">
+            <!-- Clock SVG animation -->
+            <div class="flex justify-center mb-6">
+              <svg width="64" height="64" viewBox="0 0 64 64" class="text-seal">
+                <circle cx="32" cy="32" r="28" fill="none" stroke="currentColor" stroke-width="1.5" opacity="0.3" />
+                <circle cx="32" cy="32" r="2" fill="currentColor" opacity="0.6" />
+                <!-- Hour hand -->
+                <line x1="32" y1="32" x2="32" y2="16" stroke="currentColor" stroke-width="2" stroke-linecap="round" opacity="0.5" style="transform-origin: 32px 32px; animation: clock-tick 8s linear infinite;" />
+                <!-- Minute hand -->
+                <line x1="32" y1="32" x2="32" y2="12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" opacity="0.4" style="transform-origin: 32px 32px; animation: clock-tick 2s linear infinite;" />
+                <!-- Tick marks -->
+                <g opacity="0.2" stroke="currentColor" stroke-width="1.5">
+                  <line x1="32" y1="6" x2="32" y2="10" />
+                  <line x1="54" y1="32" x2="58" y2="32" />
+                  <line x1="32" y1="54" x2="32" y2="58" />
+                  <line x1="6" y1="32" x2="10" y2="32" />
+                </g>
+              </svg>
+            </div>
+
+            <!-- Progress bar -->
+            <div class="progress-bar-indeterminate max-w-48 mx-auto mb-6"></div>
+
+            <!-- Dynamic loading text -->
+            <p id="loading-text" class="text-sm text-ink-muted font-light loading-text-fade">Searching the archives...</p>
+          </div>
+
+          <!-- Footer -->
+          <div class="pt-6 border-t border-divider/50">
+            <p class="text-[10px] text-ink-muted/50 tracking-[0.15em] uppercase">Certified by SiteAge.org &middot; Data from Internet Archive</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Skeleton placeholders for below-certificate sections -->
+    <div class="mt-10 space-y-6">
+      <!-- AgeDisplay skeleton -->
+      <div class="animate-fade-up delay-100">
+        <div class="bg-white/60 border border-divider p-6 sm:p-8">
+          <div class="skeleton h-3 w-12 mb-4"></div>
+          <div class="skeleton h-8 w-48"></div>
+        </div>
+      </div>
+
+      <!-- RankingBar skeleton -->
+      <div class="animate-fade-up delay-200">
+        <div class="bg-white/60 border border-divider p-6 sm:p-8">
+          <div class="skeleton h-3 w-32 mb-4"></div>
+          <div class="skeleton h-3 w-full"></div>
+        </div>
+      </div>
+
+      <!-- BadgePreview skeleton -->
+      <div class="animate-fade-up delay-300">
+        <div class="bg-white/60 border border-divider p-6 sm:p-8">
+          <div class="skeleton h-3 w-14 mb-6"></div>
+          <div class="space-y-4">
+            <div class="skeleton h-5 w-32"></div>
+            <div class="skeleton h-5 w-36"></div>
+            <div class="skeleton h-7 w-40"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Timeline skeleton -->
+      <div class="animate-fade-up delay-400">
+        <div class="bg-white/60 border border-divider p-6 sm:p-8">
+          <div class="skeleton h-3 w-20 mb-6"></div>
+          <div class="space-y-6 pl-6">
+            <div class="skeleton h-4 w-40"></div>
+            <div class="skeleton h-4 w-24"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Error state (hidden initially) -->
+  <div id="error-state" class="hidden">
+    <div class="animate-fade-up">
+      <div class="relative bg-white border border-divider p-10 sm:p-14 max-w-2xl mx-auto overflow-hidden noise-overlay">
+        <!-- Corner ornaments -->
+        <div class="absolute top-3 left-3 w-10 h-10 border-t-2 border-l-2 border-seal/30"></div>
+        <div class="absolute top-3 right-3 w-10 h-10 border-t-2 border-r-2 border-seal/30"></div>
+        <div class="absolute bottom-3 left-3 w-10 h-10 border-b-2 border-l-2 border-seal/30"></div>
+        <div class="absolute bottom-3 right-3 w-10 h-10 border-b-2 border-r-2 border-seal/30"></div>
+
+        <div class="absolute inset-6 border border-divider/50 pointer-events-none"></div>
+
+        <div class="relative text-center">
+          <div class="mb-6">
+            <svg class="w-12 h-12 mx-auto text-ink-muted/40" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" />
+            </svg>
+          </div>
+
+          <h2 class="font-display text-2xl text-ink mb-3">{domain}</h2>
+          <p id="error-message" class="text-ink-muted font-light mb-8">Unable to look up this domain. Please try again.</p>
+
+          <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
+            <button
+              id="retry-btn"
+              class="px-8 py-3 bg-ink text-parchment font-medium tracking-wider uppercase text-sm hover:bg-ink-light transition-colors duration-200"
+            >
+              Try Again
+            </button>
+            <a
+              href="/"
+              class="text-sm text-azure hover:text-azure-light transition-colors tracking-wide"
+            >
+              &larr; Return to search
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  const container = document.getElementById("lookup-loading")!;
+  const domain = container.dataset.domain!;
+  const apiBase = container.dataset.apiBase!;
+  const loadingState = document.getElementById("loading-state")!;
+  const errorState = document.getElementById("error-state")!;
+  const loadingText = document.getElementById("loading-text")!;
+  const errorMessage = document.getElementById("error-message")!;
+  const retryBtn = document.getElementById("retry-btn")!;
+
+  const messages = [
+    "Searching the archives...",
+    "Consulting the Wayback Machine...",
+    "Digging through web history...",
+    "Tracing the digital footprint...",
+    "Almost there...",
+  ];
+
+  let messageIndex = 0;
+  let messageInterval: ReturnType<typeof setInterval>;
+
+  function startMessageRotation() {
+    messageIndex = 0;
+    loadingText.textContent = messages[0];
+    loadingText.style.opacity = "1";
+
+    messageInterval = setInterval(() => {
+      loadingText.style.opacity = "0";
+      setTimeout(() => {
+        messageIndex = (messageIndex + 1) % messages.length;
+        loadingText.textContent = messages[messageIndex];
+        loadingText.style.opacity = "1";
+      }, 400);
+    }, 3000);
+  }
+
+  function stopMessageRotation() {
+    clearInterval(messageInterval);
+  }
+
+  function showError(message: string) {
+    stopMessageRotation();
+    loadingState.classList.add("hidden");
+    errorState.classList.remove("hidden");
+    errorMessage.textContent = message;
+  }
+
+  function showLoading() {
+    errorState.classList.add("hidden");
+    loadingState.classList.remove("hidden");
+    startMessageRotation();
+  }
+
+  async function performLookup() {
+    try {
+      const resp = await fetch(`${apiBase}/lookup`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ url: domain }),
+      });
+
+      if (!resp.ok) {
+        const err = await resp.json().catch(() => null);
+        const msg = (err as any)?.message || "Failed to look up this domain.";
+        showError(msg);
+        return;
+      }
+
+      // Success - show confirmation then navigate
+      stopMessageRotation();
+      loadingText.style.opacity = "0";
+      setTimeout(() => {
+        loadingText.textContent = "Record found!";
+        loadingText.style.opacity = "1";
+      }, 200);
+
+      setTimeout(() => {
+        window.location.replace(`/${domain}`);
+      }, 700);
+    } catch {
+      showError("Unable to connect to the server. Please check your connection and try again.");
+    }
+  }
+
+  retryBtn.addEventListener("click", () => {
+    showLoading();
+    performLookup();
+  });
+
+  // Start lookup immediately
+  startMessageRotation();
+  performLookup();
+</script>

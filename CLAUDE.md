@@ -38,6 +38,15 @@ pnpm dev:web              # Start Astro dev server only
 - Verification status: `detected`, `pending`, `verified`
 - Badge caching: CDN Edge (s-maxage=86400) -> KV (TTL 1h) -> real-time render
 
+## Domain Lookup: Two-Phase Rendering
+
+`[domain].astro` uses a two-phase rendering strategy for optimal UX:
+
+- **Fast path (cached)**: SSR does a quick `GET /api/{domain}`. If cached, renders full result page immediately.
+- **Slow path (uncached)**: SSR gets 404, renders a loading skeleton page (`LookupLoading.astro`) instantly. Client-side JS then calls `POST /api/lookup` asynchronously and navigates to the result via `location.replace()` (no history entry for loading page).
+
+Key files: `[domain].astro` (routing logic), `LookupLoading.astro` (skeleton + client JS).
+
 ## Environment Variables (secrets)
 
 - `ADMIN_KEY`: Admin authentication key
