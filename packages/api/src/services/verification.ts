@@ -25,7 +25,7 @@ export async function initVerification(
   env: Env,
   domain: string,
   email: string,
-  method: "dns_txt" | "meta_tag"
+  method: "dns_txt" | "meta_tag" | "well_known"
 ): Promise<{ token: string; instructions: string }> {
   // Ensure domain exists
   let domainRow = await env.DB.prepare("SELECT id FROM domains WHERE domain = ?").bind(domain).first();
@@ -51,6 +51,8 @@ export async function initVerification(
   let instructions: string;
   if (method === "dns_txt") {
     instructions = `Add a DNS TXT record to ${domain}:\n\nName: @ (or ${domain})\nValue: siteage-verify=${token}\n\nNote: DNS changes may take up to 24 hours to propagate. The token expires in 24 hours.`;
+  } else if (method === "well_known") {
+    instructions = `Create a file at https://${domain}/.well-known/siteage-verify.txt with the following content:\n\n${token}\n\nThe file must be publicly accessible. The token expires in 24 hours.`;
   } else {
     instructions = `Add the following meta tag to the <head> of your homepage at https://${domain}/:\n\n<meta name="siteage-verify" content="${token}">\n\nThe token expires in 24 hours.`;
   }
@@ -65,7 +67,7 @@ export async function checkVerification(
   env: Env,
   domain: string,
   token: string
-): Promise<{ verified: boolean; message: string }> {
+): Promise<{ verified: boolean; message: string; magicKey?: string }> {
   // Find the verification record
   const verification = await env.DB.prepare(
     `SELECT v.*, d.id as domain_id FROM verifications v
@@ -93,12 +95,15 @@ export async function checkVerification(
 
   if (method === "dns_txt") {
     found = await checkDnsTxt(domain, token);
+  } else if (method === "well_known") {
+    found = await checkWellKnown(domain, token);
   } else {
     found = await checkMetaTag(domain, token);
   }
 
+  const methodLabel = method === "dns_txt" ? "DNS TXT record" : method === "well_known" ? "verification file" : "meta tag";
   if (!found) {
-    return { verified: false, message: `Verification record not found. Please ensure the ${method === "dns_txt" ? "DNS TXT record" : "meta tag"} is correctly configured.` };
+    return { verified: false, message: `Verification record not found. Please ensure the ${methodLabel} is correctly configured.` };
   }
 
   // Verification successful
@@ -116,10 +121,12 @@ export async function checkVerification(
   await env.API_CACHE.delete(`lookup:${domain}`);
   await env.API_CACHE.delete(`domain:${domain}`);
 
-  // Send magic link email
-  await sendMagicLinkEmail(env, verification.email as string, domain, magicKey);
+  // Send magic link email asynchronously (don't block response)
+  sendMagicLinkEmail(env, verification.email as string, domain, magicKey).catch((err) => {
+    console.error("Failed to send magic link email:", err);
+  });
 
-  return { verified: true, message: "Verification successful! A management link has been sent to your email." };
+  return { verified: true, message: "Verification successful! Redirecting to management page...", magicKey };
 }
 
 /**
@@ -201,6 +208,26 @@ async function checkMetaTag(domain: string, token: string): Promise<boolean> {
 
     const match = regex.exec(html) || altRegex.exec(html);
     return match ? match[1] === token : false;
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Check well-known verification file on the domain.
+ */
+async function checkWellKnown(domain: string, token: string): Promise<boolean> {
+  try {
+    const resp = await fetch(`https://${domain}/.well-known/siteage-verify.txt`, {
+      headers: { "User-Agent": "SiteAge.org Verification/1.0" },
+      signal: AbortSignal.timeout(10000),
+      redirect: "follow",
+    });
+
+    if (!resp.ok) return false;
+
+    const text = await resp.text();
+    return text.trim() === token;
   } catch {
     return false;
   }

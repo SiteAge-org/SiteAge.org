@@ -19,8 +19,8 @@ verifyRoutes.post("/init", async (c) => {
     return c.json({ error: "bad_request", message: "Invalid domain" }, 400);
   }
 
-  if (!["dns_txt", "meta_tag"].includes(body.method)) {
-    return c.json({ error: "bad_request", message: "method must be dns_txt or meta_tag" }, 400);
+  if (!["dns_txt", "meta_tag", "well_known"].includes(body.method)) {
+    return c.json({ error: "bad_request", message: "method must be dns_txt, meta_tag, or well_known" }, 400);
   }
 
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;

@@ -31,12 +31,12 @@ export interface DomainDetail {
 export interface VerifyInitRequest {
   domain: string;
   email: string;
-  method: "dns_txt" | "meta_tag";
+  method: "dns_txt" | "meta_tag" | "well_known";
 }
 
 export interface VerifyInitResponse {
   token: string;
-  method: "dns_txt" | "meta_tag";
+  method: "dns_txt" | "meta_tag" | "well_known";
   instructions: string;
 }
 
@@ -48,6 +48,7 @@ export interface VerifyCheckRequest {
 export interface VerifyCheckResponse {
   verified: boolean;
   message: string;
+  magicKey?: string;
 }
 
 export interface VerifyResendRequest {
