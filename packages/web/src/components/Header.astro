@@ -1,12 +1,12 @@
 ---
 ---
 
-<header class="border-b border-divider bg-parchment/80 backdrop-blur-sm sticky top-0 z-50">
+<header class="bg-parchment/80 backdrop-blur-md sticky top-0 z-50">
   <div class="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
     <a href="/" class="flex items-center gap-2.5 group">
       <!-- Seal-style logo mark -->
       <div class="relative w-9 h-9">
-        <svg width="36" height="36" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg" class="transition-transform duration-300 group-hover:rotate-[15deg]">
+        <svg width="36" height="36" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg" class="transition-all duration-300 group-hover:rotate-[15deg] group-hover:drop-shadow-[0_0_6px_rgba(200,164,78,0.4)]">
           <circle cx="18" cy="18" r="16" stroke="currentColor" stroke-width="1.5" class="text-ink"/>
           <circle cx="18" cy="18" r="13" stroke="currentColor" stroke-width="0.75" class="text-ink-muted"/>
           <path d="M18 7 L18 18 L25 18" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="text-seal-dark"/>
@@ -16,7 +16,9 @@
       <span class="font-display text-xl tracking-wide text-ink">SiteAge</span>
     </a>
     <nav class="flex items-center gap-8">
-      <a href="/about" class="text-sm text-ink-muted hover:text-ink transition-colors duration-200 tracking-wide uppercase font-medium">About</a>
+      <a href="/about" class="relative text-sm text-ink-muted hover:text-ink transition-colors duration-200 tracking-wide uppercase font-medium after:absolute after:bottom-[-4px] after:left-0 after:w-0 after:h-px after:bg-seal after:transition-all after:duration-300 hover:after:w-full">About</a>
     </nav>
   </div>
+  <!-- Gradient decorative bottom line with center gold highlight -->
+  <div class="h-px bg-gradient-to-r from-transparent via-seal/60 to-transparent"></div>
 </header>

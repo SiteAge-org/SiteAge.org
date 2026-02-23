@@ -9,7 +9,7 @@
     <div class="absolute -bottom-1.5 -left-1.5 w-4 h-4 border-b-2 border-l-2 border-seal/40 rounded-bl-sm transition-all duration-300 group-focus-within:border-seal group-focus-within:-bottom-2 group-focus-within:-left-2"></div>
     <div class="absolute -bottom-1.5 -right-1.5 w-4 h-4 border-b-2 border-r-2 border-seal/40 rounded-br-sm transition-all duration-300 group-focus-within:border-seal group-focus-within:-bottom-2 group-focus-within:-right-2"></div>
 
-    <div class="flex border border-divider bg-white/80 backdrop-blur-sm overflow-hidden transition-all duration-300 group-focus-within:border-seal/50 group-focus-within:shadow-[0_0_30px_rgba(200,164,78,0.08)]">
+    <div class="flex border border-divider bg-white/80 backdrop-blur-sm overflow-hidden transition-all duration-300 group-focus-within:border-seal/50 group-focus-within:shadow-[0_0_30px_rgba(200,164,78,0.12)]">
       <div class="flex items-center pl-5 text-ink-muted">
         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
           <path stroke-linecap="round" stroke-linejoin="round" d="M12 21a9.004 9.004 0 008.716-6.747M12 21a9.004 9.004 0 01-8.716-6.747M12 21c2.485 0 4.5-4.03 4.5-9S14.485 3 12 3m0 18c-2.485 0-4.5-4.03-4.5-9S9.515 3 12 3m0 0a8.997 8.997 0 017.843 4.582M12 3a8.997 8.997 0 00-7.843 4.582m15.686 0A11.953 11.953 0 0112 10.5c-2.998 0-5.74-1.1-7.843-2.918m15.686 0A8.959 8.959 0 0121 12c0 .778-.099 1.533-.284 2.253m0 0A17.919 17.919 0 0112 16.5c-3.162 0-6.133-.815-8.716-2.247m0 0A9.015 9.015 0 013 12c0-1.605.42-3.113 1.157-4.418"/>
@@ -20,7 +20,7 @@
         name="q"
         id="domain-input"
         placeholder="Enter any domain..."
-        class="flex-1 px-4 py-4 text-base font-body outline-none bg-transparent tracking-wide placeholder:text-ink-muted/50"
+        class="flex-1 px-4 py-5 text-lg font-body outline-none bg-transparent tracking-wide placeholder:text-ink-muted/50"
         autocomplete="off"
         spellcheck="false"
         required
@@ -28,17 +28,23 @@
       <button
         type="submit"
         id="search-btn"
-        class="px-8 py-4 bg-ink text-parchment font-medium tracking-wider uppercase text-sm hover:bg-ink-light transition-colors duration-200 flex items-center gap-2"
+        class="relative px-8 py-5 bg-gradient-to-b from-ink-light to-ink text-parchment font-medium tracking-wider uppercase text-sm hover:shadow-[0_4px_20px_rgba(26,29,46,0.3)] transition-all duration-300 flex items-center gap-2 overflow-hidden"
       >
-        <span id="btn-text">Look Up</span>
-        <svg id="btn-spinner" class="hidden w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+        <!-- Sheen sweep effect -->
+        <span class="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/10 to-transparent transition-transform duration-700 group-focus-within:translate-x-full"></span>
+        <span id="btn-text" class="relative">Look Up</span>
+        <svg id="btn-spinner" class="hidden w-4 h-4 animate-spin relative" fill="none" viewBox="0 0 24 24">
           <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3"></circle>
           <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
         </svg>
       </button>
     </div>
   </div>
-  <p class="text-center text-xs text-ink-muted/60 mt-3 tracking-wide">e.g. wikipedia.org, github.com, nytimes.com</p>
+  <p class="text-center text-xs text-ink-muted/60 mt-4 tracking-wide flex items-center justify-center gap-3">
+    <span class="w-6 h-px bg-divider"></span>
+    e.g. wikipedia.org, github.com, nytimes.com
+    <span class="w-6 h-px bg-divider"></span>
+  </p>
 </form>
 
 <script>
