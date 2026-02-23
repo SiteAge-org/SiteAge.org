@@ -58,7 +58,7 @@ try {
         {data.status === "dead" ? (
           <TombstoneCard data={data} />
         ) : (
-          <CertificateCard data={data} />
+          <CertificateCard data={data} apiBase={apiBase} />
         )}
       </div>
     )}

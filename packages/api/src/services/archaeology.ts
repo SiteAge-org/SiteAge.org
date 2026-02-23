@@ -1,5 +1,5 @@
 import type { Env } from "../env.js";
-import { LOOKUP_CACHE_TTL } from "@siteage/shared";
+import { LOOKUP_CACHE_TTL, LOOKUP_ERROR_CACHE_TTL } from "@siteage/shared";
 import { queryCdx } from "./cdx.js";
 
 export interface ArchaeologyResult {
@@ -40,6 +40,7 @@ export async function archaeologyService(env: Env, domain: string): Promise<Arch
   // 3. Query CDX API
   let birthAt: string | null = null;
   let status = "unknown";
+  let cdxFailed = false;
 
   try {
     const cdxResult = await queryCdx(domain, env.CDX_API_BASE);
@@ -55,6 +56,19 @@ export async function archaeologyService(env: Env, domain: string): Promise<Arch
     }
   } catch (err) {
     console.error(`CDX query failed for ${domain}:`, err);
+    cdxFailed = true;
+  }
+
+  if (cdxFailed) {
+    // CDX failed (timeout, network error, etc.): cache with short TTL, do NOT persist to D1
+    const result: ArchaeologyResult = {
+      domain,
+      birth_at: null,
+      status: "unknown",
+      verification_status: "detected",
+    };
+    await env.API_CACHE.put(cacheKey, JSON.stringify(result), { expirationTtl: LOOKUP_ERROR_CACHE_TTL });
+    return result;
   }
 
   // 4. Insert into D1 (use INSERT OR IGNORE to handle concurrent requests)

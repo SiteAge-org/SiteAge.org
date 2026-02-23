@@ -1,6 +1,6 @@
 import { Hono } from "hono";
 import type { Env } from "../env.js";
-import { normalizeDomain, isValidDomain, LOOKUP_CACHE_TTL, BADGE_BASE_URL, WEB_BASE_URL } from "@siteage/shared";
+import { normalizeDomain, isValidDomain, BADGE_BASE_URL, WEB_BASE_URL, REFRESH_COOLDOWN_TTL } from "@siteage/shared";
 import type { LookupRequest, LookupResponse } from "@siteage/shared";
 import { archaeologyService } from "../services/archaeology.js";
 import { ageDays } from "@siteage/shared";
@@ -16,6 +16,31 @@ lookupRoutes.post("/lookup", async (c) => {
   const domain = normalizeDomain(body.url);
   if (!isValidDomain(domain)) {
     return c.json({ error: "bad_request", message: "Invalid domain" }, 400);
+  }
+
+  // Handle force refresh
+  if (body.force) {
+    // Check cooldown to prevent abuse
+    const cooldownKey = `refresh:${domain}`;
+    const cooldown = await c.env.API_CACHE.get(cooldownKey);
+    if (cooldown) {
+      return c.json({ error: "rate_limited", message: "Please wait before refreshing again" }, 429);
+    }
+
+    // Set cooldown
+    await c.env.API_CACHE.put(cooldownKey, "1", { expirationTtl: REFRESH_COOLDOWN_TTL });
+
+    // Clear KV caches
+    await Promise.all([
+      c.env.API_CACHE.delete(`lookup:${domain}`),
+      c.env.API_CACHE.delete(`domain:${domain}`),
+    ]);
+
+    // Clear D1 records
+    await Promise.all([
+      c.env.DB.prepare("DELETE FROM cdx_queries WHERE domain = ?").bind(domain).run(),
+      c.env.DB.prepare("DELETE FROM domains WHERE domain = ?").bind(domain).run(),
+    ]);
   }
 
   const result = await archaeologyService(c.env, domain);

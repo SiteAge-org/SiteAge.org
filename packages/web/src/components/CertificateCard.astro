@@ -4,9 +4,10 @@ import type { DomainDetail } from "@siteage/shared";
 
 interface Props {
   data: DomainDetail;
+  apiBase: string;
 }
 
-const { data } = Astro.props;
+const { data, apiBase } = Astro.props;
 const birth = data.verified_birth_at || data.birth_at;
 const isVerified = data.verification_status === "verified";
 const catalogedDate = new Date(data.created_at).toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric", timeZone: "UTC" });
@@ -60,6 +61,16 @@ const catalogedDate = new Date(data.created_at).toLocaleDateString("en-US", { ye
     ) : (
       <div class="my-8">
         <p class="font-display text-3xl text-ink-muted">Birth Date Unknown</p>
+        <p class="text-sm text-ink-muted/70 mt-3 font-light">The archives could not be reached. Try again later.</p>
+        <button
+          id="recheck-btn"
+          type="button"
+          class="btn-primary mt-4 text-sm"
+          data-domain={data.domain}
+          data-api-base={apiBase}
+        >
+          Re-check Archives
+        </button>
       </div>
     )}
 
@@ -81,3 +92,48 @@ const catalogedDate = new Date(data.created_at).toLocaleDateString("en-US", { ye
     </div>
   </div>
 </div>
+
+<script>
+  const btn = document.getElementById("recheck-btn");
+  if (btn) {
+    btn.addEventListener("click", async () => {
+      const domain = btn.getAttribute("data-domain");
+      const apiBase = btn.getAttribute("data-api-base");
+      btn.textContent = "Checking\u2026";
+      btn.setAttribute("disabled", "true");
+
+      try {
+        const resp = await fetch(`${apiBase}/lookup`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ url: domain, force: true }),
+        });
+
+        if (resp.status === 429) {
+          btn.textContent = "Please wait before retrying";
+          setTimeout(() => {
+            btn.textContent = "Re-check Archives";
+            btn.removeAttribute("disabled");
+          }, 5000);
+          return;
+        }
+
+        if (resp.ok) {
+          location.reload();
+        } else {
+          btn.textContent = "Check failed — try again later";
+          setTimeout(() => {
+            btn.textContent = "Re-check Archives";
+            btn.removeAttribute("disabled");
+          }, 3000);
+        }
+      } catch {
+        btn.textContent = "Network error — try again";
+        setTimeout(() => {
+          btn.textContent = "Re-check Archives";
+          btn.removeAttribute("disabled");
+        }, 3000);
+      }
+    });
+  }
+</script>

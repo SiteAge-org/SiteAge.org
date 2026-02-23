@@ -1,5 +1,6 @@
 export interface LookupRequest {
   url: string;
+  force?: boolean;
 }
 
 export interface LookupResponse {
