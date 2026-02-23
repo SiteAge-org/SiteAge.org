@@ -38,6 +38,15 @@ pnpm dev:web              # Start Astro dev server only
 - Verification status: `detected`, `pending`, `verified`
 - Badge caching: CDN Edge (s-maxage=86400) -> KV (TTL 1h) -> real-time render
 
+### Design System Conventions
+
+- **Cards**: Use `.card-base` (gradient bg + border + shadow + hover lift) for all content containers. Use `.card-title` for section headings inside cards.
+- **Buttons**: Use `.btn-primary` (dark gradient) for primary actions, `.btn-seal` (gold gradient) for premium/highlight actions. Do not use raw Tailwind color utilities (e.g., `bg-blue-600`) for buttons.
+- **Forms**: Use `.input-archival` for text inputs and textareas, `.select-archival` for select dropdowns. Do not use generic Tailwind form classes (e.g., `rounded-lg`, `border-gray-300`).
+- **Decorative**: Use `.ornament-line` (single) and `.ornament-line-double` (double) for dividers. Use `.decorative-frame` for inner border overlays. Use `.noise-overlay` on hero/certificate sections.
+- **Colors**: Always use design system colors (`ink`, `seal`, `azure`, `parchment`, `divider`, `tombstone`). Do not use raw Tailwind colors (e.g., `gray-200`, `blue-600`, `green-100`, `red-100`).
+- **Shadows**: Use theme tokens (`--shadow-card`, `--shadow-card-hover`, `--shadow-certificate`, `--shadow-seal-glow`) instead of arbitrary shadow values.
+
 ## Domain Lookup: Two-Phase Rendering
 
 `[domain].astro` uses a two-phase rendering strategy for optimal UX:
