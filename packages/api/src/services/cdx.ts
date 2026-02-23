@@ -35,18 +35,18 @@ export async function queryCdx(domain: string, cdxBase?: string): Promise<CdxRes
 
   const earliest = data[1][0]; // timestamp is first field
 
-  // Get total snapshot count with a matchType=exact query (no limit)
-  const countUrl = `${base}?url=${encodeURIComponent(domain)}&output=json&filter=statuscode:200&matchType=exact&fl=timestamp&limit=-1`;
+  // Get approximate snapshot count using CDX pagination metadata (avoids downloading all data)
+  const countUrl = `${base}?url=${encodeURIComponent(domain)}&filter=statuscode:200&matchType=exact&showNumPages=true`;
   let snapshotCount = 1;
   try {
     const countResp = await fetch(countUrl, {
       headers: { "User-Agent": "SiteAge.org/1.0 (https://siteage.org)" },
-      signal: AbortSignal.timeout(30000),
+      signal: AbortSignal.timeout(10000),
     });
     if (countResp.ok) {
-      const countData = await countResp.json() as string[][];
-      // First row is header, remaining rows are snapshots
-      snapshotCount = Math.max(1, (countData?.length ?? 1) - 1);
+      const numPages = parseInt(await countResp.text(), 10);
+      // Each page has ~1-5 results by default; use as rough estimate
+      snapshotCount = Math.max(1, numPages);
     }
   } catch {
     // Non-critical, keep default count
