@@ -37,6 +37,8 @@ pnpm dev:web              # Start Astro dev server only
 - Domain status: `active`, `unreachable`, `dead`, `unknown`
 - Verification status: `detected`, `pending`, `verified`
 - Badge caching: CDN Edge (s-maxage=86400) -> KV (TTL 1h) -> real-time render
+- Lookup caching: KV (TTL 24h for success, 5min for CDX failures). CDX failures are NOT persisted to D1.
+- Force refresh: `POST /lookup` with `{ force: true }` clears KV + D1 and re-queries CDX. Rate limited to once per 5 minutes per domain.
 
 ### Design System Conventions
 
@@ -64,3 +66,20 @@ Key files: `[domain].astro` (routing logic), `LookupLoading.astro` (skeleton + c
 ## Database
 
 D1 database `siteage-db`. Migrations in `packages/api/src/db/migrations/`.
+
+## CI/CD
+
+**GitHub Actions** (`.github/workflows/deploy.yml`): Triggers on push to `main`.
+
+```
+push to main → [build] → [deploy-api] + [deploy-badge] + [deploy-web] (parallel)
+```
+
+- **build**: `pnpm install` → `build:shared` → `typecheck`, uploads shared dist as artifact
+- **deploy-api**: D1 migrations → `wrangler deploy` (api.siteage.org)
+- **deploy-badge**: `wrangler deploy` (badge.siteage.org)
+- **deploy-web**: `astro build` → `wrangler pages deploy` (siteage.org)
+
+**GitHub Secrets required**: `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID`
+
+**Worker secrets** (set via `wrangler secret put`, not in CI): `ADMIN_KEY`, `RESEND_API_KEY`
