@@ -2,7 +2,7 @@
   "name": "siteage-org",
   "private": true,
   "scripts": {
-    "dev": "pnpm --parallel -r dev",
+    "dev": "node scripts/cdx-proxy.mjs & pnpm --parallel -r dev",
     "dev:api": "pnpm --filter @siteage/api dev",
     "dev:badge": "pnpm --filter @siteage/badge dev",
     "dev:web": "pnpm --filter @siteage/web dev",
@@ -15,6 +15,7 @@
   },
   "devDependencies": {
     "typescript": "^5.7.3",
+    "undici": "^7.22.0",
     "wrangler": "^4.6.0"
   },
   "engines": {
@@ -23,6 +24,10 @@
   },
   "packageManager": "pnpm@9.15.4",
   "pnpm": {
-    "onlyBuiltDependencies": ["esbuild", "sharp", "workerd"]
+    "onlyBuiltDependencies": [
+      "esbuild",
+      "sharp",
+      "workerd"
+    ]
   }
 }

@@ -8,13 +8,15 @@ export interface CdxResult {
 
 /**
  * Query the Wayback Machine CDX API for the earliest 200 OK snapshot.
+ * @param cdxBase - Optional CDX API base URL override (for local dev proxy)
  */
-export async function queryCdx(domain: string): Promise<CdxResult> {
-  const url = `${CDX_API_BASE}?url=${encodeURIComponent(domain)}&output=json&filter=statuscode:200&limit=1&fl=timestamp,statuscode`;
+export async function queryCdx(domain: string, cdxBase?: string): Promise<CdxResult> {
+  const base = cdxBase || CDX_API_BASE;
+  const url = `${base}?url=${encodeURIComponent(domain)}&output=json&filter=statuscode:200&limit=1&fl=timestamp,statuscode`;
 
   const response = await fetch(url, {
     headers: { "User-Agent": "SiteAge.org/1.0 (https://siteage.org)" },
-    signal: AbortSignal.timeout(15000),
+    signal: AbortSignal.timeout(30000),
   });
 
   if (!response.ok) {
@@ -34,12 +36,12 @@ export async function queryCdx(domain: string): Promise<CdxResult> {
   const earliest = data[1][0]; // timestamp is first field
 
   // Get total snapshot count with a matchType=exact query (no limit)
-  const countUrl = `${CDX_API_BASE}?url=${encodeURIComponent(domain)}&output=json&filter=statuscode:200&matchType=exact&fl=timestamp&limit=-1`;
+  const countUrl = `${base}?url=${encodeURIComponent(domain)}&output=json&filter=statuscode:200&matchType=exact&fl=timestamp&limit=-1`;
   let snapshotCount = 1;
   try {
     const countResp = await fetch(countUrl, {
       headers: { "User-Agent": "SiteAge.org/1.0 (https://siteage.org)" },
-      signal: AbortSignal.timeout(15000),
+      signal: AbortSignal.timeout(30000),
     });
     if (countResp.ok) {
       const countData = await countResp.json() as string[][];

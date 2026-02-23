@@ -3,6 +3,7 @@ import Base from "../../layouts/Base.astro";
 import { API_BASE_URL, isValidDomain } from "@siteage/shared";
 import type { ManageData } from "@siteage/shared";
 
+const apiBase = import.meta.env.PUBLIC_API_URL || API_BASE_URL;
 const { domain } = Astro.params;
 const key = Astro.url.searchParams.get("key");
 
@@ -14,7 +15,7 @@ let data: ManageData | null = null;
 let error: string | null = null;
 
 try {
-  const resp = await fetch(`${API_BASE_URL}/manage/${domain}?key=${key}`);
+  const resp = await fetch(`${apiBase}/manage/${domain}?key=${key}`);
   if (resp.ok) {
     data = await resp.json() as ManageData;
   } else {

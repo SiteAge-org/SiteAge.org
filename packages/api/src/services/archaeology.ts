@@ -42,7 +42,7 @@ export async function archaeologyService(env: Env, domain: string): Promise<Arch
   let status = "unknown";
 
   try {
-    const cdxResult = await queryCdx(domain);
+    const cdxResult = await queryCdx(domain, env.CDX_API_BASE);
 
     // Store CDX audit record
     await env.DB.prepare(

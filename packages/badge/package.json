@@ -4,7 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "wrangler dev",
+    "dev": "HTTP_PROXY= HTTPS_PROXY= http_proxy= https_proxy= wrangler dev --port 8790 --inspector-port 9232",
     "deploy": "wrangler deploy",
     "typecheck": "tsc --noEmit"
   },

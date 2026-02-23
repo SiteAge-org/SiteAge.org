@@ -9,6 +9,7 @@ import Timeline from "../components/Timeline.astro";
 import { API_BASE_URL, isValidDomain } from "@siteage/shared";
 import type { DomainDetail, LookupResponse } from "@siteage/shared";
 
+const apiBase = import.meta.env.PUBLIC_API_URL || API_BASE_URL;
 const { domain } = Astro.params;
 
 if (!domain || !isValidDomain(domain)) {
@@ -19,17 +20,17 @@ let data: DomainDetail | null = null;
 let error: string | null = null;
 
 try {
-  let resp = await fetch(`${API_BASE_URL}/${domain}`);
+  let resp = await fetch(`${apiBase}/${domain}`);
 
   if (resp.status === 404) {
-    resp = await fetch(`${API_BASE_URL}/lookup`, {
+    resp = await fetch(`${apiBase}/lookup`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ url: domain }),
     });
 
     if (resp.ok) {
-      resp = await fetch(`${API_BASE_URL}/${domain}`);
+      resp = await fetch(`${apiBase}/${domain}`);
     }
   }
 

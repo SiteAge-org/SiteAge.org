@@ -4,4 +4,5 @@ export interface Env {
   ADMIN_KEY: string;
   RESEND_API_KEY: string;
   ENVIRONMENT: string;
+  CDX_API_BASE?: string;
 }
