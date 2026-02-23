@@ -1,6 +1,7 @@
 import { Hono } from "hono";
 import type { Env } from "../env.js";
 import type { AdminDashboard, GlobalStats } from "@siteage/shared";
+import { queryDohTxt } from "../services/verification.js";
 
 export const adminRoutes = new Hono<{ Bindings: Env }>();
 
@@ -181,4 +182,40 @@ adminRoutes.post("/domains/:id", async (c) => {
   }
 
   return c.json({ success: true });
+});
+
+// GET /admin/dns-check/:domain - DNS TXT diagnostic endpoint
+adminRoutes.get("/dns-check/:domain", async (c) => {
+  const domain = c.req.param("domain");
+
+  // Query both DoH providers in parallel
+  const [cloudflare, google] = await Promise.all([
+    queryDohTxt(domain, "https://cloudflare-dns.com/dns-query", "Cloudflare"),
+    queryDohTxt(domain, "https://dns.google/resolve", "Google"),
+  ]);
+
+  // Fetch pending verification records for this domain
+  const pendingRows = await c.env.DB.prepare(
+    `SELECT v.method, v.token, v.email, v.expires_at, v.created_at, v.last_attempt_at
+     FROM verifications v
+     JOIN domains d ON v.domain_id = d.id
+     WHERE d.domain = ? AND v.status = 'pending'
+     ORDER BY v.created_at DESC`
+  ).bind(domain).all();
+
+  const pending = (pendingRows.results || []).map((row) => ({
+    method: row.method,
+    token: row.token,
+    expected: `siteage-verify=${row.token}`,
+    email: row.email,
+    expires_at: row.expires_at,
+    created_at: row.created_at,
+    last_attempt_at: row.last_attempt_at,
+  }));
+
+  return c.json({
+    domain,
+    resolvers: { cloudflare, google },
+    pending_verifications: pending,
+  });
 });

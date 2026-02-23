@@ -91,7 +91,10 @@ export async function checkVerification(
   ).bind(verification.id).run();
 
   const method = verification.method as string;
+  const tokenPrefix = token.substring(0, 8);
   let found = false;
+
+  console.info(`[Verify] Starting ${method} verification for ${domain} (token=${tokenPrefix}...)`);
 
   if (method === "dns_txt") {
     found = await checkDnsTxt(domain, token);
@@ -100,6 +103,8 @@ export async function checkVerification(
   } else {
     found = await checkMetaTag(domain, token);
   }
+
+  console.info(`[Verify] ${method} result for ${domain}: ${found ? "FOUND" : "NOT FOUND"}`);
 
   const methodLabel = method === "dns_txt" ? "DNS TXT record" : method === "well_known" ? "verification file" : "meta tag";
   if (!found) {
@@ -160,32 +165,90 @@ export async function resendMagicLink(
 }
 
 /**
- * Check DNS TXT records via Cloudflare DoH.
+ * Parse raw TXT record data from DoH response.
+ * Handles quoted strings, multi-segment TXT records ("seg1" "seg2"), and whitespace.
+ */
+export function parseTxtData(raw: string): string {
+  // Extract all quoted segments and concatenate them
+  const segments: string[] = [];
+  const regex = /"([^"]*)"/g;
+  let match: RegExpExecArray | null;
+  while ((match = regex.exec(raw)) !== null) {
+    segments.push(match[1]);
+  }
+  if (segments.length > 0) {
+    return segments.join("").trim();
+  }
+  // Fallback: no quotes found, use raw value trimmed
+  return raw.trim();
+}
+
+export interface DohResult {
+  provider: string;
+  status: number;
+  dnsStatus: number;
+  records: string[];
+  error?: string;
+}
+
+/**
+ * Query TXT records from a DoH provider. Returns structured result.
+ */
+export async function queryDohTxt(domain: string, dohBase: string, provider: string): Promise<DohResult> {
+  try {
+    const url = `${dohBase}?name=${encodeURIComponent(domain)}&type=TXT`;
+    const resp = await fetch(url, {
+      headers: { Accept: "application/dns-json" },
+      signal: AbortSignal.timeout(10000),
+    });
+
+    if (!resp.ok) {
+      console.warn(`[DNS] ${provider} HTTP error: ${resp.status} for ${domain}`);
+      return { provider, status: resp.status, dnsStatus: -1, records: [], error: `HTTP ${resp.status}` };
+    }
+
+    const data = await resp.json() as { Status?: number; Answer?: Array<{ data: string }> };
+    const dnsStatus = data.Status ?? -1;
+
+    if (dnsStatus !== 0) {
+      console.warn(`[DNS] ${provider} DNS Status=${dnsStatus} for ${domain} (0=NOERROR, 2=SERVFAIL, 3=NXDOMAIN)`);
+    }
+
+    const records = (data.Answer || []).map((a) => parseTxtData(a.data));
+    console.info(`[DNS] ${provider} returned ${records.length} TXT record(s) for ${domain}: ${JSON.stringify(records)}`);
+
+    return { provider, status: resp.status, dnsStatus, records };
+  } catch (err) {
+    const message = err instanceof Error ? err.message : String(err);
+    console.error(`[DNS] ${provider} query failed for ${domain}: ${message}`);
+    return { provider, status: -1, dnsStatus: -1, records: [], error: message };
+  }
+}
+
+/**
+ * Check DNS TXT records via DoH with fallback (Cloudflare → Google).
  */
 async function checkDnsTxt(domain: string, token: string): Promise<boolean> {
-  try {
-    const resp = await fetch(
-      `https://cloudflare-dns.com/dns-query?name=${encodeURIComponent(domain)}&type=TXT`,
-      {
-        headers: { Accept: "application/dns-json" },
-        signal: AbortSignal.timeout(10000),
-      }
-    );
+  const target = `siteage-verify=${token}`;
+  const tokenPrefix = token.substring(0, 8);
 
-    if (!resp.ok) return false;
-
-    const data = await resp.json() as { Answer?: Array<{ data: string }> };
-    if (!data.Answer) return false;
-
-    const target = `siteage-verify=${token}`;
-    return data.Answer.some((a) => {
-      // DNS TXT records may be quoted
-      const value = a.data.replace(/^"|"$/g, "");
-      return value === target;
-    });
-  } catch {
-    return false;
+  // Try Cloudflare DoH first
+  const cfResult = await queryDohTxt(domain, "https://cloudflare-dns.com/dns-query", "Cloudflare");
+  if (cfResult.records.some((r) => r === target)) {
+    console.info(`[DNS] Match found via Cloudflare for ${domain} (token=${tokenPrefix}...)`);
+    return true;
   }
+
+  // Fallback to Google DoH
+  console.info(`[DNS] No match via Cloudflare, falling back to Google DoH for ${domain}`);
+  const googleResult = await queryDohTxt(domain, "https://dns.google/resolve", "Google");
+  if (googleResult.records.some((r) => r === target)) {
+    console.info(`[DNS] Match found via Google for ${domain} (token=${tokenPrefix}...)`);
+    return true;
+  }
+
+  console.warn(`[DNS] No match from either resolver for ${domain} (token=${tokenPrefix}...). Expected: "${target}"`);
+  return false;
 }
 
 /**
