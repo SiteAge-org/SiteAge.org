@@ -9,14 +9,14 @@
     {
       "binding": "DB",
       "database_name": "siteage-db",
-      "database_id": "REPLACE_WITH_ACTUAL_ID",
+      "database_id": "59ae9dc6-9d57-4a7f-85e8-68c029560cc3",
       "migrations_dir": "src/db/migrations"
     }
   ],
   "kv_namespaces": [
     {
       "binding": "API_CACHE",
-      "id": "REPLACE_WITH_ACTUAL_ID"
+      "id": "85dd3034c76e44fdbc919fc565530d3c"
     }
   ],
   "vars": {
