@@ -3,46 +3,67 @@ import Base from "../layouts/Base.astro";
 ---
 
 <Base title="About">
-  <div class="max-w-3xl mx-auto px-6 py-12 sm:py-20">
-    <div class="text-center mb-12">
+  <!-- Top decorative header area -->
+  <section class="relative overflow-hidden">
+    <div class="absolute inset-0 bg-gradient-to-b from-parchment-dark/40 to-parchment noise-overlay"></div>
+    <div class="relative max-w-3xl mx-auto px-6 pt-16 pb-10 text-center">
       <span class="text-xs tracking-[0.3em] uppercase text-seal-dark font-medium">About</span>
-      <h1 class="font-display text-3xl sm:text-4xl mt-4">SiteAge.org</h1>
+      <h1 class="font-display text-3xl sm:text-4xl mt-4 text-ink">SiteAge.org</h1>
+      <div class="ornament-line max-w-32 mx-auto mt-5"></div>
     </div>
+  </section>
 
-    <div class="space-y-8 text-ink-muted font-light leading-relaxed">
-      <p class="text-lg">
+  <div class="max-w-3xl mx-auto px-6 pb-16 sm:pb-24 space-y-8">
+    <!-- Introduction quote -->
+    <div class="border-l-3 border-l-seal/50 pl-6 py-2">
+      <p class="text-lg text-ink-muted font-light italic leading-relaxed">
         SiteAge.org is a website age certification platform. We trace the origins of websites
         using the Internet Archive's Wayback Machine and generate verifiable age badges.
       </p>
+    </div>
 
-      <div>
-        <h2 class="font-display text-xl text-ink mb-4">How It Works</h2>
-        <ol class="list-decimal list-inside space-y-3">
-          <li>Enter a domain name to look up</li>
-          <li>We query the Wayback Machine CDX API for the earliest archived snapshot</li>
-          <li>The earliest successful snapshot date becomes the "birth date"</li>
-          <li>You receive a certificate page and an embeddable SVG badge</li>
-        </ol>
-      </div>
+    <!-- How It Works -->
+    <div class="card-base p-8 sm:p-10">
+      <h2 class="card-title">How It Works</h2>
+      <ol class="space-y-4 mt-2">
+        <li class="flex gap-4 items-start">
+          <span class="flex-shrink-0 w-7 h-7 flex items-center justify-center font-display text-sm text-seal-dark bg-seal/[0.08]">1</span>
+          <span class="text-ink-muted font-light leading-relaxed pt-0.5">Enter a domain name to look up</span>
+        </li>
+        <li class="flex gap-4 items-start">
+          <span class="flex-shrink-0 w-7 h-7 flex items-center justify-center font-display text-sm text-seal-dark bg-seal/[0.08]">2</span>
+          <span class="text-ink-muted font-light leading-relaxed pt-0.5">We query the Wayback Machine CDX API for the earliest archived snapshot</span>
+        </li>
+        <li class="flex gap-4 items-start">
+          <span class="flex-shrink-0 w-7 h-7 flex items-center justify-center font-display text-sm text-seal-dark bg-seal/[0.08]">3</span>
+          <span class="text-ink-muted font-light leading-relaxed pt-0.5">The earliest successful snapshot date becomes the "birth date"</span>
+        </li>
+        <li class="flex gap-4 items-start">
+          <span class="flex-shrink-0 w-7 h-7 flex items-center justify-center font-display text-sm text-seal-dark bg-seal/[0.08]">4</span>
+          <span class="text-ink-muted font-light leading-relaxed pt-0.5">You receive a certificate page and an embeddable SVG badge</span>
+        </li>
+      </ol>
+    </div>
 
-      <div>
-        <h2 class="font-display text-xl text-ink mb-4">Verification</h2>
-        <p>
-          Website owners can claim their domain through DNS TXT record or meta tag verification.
-          Verified domains receive a gold "Established" badge and can submit evidence for an
-          earlier birth date if the Wayback Machine didn't capture the earliest version.
-        </p>
-      </div>
+    <!-- Verification -->
+    <div class="card-base p-8 sm:p-10">
+      <h2 class="card-title">Verification</h2>
+      <p class="text-ink-muted font-light leading-relaxed">
+        Website owners can claim their domain through DNS TXT record or meta tag verification.
+        Verified domains receive a gold "Established" badge and can submit evidence for an
+        earlier birth date if the Wayback Machine didn't capture the earliest version.
+      </p>
+    </div>
 
-      <div>
-        <h2 class="font-display text-xl text-ink mb-4">Open Source</h2>
-        <p>
-          SiteAge.org is open source under the MIT license.
-          <a href="https://github.com/SiteAge-org/SiteAge.org" class="text-azure hover:text-azure-light transition-colors" target="_blank" rel="noopener noreferrer">
-            View on GitHub
-          </a>.
-        </p>
-      </div>
+    <!-- Open Source -->
+    <div class="card-base p-8 sm:p-10">
+      <h2 class="card-title">Open Source</h2>
+      <p class="text-ink-muted font-light leading-relaxed">
+        SiteAge.org is open source under the MIT license.
+        <a href="https://github.com/SiteAge-org/SiteAge.org" class="text-azure hover:text-azure-light transition-colors" target="_blank" rel="noopener noreferrer">
+          View on GitHub
+        </a>.
+      </p>
     </div>
   </div>
 </Base>
