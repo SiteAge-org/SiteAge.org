@@ -189,9 +189,10 @@ adminRoutes.get("/dns-check/:domain", async (c) => {
   const domain = c.req.param("domain");
 
   // Query all DNS providers in parallel
-  const [cloudflare, google, system] = await Promise.all([
+  const [cloudflare, google, alidns, system] = await Promise.all([
     queryDohTxt(domain, "https://cloudflare-dns.com/dns-query", "Cloudflare"),
     queryDohTxt(domain, "https://dns.google/resolve", "Google"),
+    queryDohTxt(domain, "https://dns.alidns.com/resolve", "AliDNS"),
     querySystemDns(domain),
   ]);
 
@@ -216,7 +217,7 @@ adminRoutes.get("/dns-check/:domain", async (c) => {
 
   return c.json({
     domain,
-    resolvers: { cloudflare, google, system },
+    resolvers: { cloudflare, google, alidns, system },
     pending_verifications: pending,
   });
 });

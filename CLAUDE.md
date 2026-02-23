@@ -42,7 +42,7 @@ pnpm dev:web              # Start Astro dev server only
 - Lookup caching: KV (TTL 24h for success, 5min for CDX failures). CDX failures are NOT persisted to D1.
 - Force refresh: `POST /lookup` with `{ force: true }` clears KV + D1 and re-queries CDX. Rate limited to once per 5 minutes per domain.
 - DNS verification help: Collapsible `<details>` guide with provider-specific steps (Cloudflare, Namecheap, GoDaddy, Squarespace, Name.com, Vercel, Other). Provider dashboard URLs use SSR-interpolated `{domain}`. Chip-based provider selector with toggle behavior.
-- DNS verification fallback chain: Cloudflare DoH → Google DoH → system DNS (`node:dns`, only when both DoH fail). Handles multi-segment TXT records (`"seg1" "seg2"` → concatenated). System DNS fallback covers Wrangler local dev where outbound fetch to DoH endpoints may be blocked.
+- DNS verification: Queries Cloudflare, Google, and AliDNS DoH in parallel; falls back to system DNS (`node:dns`, 5s timeout) when all DoH fail. Handles multi-segment TXT records (`"seg1" "seg2"` → concatenated).
 - Diagnostic log prefixes: `[DNS]` for DoH queries/results, `[Verify]` for verification method lifecycle.
 - Admin DNS diagnostic: `GET /admin/dns-check/:domain` returns raw TXT records from both resolvers + pending verification tokens. Protected by `X-Admin-Key`.
 
