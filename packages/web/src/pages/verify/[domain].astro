@@ -10,69 +10,77 @@ if (!domain || !isValidDomain(domain)) {
 ---
 
 <Base title={`Verify ${domain}`}>
-  <div class="max-w-2xl mx-auto px-4 py-12">
-    <h1 class="text-2xl font-bold mb-6">Verify Ownership of {domain}</h1>
+  <div class="max-w-2xl mx-auto px-6 py-12 sm:py-20">
+    <!-- Page header -->
+    <div class="text-center mb-10">
+      <span class="text-xs tracking-[0.3em] uppercase text-seal-dark font-medium">Ownership Verification</span>
+      <h1 class="font-display text-2xl sm:text-3xl mt-3 text-ink">{domain}</h1>
+      <div class="ornament-line max-w-32 mx-auto mt-4"></div>
+    </div>
 
-    <div class="bg-white rounded-lg border border-gray-200 p-6">
-      <!-- Step 1: Email -->
-      <div id="step-email">
-        <h2 class="text-lg font-semibold mb-4">Step 1: Enter your email</h2>
-        <div class="space-y-4">
-          <input
-            type="email"
-            id="verify-email"
-            placeholder="you@example.com"
-            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
-          />
-          <div>
-            <label class="text-sm font-medium text-gray-700 block mb-2">Verification method</label>
-            <div class="space-y-2">
-              <label class="flex items-center gap-2">
-                <input type="radio" name="method" value="dns_txt" checked class="text-blue-600" />
-                <span class="text-sm">DNS TXT Record</span>
-              </label>
-              <label class="flex items-center gap-2">
-                <input type="radio" name="method" value="meta_tag" class="text-blue-600" />
-                <span class="text-sm">HTML Meta Tag</span>
-              </label>
+    <div class="card-base p-8 sm:p-10 relative decorative-frame noise-overlay overflow-hidden">
+      <div class="relative">
+        <!-- Step 1: Email -->
+        <div id="step-email">
+          <h2 class="card-title">Step 1: Enter your email</h2>
+          <div class="space-y-5">
+            <input
+              type="email"
+              id="verify-email"
+              placeholder="you@example.com"
+              class="input-archival"
+            />
+            <div>
+              <label class="text-[10px] tracking-[0.15em] uppercase text-ink-muted font-medium block mb-3">Verification method</label>
+              <div class="space-y-2">
+                <label class="flex items-center gap-2 cursor-pointer">
+                  <input type="radio" name="method" value="dns_txt" checked class="accent-seal" />
+                  <span class="text-sm text-ink">DNS TXT Record</span>
+                </label>
+                <label class="flex items-center gap-2 cursor-pointer">
+                  <input type="radio" name="method" value="meta_tag" class="accent-seal" />
+                  <span class="text-sm text-ink">HTML Meta Tag</span>
+                </label>
+              </div>
             </div>
+            <button
+              id="btn-init"
+              class="btn-primary"
+            >
+              Start Verification
+            </button>
           </div>
+        </div>
+
+        <!-- Step 2: Instructions (hidden by default) -->
+        <div id="step-instructions" class="hidden">
+          <h2 class="card-title">Step 2: Add verification record</h2>
+          <div id="instructions-content" class="bg-parchment-dark/60 p-4 text-sm text-ink-muted font-mono mb-4"></div>
+          <p class="text-sm text-ink-muted font-light mb-5">After adding the record, click verify below.</p>
           <button
-            id="btn-init"
-            class="px-6 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors"
+            id="btn-verify"
+            class="btn-seal"
           >
-            Start Verification
+            Verify Now
           </button>
         </div>
-      </div>
 
-      <!-- Step 2: Instructions (hidden by default) -->
-      <div id="step-instructions" class="hidden">
-        <h2 class="text-lg font-semibold mb-4">Step 2: Add verification record</h2>
-        <div id="instructions-content" class="bg-gray-50 rounded-lg p-4 text-sm mb-4"></div>
-        <p class="text-sm text-gray-500 mb-4">After adding the record, click verify below.</p>
-        <button
-          id="btn-verify"
-          class="px-6 py-2 bg-green-600 text-white rounded-lg font-medium hover:bg-green-700 transition-colors"
-        >
-          Verify Now
-        </button>
-      </div>
+        <!-- Result -->
+        <div id="step-result" class="hidden">
+          <div id="result-content"></div>
+        </div>
 
-      <!-- Result -->
-      <div id="step-result" class="hidden">
-        <div id="result-content"></div>
-      </div>
-
-      <!-- Resend section for already-verified domains -->
-      <div class="mt-6 pt-6 border-t border-gray-200">
-        <p class="text-sm text-gray-500 mb-2">Already verified? Lost your management link?</p>
-        <button
-          id="btn-resend"
-          class="text-sm text-blue-600 hover:underline"
-        >
-          Resend Magic Link
-        </button>
+        <!-- Resend section for already-verified domains -->
+        <div class="mt-8 pt-6">
+          <div class="ornament-line mb-6"></div>
+          <p class="text-sm text-ink-muted font-light mb-2">Already verified? Lost your management link?</p>
+          <button
+            id="btn-resend"
+            class="text-sm text-azure hover:text-azure-light transition-colors tracking-wide font-medium"
+          >
+            Resend Magic Link
+          </button>
+        </div>
       </div>
     </div>
   </div>
@@ -115,8 +123,8 @@ if (!domain || !isValidDomain(domain)) {
         document.getElementById("step-instructions").classList.add("hidden");
         document.getElementById("step-result").classList.remove("hidden");
         document.getElementById("result-content").innerHTML = data.verified
-          ? '<p class="text-green-600 font-semibold">Verification successful! Check your email for the management link.</p>'
-          : `<p class="text-red-600">Verification failed: ${data.message}</p>`;
+          ? '<p class="text-seal-dark font-medium tracking-wide">Verification successful! Check your email for the management link.</p>'
+          : `<p class="text-ink-muted">Verification failed: ${data.message}</p>`;
       } catch (e) {
         alert("Verification check failed");
       }
