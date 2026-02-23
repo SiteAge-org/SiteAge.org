@@ -1,7 +1,7 @@
 import { Hono } from "hono";
 import type { Env } from "../env.js";
 import type { AdminDashboard, GlobalStats } from "@siteage/shared";
-import { queryDohTxt } from "../services/verification.js";
+import { queryDohTxt, querySystemDns } from "../services/verification.js";
 
 export const adminRoutes = new Hono<{ Bindings: Env }>();
 
@@ -188,10 +188,11 @@ adminRoutes.post("/domains/:id", async (c) => {
 adminRoutes.get("/dns-check/:domain", async (c) => {
   const domain = c.req.param("domain");
 
-  // Query both DoH providers in parallel
-  const [cloudflare, google] = await Promise.all([
+  // Query all DNS providers in parallel
+  const [cloudflare, google, system] = await Promise.all([
     queryDohTxt(domain, "https://cloudflare-dns.com/dns-query", "Cloudflare"),
     queryDohTxt(domain, "https://dns.google/resolve", "Google"),
+    querySystemDns(domain),
   ]);
 
   // Fetch pending verification records for this domain
@@ -215,7 +216,7 @@ adminRoutes.get("/dns-check/:domain", async (c) => {
 
   return c.json({
     domain,
-    resolvers: { cloudflare, google },
+    resolvers: { cloudflare, google, system },
     pending_verifications: pending,
   });
 });

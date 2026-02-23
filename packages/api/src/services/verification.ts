@@ -226,7 +226,27 @@ export async function queryDohTxt(domain: string, dohBase: string, provider: str
 }
 
 /**
- * Check DNS TXT records via DoH with fallback (Cloudflare → Google).
+ * Query TXT records via system DNS resolver (node:dns).
+ * Works reliably in local Wrangler dev where outbound fetch may be blocked.
+ * Uses dynamic import to avoid module-level dependency on node:dns types.
+ */
+export async function querySystemDns(domain: string): Promise<DohResult> {
+  try {
+    const dns = await import("node:dns");
+    const records: string[][] = await dns.promises.resolveTxt(domain);
+    // resolveTxt returns string[][] — each entry is an array of segments
+    const parsed = records.map((segments: string[]) => segments.join(""));
+    console.info(`[DNS] System resolver returned ${parsed.length} TXT record(s) for ${domain}: ${JSON.stringify(parsed)}`);
+    return { provider: "System", status: 200, dnsStatus: 0, records: parsed };
+  } catch (err) {
+    const message = err instanceof Error ? err.message : String(err);
+    console.error(`[DNS] System resolver failed for ${domain}: ${message}`);
+    return { provider: "System", status: -1, dnsStatus: -1, records: [], error: message };
+  }
+}
+
+/**
+ * Check DNS TXT records via DoH with fallback (Cloudflare → Google → system DNS).
  */
 async function checkDnsTxt(domain: string, token: string): Promise<boolean> {
   const target = `siteage-verify=${token}`;
@@ -247,7 +267,18 @@ async function checkDnsTxt(domain: string, token: string): Promise<boolean> {
     return true;
   }
 
-  console.warn(`[DNS] No match from either resolver for ${domain} (token=${tokenPrefix}...). Expected: "${target}"`);
+  // Final fallback: system DNS resolver (node:dns) — useful when DoH is unreachable in local dev
+  const bothDohFailed = !!cfResult.error && !!googleResult.error;
+  if (bothDohFailed) {
+    console.info(`[DNS] Both DoH resolvers failed, falling back to system DNS for ${domain}`);
+    const sysResult = await querySystemDns(domain);
+    if (sysResult.records.some((r) => r === target)) {
+      console.info(`[DNS] Match found via system DNS for ${domain} (token=${tokenPrefix}...)`);
+      return true;
+    }
+  }
+
+  console.warn(`[DNS] No match from any resolver for ${domain} (token=${tokenPrefix}...). Expected: "${target}"`);
   return false;
 }
 
