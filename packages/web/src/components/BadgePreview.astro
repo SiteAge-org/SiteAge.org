@@ -10,20 +10,20 @@ const badgeUrl = `${BADGE_BASE_URL}/${domain}`;
 const linkUrl = `${WEB_BASE_URL}/${domain}`;
 ---
 
-<div class="bg-white/60 border border-divider p-6 sm:p-8">
-  <h2 class="text-[10px] tracking-[0.3em] uppercase text-seal-dark font-medium mb-6">Badge</h2>
+<div class="card-base p-6 sm:p-8">
+  <h2 class="card-title">Badge</h2>
 
   <!-- Preview -->
   <div class="flex flex-col gap-5 mb-8">
-    <div>
+    <div class="bg-parchment/60 p-3 rounded-sm">
       <p class="text-[10px] tracking-[0.15em] uppercase text-ink-muted/50 mb-2">Flat</p>
       <img src={`${badgeUrl}?style=flat`} alt="SiteAge badge" class="h-5" />
     </div>
-    <div>
+    <div class="bg-parchment/60 p-3 rounded-sm">
       <p class="text-[10px] tracking-[0.15em] uppercase text-ink-muted/50 mb-2">Flat Square</p>
       <img src={`${badgeUrl}?style=flat-square`} alt="SiteAge badge" class="h-5" />
     </div>
-    <div>
+    <div class="bg-parchment/60 p-3 rounded-sm">
       <p class="text-[10px] tracking-[0.15em] uppercase text-ink-muted/50 mb-2">For the Badge</p>
       <img src={`${badgeUrl}?style=for-the-badge`} alt="SiteAge badge" class="h-7" />
     </div>
@@ -35,14 +35,14 @@ const linkUrl = `${WEB_BASE_URL}/${domain}`;
       <label class="text-[10px] tracking-[0.15em] uppercase text-ink-muted/50 font-medium block mb-2">HTML</label>
       <div class="relative">
         <code class="block bg-parchment-dark rounded px-4 py-3 text-xs text-ink-muted font-mono overflow-x-auto" id="html-code">{`<a href="${linkUrl}"><img src="${badgeUrl}" alt="SiteAge badge"></a>`}</code>
-        <button data-copy="html-code" class="copy-btn absolute top-2 right-2 text-[10px] tracking-[0.1em] uppercase px-2 py-1 bg-white border border-divider text-ink-muted hover:text-ink transition-colors">Copy</button>
+        <button data-copy="html-code" class="copy-btn absolute top-2 right-2 text-[10px] tracking-[0.1em] uppercase px-2 py-1 bg-white border border-divider text-ink-muted hover:text-seal-dark hover:border-seal/30 transition-colors">Copy</button>
       </div>
     </div>
     <div>
       <label class="text-[10px] tracking-[0.15em] uppercase text-ink-muted/50 font-medium block mb-2">Markdown</label>
       <div class="relative">
         <code class="block bg-parchment-dark rounded px-4 py-3 text-xs text-ink-muted font-mono overflow-x-auto" id="md-code">{`[![SiteAge](${badgeUrl})](${linkUrl})`}</code>
-        <button data-copy="md-code" class="copy-btn absolute top-2 right-2 text-[10px] tracking-[0.1em] uppercase px-2 py-1 bg-white border border-divider text-ink-muted hover:text-ink transition-colors">Copy</button>
+        <button data-copy="md-code" class="copy-btn absolute top-2 right-2 text-[10px] tracking-[0.1em] uppercase px-2 py-1 bg-white border border-divider text-ink-muted hover:text-seal-dark hover:border-seal/30 transition-colors">Copy</button>
       </div>
     </div>
   </div>

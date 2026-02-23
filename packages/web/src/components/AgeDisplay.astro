@@ -12,10 +12,12 @@ const days = data.age_days || 0;
 ---
 
 {birth && (
-  <div class="bg-white/60 border border-divider p-6 sm:p-8">
-    <h2 class="text-[10px] tracking-[0.3em] uppercase text-seal-dark font-medium mb-4">Age</h2>
-    <div class="flex items-baseline gap-3">
-      <span class="font-display text-2xl sm:text-3xl text-ink">{formatAge(birth, data.death_at || undefined)}</span>
+  <div class="card-base p-6 sm:p-8 relative">
+    <!-- Left accent line -->
+    <div class="absolute left-0 top-4 bottom-4 w-[3px] bg-gradient-to-b from-seal to-seal/30 rounded-full"></div>
+    <h2 class="card-title pl-2">Age</h2>
+    <div class="flex items-baseline gap-3 pl-2">
+      <span class="font-display text-3xl sm:text-4xl text-ink">{formatAge(birth, data.death_at || undefined)}</span>
       <span class="text-ink-muted text-sm font-light">({days.toLocaleString()} days)</span>
     </div>
   </div>

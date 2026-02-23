@@ -12,12 +12,16 @@ const { domain, apiBase } = Astro.props;
   <div id="loading-state">
     <!-- Certificate skeleton -->
     <div class="animate-fade-up">
-      <div class="relative bg-white border border-divider p-10 sm:p-14 max-w-2xl mx-auto overflow-hidden noise-overlay">
-        <!-- Corner ornaments -->
-        <div class="absolute top-3 left-3 w-10 h-10 border-t-2 border-l-2 border-seal/30"></div>
-        <div class="absolute top-3 right-3 w-10 h-10 border-t-2 border-r-2 border-seal/30"></div>
-        <div class="absolute bottom-3 left-3 w-10 h-10 border-b-2 border-l-2 border-seal/30"></div>
-        <div class="absolute bottom-3 right-3 w-10 h-10 border-b-2 border-r-2 border-seal/30"></div>
+      <div class="relative bg-gradient-to-b from-white to-parchment/80 border border-divider p-10 sm:p-14 max-w-2xl mx-auto overflow-hidden noise-overlay shadow-[var(--shadow-certificate)]">
+        <!-- Double-layer corner ornaments -->
+        <div class="absolute top-3 left-3 w-12 h-12 border-t-2 border-l-2 border-seal/30"></div>
+        <div class="absolute top-5 left-5 w-4 h-4 border-t border-l border-seal/15"></div>
+        <div class="absolute top-3 right-3 w-12 h-12 border-t-2 border-r-2 border-seal/30"></div>
+        <div class="absolute top-5 right-5 w-4 h-4 border-t border-r border-seal/15"></div>
+        <div class="absolute bottom-3 left-3 w-12 h-12 border-b-2 border-l-2 border-seal/30"></div>
+        <div class="absolute bottom-5 left-5 w-4 h-4 border-b border-l border-seal/15"></div>
+        <div class="absolute bottom-3 right-3 w-12 h-12 border-b-2 border-r-2 border-seal/30"></div>
+        <div class="absolute bottom-5 right-5 w-4 h-4 border-b border-r border-seal/15"></div>
 
         <!-- Inner decorative border -->
         <div class="absolute inset-6 border border-divider/50 pointer-events-none"></div>
@@ -61,7 +65,8 @@ const { domain, apiBase } = Astro.props;
           </div>
 
           <!-- Footer -->
-          <div class="pt-6 border-t border-divider/50">
+          <div class="pt-6">
+            <div class="ornament-line mb-4"></div>
             <p class="text-[10px] text-ink-muted/50 tracking-[0.15em] uppercase">Certified by SiteAge.org &middot; Data from Internet Archive</p>
           </div>
         </div>
@@ -72,7 +77,8 @@ const { domain, apiBase } = Astro.props;
     <div class="mt-10 space-y-6">
       <!-- AgeDisplay skeleton -->
       <div class="animate-fade-up delay-100">
-        <div class="bg-white/60 border border-divider p-6 sm:p-8">
+        <div class="card-base p-6 sm:p-8 relative">
+          <div class="absolute left-0 top-4 bottom-4 w-[3px] bg-gradient-to-b from-seal/30 to-seal/10 rounded-full"></div>
           <div class="skeleton h-3 w-12 mb-4"></div>
           <div class="skeleton h-8 w-48"></div>
         </div>
@@ -80,15 +86,15 @@ const { domain, apiBase } = Astro.props;
 
       <!-- RankingBar skeleton -->
       <div class="animate-fade-up delay-200">
-        <div class="bg-white/60 border border-divider p-6 sm:p-8">
+        <div class="card-base p-6 sm:p-8">
           <div class="skeleton h-3 w-32 mb-4"></div>
-          <div class="skeleton h-3 w-full"></div>
+          <div class="skeleton h-4 w-full"></div>
         </div>
       </div>
 
       <!-- BadgePreview skeleton -->
       <div class="animate-fade-up delay-300">
-        <div class="bg-white/60 border border-divider p-6 sm:p-8">
+        <div class="card-base p-6 sm:p-8">
           <div class="skeleton h-3 w-14 mb-6"></div>
           <div class="space-y-4">
             <div class="skeleton h-5 w-32"></div>
@@ -100,7 +106,7 @@ const { domain, apiBase } = Astro.props;
 
       <!-- Timeline skeleton -->
       <div class="animate-fade-up delay-400">
-        <div class="bg-white/60 border border-divider p-6 sm:p-8">
+        <div class="card-base p-6 sm:p-8">
           <div class="skeleton h-3 w-20 mb-6"></div>
           <div class="space-y-6 pl-6">
             <div class="skeleton h-4 w-40"></div>
@@ -114,12 +120,16 @@ const { domain, apiBase } = Astro.props;
   <!-- Error state (hidden initially) -->
   <div id="error-state" class="hidden">
     <div class="animate-fade-up">
-      <div class="relative bg-white border border-divider p-10 sm:p-14 max-w-2xl mx-auto overflow-hidden noise-overlay">
-        <!-- Corner ornaments -->
-        <div class="absolute top-3 left-3 w-10 h-10 border-t-2 border-l-2 border-seal/30"></div>
-        <div class="absolute top-3 right-3 w-10 h-10 border-t-2 border-r-2 border-seal/30"></div>
-        <div class="absolute bottom-3 left-3 w-10 h-10 border-b-2 border-l-2 border-seal/30"></div>
-        <div class="absolute bottom-3 right-3 w-10 h-10 border-b-2 border-r-2 border-seal/30"></div>
+      <div class="relative bg-gradient-to-b from-white to-parchment/80 border border-divider p-10 sm:p-14 max-w-2xl mx-auto overflow-hidden noise-overlay shadow-[var(--shadow-certificate)]">
+        <!-- Double-layer corner ornaments -->
+        <div class="absolute top-3 left-3 w-12 h-12 border-t-2 border-l-2 border-seal/30"></div>
+        <div class="absolute top-5 left-5 w-4 h-4 border-t border-l border-seal/15"></div>
+        <div class="absolute top-3 right-3 w-12 h-12 border-t-2 border-r-2 border-seal/30"></div>
+        <div class="absolute top-5 right-5 w-4 h-4 border-t border-r border-seal/15"></div>
+        <div class="absolute bottom-3 left-3 w-12 h-12 border-b-2 border-l-2 border-seal/30"></div>
+        <div class="absolute bottom-5 left-5 w-4 h-4 border-b border-l border-seal/15"></div>
+        <div class="absolute bottom-3 right-3 w-12 h-12 border-b-2 border-r-2 border-seal/30"></div>
+        <div class="absolute bottom-5 right-5 w-4 h-4 border-b border-r border-seal/15"></div>
 
         <div class="absolute inset-6 border border-divider/50 pointer-events-none"></div>
 
@@ -136,7 +146,7 @@ const { domain, apiBase } = Astro.props;
           <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
             <button
               id="retry-btn"
-              class="px-8 py-3 bg-ink text-parchment font-medium tracking-wider uppercase text-sm hover:bg-ink-light transition-colors duration-200"
+              class="btn-primary"
             >
               Try Again
             </button>

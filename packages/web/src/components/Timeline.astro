@@ -9,11 +9,11 @@ const { domain, firstSnapshotUrl, birthAt } = Astro.props;
 ---
 
 {birthAt && (
-  <div class="bg-white/60 border border-divider p-6 sm:p-8">
-    <h2 class="text-[10px] tracking-[0.3em] uppercase text-seal-dark font-medium mb-6">Timeline</h2>
-    <div class="relative pl-6 space-y-8 before:absolute before:left-[5px] before:top-2 before:bottom-2 before:w-px before:bg-divider">
+  <div class="card-base p-6 sm:p-8">
+    <h2 class="card-title">Timeline</h2>
+    <div class="relative pl-6 space-y-8 before:absolute before:left-[5px] before:top-2 before:bottom-2 before:w-px before:bg-gradient-to-b before:from-azure before:via-divider before:to-seal">
       <div class="relative">
-        <div class="absolute -left-6 top-1 w-[11px] h-[11px] rounded-full border-2 border-azure bg-parchment"></div>
+        <div class="absolute -left-6 top-1 w-[11px] h-[11px] rounded-full border-2 border-azure bg-parchment shadow-[0_0_0_3px_rgba(43,94,167,0.1)]"></div>
         <div>
           <p class="font-display text-base text-ink">{new Date(birthAt).toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" })}</p>
           <p class="text-xs text-ink-muted mt-1 font-light">Earliest known snapshot</p>
@@ -28,7 +28,7 @@ const { domain, firstSnapshotUrl, birthAt } = Astro.props;
         </div>
       </div>
       <div class="relative">
-        <div class="absolute -left-6 top-1 w-[11px] h-[11px] rounded-full border-2 border-seal bg-parchment"></div>
+        <div class="absolute -left-6 top-1 w-[11px] h-[11px] rounded-full border-2 border-seal bg-parchment" style="animation: seal-pulse 2s ease-in-out infinite;"></div>
         <div>
           <p class="font-display text-base text-ink">Today</p>
           <p class="text-xs text-ink-muted mt-1 font-light">Still going strong</p>

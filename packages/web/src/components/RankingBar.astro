@@ -6,14 +6,23 @@ interface Props {
 const { percentile } = Astro.props;
 ---
 
-<div class="bg-white/60 border border-divider p-6 sm:p-8">
-  <h2 class="text-[10px] tracking-[0.3em] uppercase text-seal-dark font-medium mb-4">Longevity Ranking</h2>
+<div class="card-base p-6 sm:p-8">
+  <h2 class="card-title">Longevity Ranking</h2>
   <div class="flex items-center gap-4">
-    <div class="flex-1 bg-parchment-dark h-3 overflow-hidden">
+    <div class="flex-1 bg-parchment-dark h-4 overflow-hidden relative">
+      <!-- Background tick marks -->
+      <div class="absolute inset-0 flex justify-between px-px pointer-events-none">
+        {Array.from({ length: 10 }).map(() => (
+          <div class="w-px h-full bg-divider/40"></div>
+        ))}
+      </div>
       <div
-        class="h-full bg-gradient-to-r from-azure to-azure-light transition-all duration-700"
+        class="h-full bg-gradient-to-r from-azure to-azure-light transition-all duration-700 relative"
         style={`width: ${percentile}%`}
-      ></div>
+      >
+        <!-- Top gloss bar -->
+        <div class="absolute top-0 left-0 right-0 h-[2px] bg-white/20"></div>
+      </div>
     </div>
     <span class="text-sm font-medium text-ink whitespace-nowrap font-display">
       Top {100 - percentile}%
