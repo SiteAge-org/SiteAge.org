@@ -69,6 +69,7 @@ import Base from "../../layouts/Base.astro";
                 <th class="px-4 py-2 font-medium text-gray-500">Domain</th>
                 <th class="px-4 py-2 font-medium text-gray-500">Status</th>
                 <th class="px-4 py-2 font-medium text-gray-500">Birth</th>
+                <th class="px-4 py-2 font-medium text-gray-500">Email</th>
                 <th class="px-4 py-2 font-medium text-gray-500">Verified</th>
                 <th class="px-4 py-2 font-medium text-gray-500">Actions</th>
               </tr>
@@ -84,7 +85,12 @@ import Base from "../../layouts/Base.astro";
                     "bg-orange-100 text-orange-700"
                   }">${d.status}</span></td>
                   <td class="px-4 py-2 text-gray-500">${d.birth_at ? new Date(d.birth_at).toLocaleDateString() : "-"}</td>
-                  <td class="px-4 py-2">${d.verification_status === "verified" ? "Yes" : "No"}</td>
+                  <td class="px-4 py-2 text-gray-500">${d.email || "-"}</td>
+                  <td class="px-4 py-2">${d.verification_status === "verified"
+                    ? (d.magic_key
+                      ? `<a href="/manage/${d.domain}?key=${d.magic_key}" target="_blank" class="text-green-600 hover:underline">Verified ↗</a>`
+                      : '<span class="text-green-600">Yes</span>')
+                    : "No"}</td>
                   <td class="px-4 py-2">
                     <select onchange="updateStatus(${d.id}, this.value)" class="text-xs border border-gray-200 rounded px-1 py-0.5">
                       <option value="">Change...</option>

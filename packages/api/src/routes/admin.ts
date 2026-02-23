@@ -112,20 +112,23 @@ adminRoutes.get("/domains", async (c) => {
   const params: unknown[] = [];
 
   if (status) {
-    where += " AND status = ?";
+    where += " AND d.status = ?";
     params.push(status);
   }
   if (search) {
-    where += " AND domain LIKE ?";
+    where += " AND d.domain LIKE ?";
     params.push(`%${search}%`);
   }
 
-  const countQuery = `SELECT COUNT(*) as count FROM domains ${where}`;
+  const countQuery = `SELECT COUNT(*) as count FROM domains d ${where}`;
   const countStmt = c.env.DB.prepare(countQuery);
   const countResult = await (params.length > 0 ? countStmt.bind(...params) : countStmt).first();
   const total = (countResult?.count as number) || 0;
 
-  const dataQuery = `SELECT id, domain, birth_at, verified_birth_at, status, verification_status, consecutive_failures, badge_embedded, last_checked_at, created_at FROM domains ${where} ORDER BY created_at DESC LIMIT ? OFFSET ?`;
+  const dataQuery = `SELECT d.id, d.domain, d.birth_at, d.verified_birth_at, d.status, d.verification_status, d.consecutive_failures, d.badge_embedded, d.last_checked_at, d.created_at,
+    (SELECT v.magic_key FROM verifications v WHERE v.domain_id = d.id AND v.status = 'verified' AND v.magic_key IS NOT NULL ORDER BY v.verified_at DESC LIMIT 1) as magic_key,
+    (SELECT v.email FROM verifications v WHERE v.domain_id = d.id AND v.status = 'verified' ORDER BY v.verified_at DESC LIMIT 1) as email
+    FROM domains d ${where} ORDER BY d.created_at DESC LIMIT ? OFFSET ?`;
   const dataStmt = c.env.DB.prepare(dataQuery);
   const dataResult = await dataStmt.bind(...params, limit, offset).all();
 

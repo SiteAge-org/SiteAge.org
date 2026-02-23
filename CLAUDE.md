@@ -45,6 +45,7 @@ pnpm dev:web              # Start Astro dev server only
 - DNS verification: Queries Cloudflare, Google, and AliDNS DoH in parallel; falls back to system DNS (`node:dns`, 5s timeout) when all DoH fail. Handles multi-segment TXT records (`"seg1" "seg2"` → concatenated).
 - Diagnostic log prefixes: `[DNS]` for DoH queries/results, `[Verify]` for verification method lifecycle, `[Email]` for email sending attempts/results.
 - Admin DNS diagnostic: `GET /admin/dns-check/:domain` returns raw TXT records from both resolvers + pending verification tokens. Protected by `X-Admin-Key`.
+- Admin domains page: `GET /admin/domains` returns `magic_key` and `email` from latest verified verification record via subquery. Verified column shows clickable "Verified ↗" link (`/manage/{domain}?key={magicKey}`, `target="_blank"`) when magic_key exists; falls back to plain "Yes" text otherwise.
 
 ### Design System Conventions
 
