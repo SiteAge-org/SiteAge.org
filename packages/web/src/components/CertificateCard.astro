@@ -9,6 +9,7 @@ interface Props {
 const { data } = Astro.props;
 const birth = data.verified_birth_at || data.birth_at;
 const isVerified = data.verification_status === "verified";
+const catalogedDate = new Date(data.created_at).toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric", timeZone: "UTC" });
 ---
 
 <div id="certificate" class="relative bg-gradient-to-b from-white to-parchment/80 border border-divider p-10 sm:p-14 max-w-2xl mx-auto overflow-hidden noise-overlay shadow-[var(--shadow-certificate)]">
@@ -75,6 +76,7 @@ const isVerified = data.verification_status === "verified";
     <!-- Footer -->
     <div class="pt-6">
       <div class="ornament-line mb-4"></div>
+      <p class="text-[10px] text-ink-muted/70 tracking-[0.15em] uppercase mb-2">Cataloged on {catalogedDate}</p>
       <p class="text-[10px] text-ink-muted/50 tracking-[0.15em] uppercase">Certified by SiteAge.org &middot; Data from Internet Archive</p>
     </div>
   </div>

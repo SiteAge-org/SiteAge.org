@@ -9,6 +9,7 @@ interface Props {
 const { data } = Astro.props;
 const birth = data.verified_birth_at || data.birth_at;
 const deathYear = data.death_at ? birthYear(data.death_at) : "?";
+const catalogedDate = new Date(data.created_at).toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric", timeZone: "UTC" });
 ---
 
 <div class="relative bg-gradient-to-b from-parchment-dark/60 to-parchment-dark/80 border border-divider p-10 sm:p-14 max-w-2xl mx-auto overflow-hidden noise-overlay shadow-[inset_0_2px_12px_rgba(0,0,0,0.06),var(--shadow-card)]">
@@ -43,6 +44,7 @@ const deathYear = data.death_at ? birthYear(data.death_at) : "?";
     </div>
 
     <div class="pt-6 border-t border-tombstone/10">
+      <p class="text-[10px] text-tombstone/40 tracking-[0.15em] uppercase mb-2">Cataloged on {catalogedDate}</p>
       <p class="text-[10px] text-tombstone/30 tracking-[0.15em] uppercase">Remembered by SiteAge.org &middot; Data from Internet Archive</p>
     </div>
   </div>
