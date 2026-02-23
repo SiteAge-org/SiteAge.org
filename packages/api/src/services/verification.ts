@@ -343,6 +343,9 @@ async function checkWellKnown(domain: string, token: string): Promise<boolean> {
 async function sendMagicLinkEmail(env: Env, email: string, domain: string, magicKey: string): Promise<void> {
   const manageUrl = `https://siteage.org/manage/${domain}?key=${magicKey}`;
 
+  console.info(`[Email] Sending magic link for ${domain} to ${email}`);
+  console.info(`[Email] Magic link URL: ${manageUrl}`);
+
   try {
     const resp = await fetch("https://api.resend.com/emails", {
       method: "POST",
@@ -369,9 +372,11 @@ async function sendMagicLinkEmail(env: Env, email: string, domain: string, magic
 
     if (!resp.ok) {
       const body = await resp.text().catch(() => "unknown error");
-      console.error(`Resend API returned ${resp.status}: ${body}`);
+      console.error(`[Email] Resend API returned ${resp.status}: ${body}`);
+    } else {
+      console.info(`[Email] Successfully sent magic link for ${domain}`);
     }
   } catch (err) {
-    console.error("Failed to send magic link email:", err);
+    console.error(`[Email] Failed to send magic link for ${domain}:`, err);
   }
 }

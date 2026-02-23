@@ -43,7 +43,7 @@ pnpm dev:web              # Start Astro dev server only
 - Force refresh: `POST /lookup` with `{ force: true }` clears KV + D1 and re-queries CDX. Rate limited to once per 5 minutes per domain.
 - DNS verification help: Collapsible `<details>` guide with provider-specific steps (Cloudflare, Namecheap, GoDaddy, Squarespace, Name.com, Vercel, Other). Provider dashboard URLs use SSR-interpolated `{domain}`. Chip-based provider selector with toggle behavior.
 - DNS verification: Queries Cloudflare, Google, and AliDNS DoH in parallel; falls back to system DNS (`node:dns`, 5s timeout) when all DoH fail. Handles multi-segment TXT records (`"seg1" "seg2"` → concatenated).
-- Diagnostic log prefixes: `[DNS]` for DoH queries/results, `[Verify]` for verification method lifecycle.
+- Diagnostic log prefixes: `[DNS]` for DoH queries/results, `[Verify]` for verification method lifecycle, `[Email]` for email sending attempts/results.
 - Admin DNS diagnostic: `GET /admin/dns-check/:domain` returns raw TXT records from both resolvers + pending verification tokens. Protected by `X-Admin-Key`.
 
 ### Design System Conventions
