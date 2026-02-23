@@ -129,8 +129,8 @@ try {
     )}
   </div>
 
-  <script define:vars={{ domain, key }}>
-    const API = import.meta.env.PUBLIC_API_URL || "https://api.siteage.org";
+  <script define:vars={{ domain, key, apiBase }}>
+    const API = apiBase;
 
     document.getElementById("evidence-form")?.addEventListener("submit", async (e) => {
       e.preventDefault();

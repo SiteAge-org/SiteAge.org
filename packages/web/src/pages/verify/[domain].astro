@@ -1,8 +1,9 @@
 ---
 import Base from "../../layouts/Base.astro";
-import { isValidDomain } from "@siteage/shared";
+import { API_BASE_URL, isValidDomain } from "@siteage/shared";
 
 const { domain } = Astro.params;
+const apiBase = import.meta.env.PUBLIC_API_URL || API_BASE_URL;
 
 if (!domain || !isValidDomain(domain)) {
   return Astro.redirect("/");
@@ -85,8 +86,8 @@ if (!domain || !isValidDomain(domain)) {
     </div>
   </div>
 
-  <script define:vars={{ domain }}>
-    const API = import.meta.env.PUBLIC_API_URL || "https://api.siteage.org";
+  <script define:vars={{ domain, apiBase }}>
+    const API = apiBase;
     let token = "";
 
     document.getElementById("btn-init")?.addEventListener("click", async () => {
