@@ -140,7 +140,7 @@ const defaultFormat = "year";
   function buildBadgeSrc(): string {
     const params = new URLSearchParams();
     if (state.style !== "flat") params.set("style", state.style);
-    if (state.type !== "since") params.set("type", state.type);
+    if (state.type !== defaultType) params.set("type", state.type);
     if (state.format !== "year") params.set("format", state.format);
     const qs = params.toString();
     return qs ? `${badgeUrl}?${qs}` : badgeUrl;
@@ -161,7 +161,7 @@ const defaultFormat = "year";
     // Build embed URLs (always include params in embed for clarity)
     const embedParams = new URLSearchParams();
     if (state.style !== "flat") embedParams.set("style", state.style);
-    if (state.type !== "since") embedParams.set("type", state.type);
+    if (state.type !== defaultType) embedParams.set("type", state.type);
     if (state.format !== "year") embedParams.set("format", state.format);
     const embedQs = embedParams.toString();
     const embedUrl = embedQs ? `${badgeUrl}?${embedQs}` : badgeUrl;
