@@ -1,7 +1,7 @@
 export type DomainStatus = "active" | "unreachable" | "dead" | "unknown";
 export type VerificationStatus = "detected" | "pending" | "verified";
 export type VerificationMethod = "dns_txt" | "meta_tag" | "well_known";
-export type EvidenceType = "whois" | "git_history" | "dns_record" | "other";
+export type EvidenceType = "whois" | "git_history" | "dns_record" | "product_hunt" | "hacker_news" | "web_archive" | "press_coverage" | "other";
 export type EvidenceStatus = "pending" | "approved" | "rejected";
 export type CheckType = "priority" | "random" | "manual";
 
@@ -43,6 +43,7 @@ export interface Evidence {
   description: string | null;
   url: string | null;
   status: EvidenceStatus;
+  rejection_reason: string | null;
   created_at: string;
   reviewed_at: string | null;
 }

@@ -9,8 +9,8 @@ export const evidenceRoutes = new Hono<{ Bindings: Env }>();
 evidenceRoutes.post("/submit", async (c) => {
   const body = await c.req.json<EvidenceSubmitRequest>();
 
-  if (!body.domain || !body.key || !body.type || !body.claimed_at) {
-    return c.json({ error: "bad_request", message: "domain, key, type, and claimed_at are required" }, 400);
+  if (!body.domain || !body.key || !body.type || !body.claimed_at || !body.description) {
+    return c.json({ error: "bad_request", message: "domain, key, type, claimed_at, and description are required" }, 400);
   }
 
   const domain = normalizeDomain(body.domain);
@@ -18,7 +18,7 @@ evidenceRoutes.post("/submit", async (c) => {
     return c.json({ error: "bad_request", message: "Invalid domain" }, 400);
   }
 
-  if (!["whois", "git_history", "dns_record", "other"].includes(body.type)) {
+  if (!["whois", "git_history", "dns_record", "product_hunt", "hacker_news", "web_archive", "press_coverage", "other"].includes(body.type)) {
     return c.json({ error: "bad_request", message: "Invalid evidence type" }, 400);
   }
 

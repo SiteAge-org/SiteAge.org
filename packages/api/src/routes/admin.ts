@@ -58,7 +58,7 @@ adminRoutes.get("/evidence", async (c) => {
 // POST /admin/evidence/:id/review - Approve or reject evidence
 adminRoutes.post("/evidence/:id/review", async (c) => {
   const id = parseInt(c.req.param("id"), 10);
-  const body = await c.req.json<{ action: "approved" | "rejected" }>();
+  const body = await c.req.json<{ action: "approved" | "rejected"; reason?: string }>();
 
   if (!["approved", "rejected"].includes(body.action)) {
     return c.json({ error: "bad_request", message: "action must be 'approved' or 'rejected'" }, 400);
@@ -72,9 +72,10 @@ adminRoutes.post("/evidence/:id/review", async (c) => {
     return c.json({ error: "not_found", message: "Evidence not found or already reviewed" }, 404);
   }
 
+  const rejectionReason = body.action === "rejected" ? (body.reason || null) : null;
   await c.env.DB.prepare(
-    "UPDATE evidence SET status = ?, reviewed_at = datetime('now') WHERE id = ?"
-  ).bind(body.action, id).run();
+    "UPDATE evidence SET status = ?, rejection_reason = ?, reviewed_at = datetime('now') WHERE id = ?"
+  ).bind(body.action, rejectionReason, id).run();
 
   // If approved, update domain's verified_birth_at
   if (body.action === "approved") {

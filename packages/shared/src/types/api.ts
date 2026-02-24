@@ -59,9 +59,9 @@ export interface VerifyResendRequest {
 export interface EvidenceSubmitRequest {
   domain: string;
   key: string;
-  type: "whois" | "git_history" | "dns_record" | "other";
+  type: "whois" | "git_history" | "dns_record" | "product_hunt" | "hacker_news" | "web_archive" | "press_coverage" | "other";
   claimed_at: string;
-  description?: string;
+  description: string;
   url?: string;
 }
 
@@ -77,6 +77,7 @@ export interface ManageData {
     type: string;
     claimed_at: string;
     status: string;
+    rejection_reason: string | null;
     created_at: string;
   }>;
 }
