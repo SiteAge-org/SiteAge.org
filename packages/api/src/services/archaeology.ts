@@ -7,6 +7,7 @@ export interface ArchaeologyResult {
   birth_at: string | null;
   status: string;
   verification_status: string;
+  cdx_failed?: boolean;
 }
 
 /**
@@ -66,6 +67,7 @@ export async function archaeologyService(env: Env, domain: string): Promise<Arch
       birth_at: null,
       status: "unknown",
       verification_status: "detected",
+      cdx_failed: true,
     };
     await env.API_CACHE.put(cacheKey, JSON.stringify(result), { expirationTtl: LOOKUP_ERROR_CACHE_TTL });
     return result;

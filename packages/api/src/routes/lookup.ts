@@ -46,6 +46,15 @@ lookupRoutes.post("/lookup", async (c) => {
 
   const result = await archaeologyService(c.env, domain);
 
+  if (result.cdx_failed) {
+    // Clear cached failure so next retry hits CDX directly
+    await c.env.API_CACHE.delete(`lookup:${domain}`);
+    return c.json({
+      error: "cdx_failed",
+      message: "Unable to query the Internet Archive. Please try again later.",
+    }, 503);
+  }
+
   const response: LookupResponse = {
     domain: result.domain,
     birth_at: result.birth_at,
