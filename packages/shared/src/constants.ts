@@ -32,3 +32,7 @@ export const BADGE_COLORS = {
   dead: "#9f9f9f",        // gray
   unknown: "#e05d44",     // orange
 } as const;
+
+export const BADGE_MESSAGE_TYPES = ["since", "established"] as const;
+export const BADGE_TIME_FORMATS = ["year", "month", "date", "age", "days"] as const;
+export const BADGE_VERIFIED_FORMATS = ["month", "date", "age", "days"] as const;

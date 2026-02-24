@@ -4,7 +4,6 @@ export interface TemplateParams {
   labelWidth: number;
   messageWidth: number;
   color: string;
-  logo: boolean;
 }
 
 export function renderFlat(p: TemplateParams): string {

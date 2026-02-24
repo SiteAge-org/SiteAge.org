@@ -76,7 +76,7 @@ try {
         )}
 
         <div class="animate-fade-up delay-300">
-          <BadgePreview domain={data.domain} />
+          <BadgePreview domain={data.domain} isVerified={data.verification_status === "verified"} />
         </div>
 
         <div class="animate-fade-up delay-400">

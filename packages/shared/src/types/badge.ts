@@ -1,14 +1,15 @@
 export type BadgeStyle = "flat" | "flat-square" | "for-the-badge";
 export type BadgeColor = "blue" | "gold" | "gray" | "orange";
-export type BadgeLang = "en" | "zh";
+export type BadgeMessageType = "since" | "established";
+export type BadgeTimeFormat = "year" | "month" | "date" | "age" | "days";
 
 export interface BadgeParams {
   domain: string;
   style: BadgeStyle;
   color?: BadgeColor;
   label?: string;
-  lang?: BadgeLang;
-  logo?: boolean;
+  type?: BadgeMessageType;
+  format?: BadgeTimeFormat;
 }
 
 export interface BadgeData {

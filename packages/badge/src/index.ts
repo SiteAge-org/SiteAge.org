@@ -1,6 +1,6 @@
 import { Hono } from "hono";
-import { isValidDomain, BADGE_CACHE_TTL, DOMAIN_CACHE_TTL, API_BASE_URL } from "@siteage/shared";
-import type { BadgeData, BadgeStyle } from "@siteage/shared";
+import { isValidDomain, BADGE_CACHE_TTL, DOMAIN_CACHE_TTL, API_BASE_URL, BADGE_MESSAGE_TYPES, BADGE_TIME_FORMATS } from "@siteage/shared";
+import type { BadgeData, BadgeStyle, BadgeMessageType, BadgeTimeFormat } from "@siteage/shared";
 import { renderBadge } from "./renderer.js";
 
 interface Env {
@@ -18,11 +18,17 @@ app.get("/:domain{[a-z0-9.-]+\\.[a-z]{2,}}", async (c) => {
   const style = (c.req.query("style") || "flat") as BadgeStyle;
   const color = c.req.query("color");
   const label = c.req.query("label") || "SiteAge";
-  const lang = c.req.query("lang") || "en";
-  const logo = c.req.query("logo") !== "false";
+  const rawType = c.req.query("type");
+  const type = rawType && (BADGE_MESSAGE_TYPES as readonly string[]).includes(rawType)
+    ? (rawType as BadgeMessageType)
+    : undefined;
+  const rawFormat = c.req.query("format");
+  const format = rawFormat && (BADGE_TIME_FORMATS as readonly string[]).includes(rawFormat)
+    ? (rawFormat as BadgeTimeFormat)
+    : undefined;
 
   // 1. Check badge cache
-  const cacheKey = `badge:${domain}:${style}:${color || "auto"}:${label}:${lang}`;
+  const cacheKey = `badge:${domain}:${style}:${color || "auto"}:${label}:${type || "default"}:${format || "default"}`;
   const cached = await c.env.BADGE_CACHE.get(cacheKey);
   if (cached) {
     return c.body(cached, 200, {
@@ -68,8 +74,8 @@ app.get("/:domain{[a-z0-9.-]+\\.[a-z]{2,}}", async (c) => {
     style,
     overrideColor: color || undefined,
     label,
-    lang,
-    logo,
+    type,
+    format,
   });
 
   // 4. Cache and return

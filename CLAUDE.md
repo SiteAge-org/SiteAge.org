@@ -50,6 +50,8 @@ pnpm dev:web              # Start Astro dev server only
 - Admin DNS diagnostic: `GET /admin/dns-check/:domain` returns raw TXT records from both resolvers + pending verification tokens. Protected by `X-Admin-Key`.
 - Smart birth date update: `POST /manage/:domain/birth-date` auto-approves non-suspicious changes (date >= baseline or within 365-day tolerance), returns `requires_evidence` for suspicious ones, rejects future dates. Baseline = `birth_at` ?? `created_at`.
 - Admin domains page: `GET /admin/domains` returns `magic_key` and `email` from latest verified verification record via subquery. Verified column shows clickable "Verified ↗" link (`/manage/{domain}?key={magicKey}`, `target="_blank"`) when magic_key exists; falls back to plain "Yes" text otherwise.
+- Badge customization: Two query params — `?type=` (`since` | `established`) controls message text, `?format=` (`year` | `month` | `date` | `age` | `days`) controls time display. `established` type and `month`/`date`/`age`/`days` formats are verified-only; unverified sites auto-downgrade to `since` + `year`. Defaults: verified → `established` + `year`, unverified → `since` + `year`.
+- Badge cache key format: `badge:{domain}:{style}:{color}:{label}:{type}:{format}` (use `"default"` for omitted type/format).
 
 ### Design System Conventions
 

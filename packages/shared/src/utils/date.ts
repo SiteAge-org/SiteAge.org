@@ -44,6 +44,31 @@ export function birthYear(birthAt: string): string {
   return new Date(birthAt).getUTCFullYear().toString();
 }
 
+const MONTH_ABBR = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+
+/**
+ * Format a birth timestamp according to the given badge time format.
+ */
+export function formatBirthTime(birthAt: string, format: "year" | "month" | "date" | "age" | "days"): string {
+  const d = new Date(birthAt);
+  switch (format) {
+    case "year":
+      return d.getUTCFullYear().toString();
+    case "month":
+      return `${MONTH_ABBR[d.getUTCMonth()]} ${d.getUTCFullYear()}`;
+    case "date":
+      return birthAt.slice(0, 10); // YYYY-MM-DD
+    case "age": {
+      const years = ageYears(birthAt);
+      return `${years} Year${years !== 1 ? "s" : ""}`;
+    }
+    case "days": {
+      const days = ageDays(birthAt);
+      return `${days.toLocaleString("en-US")} Days`;
+    }
+  }
+}
+
 /**
  * Format age as a human-readable string like "5 years, 3 months".
  */
