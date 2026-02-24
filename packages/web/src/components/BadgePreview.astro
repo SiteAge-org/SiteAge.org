@@ -7,7 +7,8 @@ interface Props {
 }
 
 const { domain, isVerified } = Astro.props;
-const badgeUrl = `${BADGE_BASE_URL}/${domain}`;
+const badgeBase = import.meta.env.PUBLIC_BADGE_URL || BADGE_BASE_URL;
+const badgeUrl = `${badgeBase}/${domain}`;
 const linkUrl = `${WEB_BASE_URL}/${domain}`;
 
 const defaultType = isVerified ? "established" : "since";
