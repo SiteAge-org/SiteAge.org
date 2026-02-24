@@ -75,6 +75,7 @@ Key files: `[domain].astro` (routing logic), `LookupLoading.astro` (skeleton + c
 
 - `ADMIN_KEY`: Admin authentication key
 - `RESEND_API_KEY`: Resend email service API key
+- `API_URL`: (Badge Worker only) Override API base URL. Set in `packages/badge/.dev.vars` for local dev (e.g., `http://localhost:8788`). Defaults to `https://api.siteage.org` in production.
 
 ## Database
 

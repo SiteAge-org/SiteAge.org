@@ -5,6 +5,7 @@ import { renderBadge } from "./renderer.js";
 
 interface Env {
   BADGE_CACHE: KVNamespace;
+  API_URL?: string;
 }
 
 const app = new Hono<{ Bindings: Env }>();
@@ -46,7 +47,8 @@ app.get("/:domain{[a-z0-9.-]+\\.[a-z]{2,}}", async (c) => {
     data = JSON.parse(domainCached);
   } else {
     try {
-      const resp = await fetch(`${API_BASE_URL}/${domain}`, {
+      const apiBase = c.env.API_URL || API_BASE_URL;
+      const resp = await fetch(`${apiBase}/${domain}`, {
         signal: AbortSignal.timeout(5000),
       });
       if (resp.ok) {
@@ -63,8 +65,8 @@ app.get("/:domain{[a-z0-9.-]+\\.[a-z]{2,}}", async (c) => {
           expirationTtl: DOMAIN_CACHE_TTL,
         });
       }
-    } catch {
-      // If API is down, render unknown badge
+    } catch (err) {
+      console.error(`[Badge] Failed to fetch domain data for ${domain}:`, err);
     }
   }
 
