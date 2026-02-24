@@ -122,9 +122,12 @@ export async function checkVerification(
     "UPDATE domains SET verification_status = 'verified', updated_at = datetime('now') WHERE id = ?"
   ).bind(verification.domain_id).run();
 
-  // Clear domain cache
-  await env.API_CACHE.delete(`lookup:${domain}`);
-  await env.API_CACHE.delete(`domain:${domain}`);
+  // Clear all caches (API + Badge)
+  await Promise.all([
+    env.API_CACHE.delete(`lookup:${domain}`),
+    env.API_CACHE.delete(`domain:${domain}`),
+    env.BADGE_CACHE.delete(`domain:${domain}`),
+  ]);
 
   // Send magic link email asynchronously (don't block response)
   sendMagicLinkEmail(env, verification.email as string, domain, magicKey).catch((err) => {

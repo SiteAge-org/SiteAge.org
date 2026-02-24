@@ -81,20 +81,24 @@ adminRoutes.post("/evidence/:id/review", async (c) => {
     const domainId = evidence.domain_id as number;
     const claimedAt = evidence.claimed_at as string;
 
-    // Only update if claimed date is earlier
-    const domain = await c.env.DB.prepare("SELECT * FROM domains WHERE id = ?").bind(domainId).first();
-    const currentBirth = (domain?.verified_birth_at || domain?.birth_at) as string | null;
-
-    if (!currentBirth || new Date(claimedAt) < new Date(currentBirth)) {
-      await c.env.DB.prepare(
-        "UPDATE domains SET verified_birth_at = ?, updated_at = datetime('now') WHERE id = ?"
-      ).bind(claimedAt, domainId).run();
-
-      // Clear caches
-      const domainName = domain?.domain as string;
-      await c.env.API_CACHE.delete(`lookup:${domainName}`);
-      await c.env.API_CACHE.delete(`domain:${domainName}`);
+    // Basic validation: claimed date cannot be in the future
+    if (new Date(claimedAt) > new Date()) {
+      return c.json({ error: "bad_request", message: "Claimed date cannot be in the future" }, 400);
     }
+
+    // Update verified_birth_at unconditionally (admin has reviewed and approved)
+    await c.env.DB.prepare(
+      "UPDATE domains SET verified_birth_at = ?, updated_at = datetime('now') WHERE id = ?"
+    ).bind(claimedAt, domainId).run();
+
+    // Clear all caches
+    const domain = await c.env.DB.prepare("SELECT domain FROM domains WHERE id = ?").bind(domainId).first();
+    const domainName = domain?.domain as string;
+    await Promise.all([
+      c.env.API_CACHE.delete(`lookup:${domainName}`),
+      c.env.API_CACHE.delete(`domain:${domainName}`),
+      c.env.BADGE_CACHE.delete(`domain:${domainName}`),
+    ]);
   }
 
   return c.json({ success: true, message: `Evidence ${body.action}` });
@@ -176,12 +180,15 @@ adminRoutes.post("/domains/:id", async (c) => {
     `UPDATE domains SET ${updates.join(", ")} WHERE id = ?`
   ).bind(...params).run();
 
-  // Clear caches
+  // Clear all caches (API + Badge)
   const domain = await c.env.DB.prepare("SELECT domain FROM domains WHERE id = ?").bind(id).first();
   if (domain) {
     const name = domain.domain as string;
-    await c.env.API_CACHE.delete(`lookup:${name}`);
-    await c.env.API_CACHE.delete(`domain:${name}`);
+    await Promise.all([
+      c.env.API_CACHE.delete(`lookup:${name}`),
+      c.env.API_CACHE.delete(`domain:${name}`),
+      c.env.BADGE_CACHE.delete(`domain:${name}`),
+    ]);
   }
 
   return c.json({ success: true });

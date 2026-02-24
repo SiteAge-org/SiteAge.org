@@ -84,7 +84,7 @@ import Base from "../../layouts/Base.astro";
                     d.status === "unreachable" ? "bg-yellow-100 text-yellow-700" :
                     "bg-orange-100 text-orange-700"
                   }">${d.status}</span></td>
-                  <td class="px-4 py-2 text-gray-500">${d.birth_at ? new Date(d.birth_at).toLocaleDateString() : "-"}</td>
+                  <td class="px-4 py-2 text-gray-500">${(d.verified_birth_at || d.birth_at) ? `${d.verified_birth_at ? "✓ " : ""}${new Date(d.verified_birth_at || d.birth_at).toLocaleDateString()}` : "-"}</td>
                   <td class="px-4 py-2 text-gray-500">${d.email || "-"}</td>
                   <td class="px-4 py-2">${d.verification_status === "verified"
                     ? (d.magic_key

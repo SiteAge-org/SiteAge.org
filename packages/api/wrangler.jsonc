@@ -18,6 +18,10 @@
     {
       "binding": "API_CACHE",
       "id": "85dd3034c76e44fdbc919fc565530d3c"
+    },
+    {
+      "binding": "BADGE_CACHE",
+      "id": "b56f517a07d64db6b8d711136b94ebe6"
     }
   ],
   "vars": {

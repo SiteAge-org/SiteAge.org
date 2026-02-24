@@ -38,9 +38,11 @@ pnpm dev:web              # Start Astro dev server only
 - Verification status: `detected`, `pending`, `verified`
 - Verification methods: `dns_txt` (DNS TXT record), `meta_tag` (HTML meta tag), `well_known` (/.well-known/siteage-verify.txt file)
 - Verification success: API returns `magicKey` for immediate redirect to manage page; email sent asynchronously as backup
+- Birth date display priority: `verified_birth_at` (admin-reviewed evidence) > `birth_at` (CDX auto-detected). Admin domains page shows ✓ prefix for verified dates.
 - Badge caching: CDN Edge (s-maxage=86400) -> KV (TTL 1h) -> real-time render
 - Lookup caching: KV (TTL 24h for success, 5min for CDX failures). CDX failures are NOT persisted to D1.
 - Force refresh: `POST /lookup` with `{ force: true }` clears KV + D1 and re-queries CDX. Rate limited to once per 5 minutes per domain.
+- Cross-worker cache clearing: API Worker binds both `API_CACHE` and `BADGE_CACHE` KV namespaces. On domain data changes (admin approval, verification, force refresh, status update), both caches are cleared via `Promise.all`.
 - DNS verification help: Collapsible `<details>` guide with provider-specific steps (Cloudflare, Namecheap, GoDaddy, Squarespace, Name.com, Vercel, Other). Provider dashboard URLs use SSR-interpolated `{domain}`. Chip-based provider selector with toggle behavior.
 - DNS verification: Queries Cloudflare, Google, and AliDNS DoH in parallel; falls back to system DNS (`node:dns`, 5s timeout) when all DoH fail. Handles multi-segment TXT records (`"seg1" "seg2"` → concatenated).
 - Diagnostic log prefixes: `[DNS]` for DoH queries/results, `[Verify]` for verification method lifecycle, `[Email]` for email sending attempts/results.

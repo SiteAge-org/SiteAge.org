@@ -30,10 +30,11 @@ lookupRoutes.post("/lookup", async (c) => {
     // Set cooldown
     await c.env.API_CACHE.put(cooldownKey, "1", { expirationTtl: REFRESH_COOLDOWN_TTL });
 
-    // Clear KV caches
+    // Clear all KV caches (API + Badge)
     await Promise.all([
       c.env.API_CACHE.delete(`lookup:${domain}`),
       c.env.API_CACHE.delete(`domain:${domain}`),
+      c.env.BADGE_CACHE.delete(`domain:${domain}`),
     ]);
 
     // Clear D1 records
