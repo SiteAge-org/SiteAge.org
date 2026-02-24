@@ -23,6 +23,8 @@ export const PRIORITY_POOL_RATIO = 0.7; // 70% priority, 30% random
 
 export const HEALTH_CHECK_TIMEOUT = 10000; // 10 seconds
 
+export const BIRTH_DATE_TOLERANCE_DAYS = 365;
+
 export const BADGE_STYLES = ["flat", "flat-square", "for-the-badge"] as const;
 export const BADGE_COLORS = {
   active: "#007ec6",      // blue

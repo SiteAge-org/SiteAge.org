@@ -65,6 +65,16 @@ export interface EvidenceSubmitRequest {
   url?: string;
 }
 
+export interface BirthDateUpdateRequest {
+  key: string;
+  birth_at: string;
+}
+
+export type BirthDateUpdateResult =
+  | { outcome: "auto_approved"; birth_at: string }
+  | { outcome: "requires_evidence"; reason: string }
+  | { outcome: "rejected"; message: string };
+
 export interface ManageData {
   domain: string;
   birth_at: string | null;

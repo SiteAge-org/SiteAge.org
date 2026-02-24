@@ -1,3 +1,5 @@
+import { BIRTH_DATE_TOLERANCE_DAYS } from "../constants.js";
+
 /**
  * Parse a Wayback Machine CDX timestamp (YYYYMMDDHHmmss) to ISO 8601 string.
  */
@@ -69,4 +71,43 @@ export function formatAge(birthAt: string, endAt?: string): string {
   if (months > 0) parts.push(`${months} month${months > 1 ? "s" : ""}`);
   if (parts.length === 0) return "< 1 month";
   return parts.join(", ");
+}
+
+/**
+ * Evaluate whether a proposed birth date change is suspicious.
+ * Baseline = cdxBirthAt ?? createdAt (CDX auto-detected date preferred, falls back to domain creation time).
+ */
+export function evaluateBirthDateChange(
+  newDate: string,
+  cdxBirthAt: string | null,
+  createdAt: string,
+): { suspicious: false } | { suspicious: true; reason: string } {
+  const proposed = new Date(newDate);
+  const now = new Date();
+
+  if (proposed.getTime() > now.getTime()) {
+    // Future dates are handled by the caller as a direct rejection
+    return { suspicious: true, reason: "future_date" };
+  }
+
+  const baseline = cdxBirthAt ?? createdAt;
+  const baselineDate = new Date(baseline);
+
+  // If proposed date is same as or after baseline, not suspicious
+  if (proposed.getTime() >= baselineDate.getTime()) {
+    return { suspicious: false };
+  }
+
+  // Proposed date is before baseline — check tolerance
+  const diffMs = baselineDate.getTime() - proposed.getTime();
+  const diffDays = diffMs / (1000 * 60 * 60 * 24);
+
+  if (diffDays <= BIRTH_DATE_TOLERANCE_DAYS) {
+    return { suspicious: false };
+  }
+
+  return {
+    suspicious: true,
+    reason: "exceeds_tolerance",
+  };
 }

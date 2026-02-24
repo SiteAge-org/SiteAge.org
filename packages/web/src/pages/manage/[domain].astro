@@ -25,6 +25,8 @@ try {
 } catch {
   error = "Unable to connect to the API";
 }
+
+const displayBirthDate = data ? (data.verified_birth_at || data.birth_at || null) : null;
 ---
 
 <Base title={`Manage ${domain}`}>
@@ -56,9 +58,22 @@ try {
               <span class="text-ink-muted font-light">Status:</span>
               <span class="font-medium text-ink ml-2">{data.status}</span>
             </div>
-            <div>
-              <span class="text-ink-muted font-light">Birth date:</span>
-              <span class="font-medium text-ink ml-2">{data.verified_birth_at || data.birth_at || "Unknown"}</span>
+            <div class="col-span-2">
+              <div class="flex items-center gap-2">
+                <span class="text-ink-muted font-light">Birth date:</span>
+                <!-- Display mode -->
+                <span id="birth-display" class="font-medium text-ink">{displayBirthDate || "Unknown"}</span>
+                <!-- Edit mode (hidden by default) -->
+                <div id="birth-edit" class="hidden items-center gap-2">
+                  <input type="datetime-local" id="birth-input" class="input-archival !py-1 !text-sm" />
+                  <span class="text-[10px] text-ink-muted/60 tracking-wide">UTC</span>
+                  <button id="birth-save" class="btn-primary !py-1 !px-3 !text-xs">Save</button>
+                  <button id="birth-cancel" class="text-xs text-ink-muted hover:text-ink transition-colors cursor-pointer">Cancel</button>
+                </div>
+                <button id="birth-edit-btn" class="text-xs text-azure hover:text-azure/80 transition-colors cursor-pointer ml-1">Edit</button>
+              </div>
+              <!-- Inline result area -->
+              <div id="birth-result" class="mt-2 hidden"></div>
             </div>
             <div>
               <span class="text-ink-muted font-light">Verification:</span>
@@ -67,39 +82,39 @@ try {
           </div>
         </div>
 
-        <!-- Submit evidence -->
-        <div class="card-base p-6 sm:p-8">
-          <h2 class="card-title">Submit Earlier Birth Date Evidence</h2>
-          <p class="text-sm text-ink-muted font-light mb-5">
-            If you believe your site existed before the detected date, submit evidence for admin review.
-          </p>
-          <form id="evidence-form" class="space-y-5">
-            <div>
-              <label class="text-[10px] tracking-[0.15em] uppercase text-ink-muted font-medium block mb-2">Evidence type</label>
-              <select id="ev-type" class="select-archival">
-                <option value="whois">WHOIS Record</option>
-                <option value="git_history">Git History</option>
-                <option value="dns_record">DNS Record</option>
-                <option value="other">Other</option>
-              </select>
-            </div>
-            <div>
-              <label class="text-[10px] tracking-[0.15em] uppercase text-ink-muted font-medium block mb-2">Claimed birth date</label>
-              <input type="datetime-local" id="ev-claimed" class="input-archival" required />
-            </div>
-            <div>
-              <label class="text-[10px] tracking-[0.15em] uppercase text-ink-muted font-medium block mb-2">Evidence URL (optional)</label>
-              <input type="url" id="ev-url" class="input-archival" placeholder="https://..." />
-            </div>
-            <div>
-              <label class="text-[10px] tracking-[0.15em] uppercase text-ink-muted font-medium block mb-2">Description</label>
-              <textarea id="ev-desc" class="input-archival" rows="3" placeholder="Explain why you believe the earlier date..."></textarea>
-            </div>
-            <button type="submit" class="btn-primary">
-              Submit Evidence
-            </button>
-          </form>
-          <div id="ev-result" class="mt-4 hidden"></div>
+        <!-- Evidence form (hidden by default, shown when requires_evidence) -->
+        <div id="evidence-section" class="hidden">
+          <div class="card-base p-6 sm:p-8">
+            <h2 class="card-title">Evidence Required</h2>
+            <p id="evidence-reason" class="text-sm text-ink-muted font-light mb-5"></p>
+            <form id="evidence-form" class="space-y-5">
+              <div>
+                <label class="text-[10px] tracking-[0.15em] uppercase text-ink-muted font-medium block mb-2">Evidence type</label>
+                <select id="ev-type" class="select-archival">
+                  <option value="web_archive" selected>Web Archive (archive.org)</option>
+                  <option value="product_hunt">Product Hunt</option>
+                  <option value="hacker_news">Hacker News</option>
+                  <option value="press_coverage">Press Coverage</option>
+                  <option value="whois">WHOIS Record</option>
+                  <option value="git_history">Git History</option>
+                  <option value="dns_record">DNS Record</option>
+                  <option value="other">Other</option>
+                </select>
+              </div>
+              <div>
+                <label class="text-[10px] tracking-[0.15em] uppercase text-ink-muted font-medium block mb-2">Evidence URL (optional)</label>
+                <input type="url" id="ev-url" class="input-archival" placeholder="https://..." />
+              </div>
+              <div>
+                <label class="text-[10px] tracking-[0.15em] uppercase text-ink-muted font-medium block mb-2">Description <span class="text-ink-muted/60">(required)</span></label>
+                <textarea id="ev-desc" class="input-archival" rows="3" placeholder="Please describe the evidence that supports this earlier date..." required></textarea>
+              </div>
+              <button type="submit" class="btn-primary">
+                Submit Evidence
+              </button>
+            </form>
+            <div id="ev-result" class="mt-4 hidden"></div>
+          </div>
         </div>
 
         <!-- Previous evidence -->
@@ -108,18 +123,23 @@ try {
             <h2 class="card-title">Your Evidence Submissions</h2>
             <div class="space-y-3">
               {data.evidence.map((ev) => (
-                <div class="flex items-center justify-between text-sm border-b border-divider pb-2">
-                  <div>
-                    <span class="font-medium text-ink">{ev.type}</span>
-                    <span class="text-ink-muted/50 ml-2">claimed: {ev.claimed_at}</span>
+                <div class="text-sm border-b border-divider pb-2">
+                  <div class="flex items-center justify-between">
+                    <div>
+                      <span class="font-medium text-ink">{ev.type}</span>
+                      <span class="text-ink-muted/50 ml-2">claimed: {ev.claimed_at}</span>
+                    </div>
+                    <span class={`px-2 py-0.5 text-xs tracking-[0.1em] uppercase font-medium ${
+                      ev.status === "approved" ? "text-seal-dark bg-seal-light/20" :
+                      ev.status === "rejected" ? "text-ink-muted bg-parchment-dark" :
+                      "text-azure bg-azure/10"
+                    }`}>
+                      {ev.status}
+                    </span>
                   </div>
-                  <span class={`px-2 py-0.5 text-xs tracking-[0.1em] uppercase font-medium ${
-                    ev.status === "approved" ? "text-seal-dark bg-seal-light/20" :
-                    ev.status === "rejected" ? "text-ink-muted bg-parchment-dark" :
-                    "text-azure bg-azure/10"
-                  }`}>
-                    {ev.status}
-                  </span>
+                  {ev.status === "rejected" && ev.rejection_reason && (
+                    <p class="text-xs text-ink-muted mt-1">Reason: {ev.rejection_reason}</p>
+                  )}
                 </div>
               ))}
             </div>
@@ -129,15 +149,119 @@ try {
     )}
   </div>
 
-  <script define:vars={{ domain, key, apiBase }}>
+  <script define:vars={{ domain, key, apiBase, displayBirthDate }}>
     const API = apiBase;
+    let pendingBirthDate = null;
 
+    // --- Utility ---
+    function showResult(el, message, success) {
+      el.classList.remove("hidden");
+      el.innerHTML = success
+        ? `<p class="text-sm text-seal-dark font-medium tracking-wide">${message}</p>`
+        : `<p class="text-sm text-ink-muted">${message}</p>`;
+    }
+
+    // --- Birth date inline editing ---
+    const editBtn = document.getElementById("birth-edit-btn");
+    const birthDisplay = document.getElementById("birth-display");
+    const birthEdit = document.getElementById("birth-edit");
+    const birthInput = document.getElementById("birth-input");
+    const birthSave = document.getElementById("birth-save");
+    const birthCancel = document.getElementById("birth-cancel");
+    const birthResult = document.getElementById("birth-result");
+
+    if (editBtn) {
+      // Pre-fill input with current date and time
+      if (displayBirthDate) {
+        // datetime-local expects "YYYY-MM-DDThh:mm" format
+        birthInput.value = displayBirthDate.slice(0, 16);
+      }
+
+      editBtn.addEventListener("click", () => {
+        birthDisplay.classList.add("hidden");
+        editBtn.classList.add("hidden");
+        birthEdit.classList.remove("hidden");
+        birthEdit.classList.add("flex");
+        birthResult.classList.add("hidden");
+      });
+
+      birthCancel.addEventListener("click", () => {
+        birthEdit.classList.add("hidden");
+        birthEdit.classList.remove("flex");
+        birthDisplay.classList.remove("hidden");
+        editBtn.classList.remove("hidden");
+      });
+
+      birthSave.addEventListener("click", async () => {
+        const newDate = birthInput.value;
+        if (!newDate) return;
+
+        birthSave.disabled = true;
+        birthSave.textContent = "Saving...";
+
+        try {
+          const resp = await fetch(`${API}/manage/${domain}/birth-date`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ key, birth_at: newDate.length === 16 ? newDate + ":00Z" : newDate + "Z" }),
+          });
+          const result = await resp.json();
+
+          if (result.outcome === "auto_approved") {
+            // Success — show message and refresh
+            birthEdit.classList.add("hidden");
+            birthEdit.classList.remove("flex");
+            birthDisplay.textContent = result.birth_at.slice(0, 10);
+            birthDisplay.classList.remove("hidden");
+            editBtn.classList.remove("hidden");
+            showResult(birthResult, "Birth date updated successfully.", true);
+            setTimeout(() => location.reload(), 1500);
+          } else if (result.outcome === "requires_evidence") {
+            // Show evidence form with reason
+            pendingBirthDate = newDate.length === 16 ? newDate + ":00Z" : newDate + "Z";
+            birthEdit.classList.add("hidden");
+            birthEdit.classList.remove("flex");
+            birthDisplay.classList.remove("hidden");
+            editBtn.classList.remove("hidden");
+            showResult(birthResult, "This change requires evidence. Please fill out the form below.", false);
+
+            const evidenceSection = document.getElementById("evidence-section");
+            const evidenceReason = document.getElementById("evidence-reason");
+            evidenceReason.textContent = result.reason;
+            evidenceSection.classList.remove("hidden");
+            evidenceSection.scrollIntoView({ behavior: "smooth", block: "center" });
+          } else if (result.outcome === "rejected") {
+            showResult(birthResult, result.message, false);
+          } else {
+            showResult(birthResult, result.message || "Update failed", false);
+          }
+        } catch {
+          showResult(birthResult, "Failed to connect to the API", false);
+        } finally {
+          birthSave.disabled = false;
+          birthSave.textContent = "Save";
+        }
+      });
+    }
+
+    // --- Evidence form ---
     document.getElementById("evidence-form")?.addEventListener("submit", async (e) => {
       e.preventDefault();
+
+      const description = document.getElementById("ev-desc").value.trim();
+      if (!description) {
+        showResult(document.getElementById("ev-result"), "Description is required.", false);
+        return;
+      }
+
       const type = document.getElementById("ev-type").value;
-      const claimed = document.getElementById("ev-claimed").value;
       const url = document.getElementById("ev-url").value;
-      const description = document.getElementById("ev-desc").value;
+      const claimedAt = pendingBirthDate;
+
+      if (!claimedAt) {
+        showResult(document.getElementById("ev-result"), "No pending birth date. Please edit the birth date first.", false);
+        return;
+      }
 
       try {
         const resp = await fetch(`${API}/evidence/submit`, {
@@ -147,19 +271,21 @@ try {
             domain,
             key,
             type,
-            claimed_at: new Date(claimed).toISOString(),
+            claimed_at: claimedAt,
             url: url || undefined,
-            description: description || undefined,
+            description,
           }),
         });
         const data = await resp.json();
         const resultEl = document.getElementById("ev-result");
-        resultEl.classList.remove("hidden");
-        resultEl.innerHTML = resp.ok
-          ? '<p class="text-seal-dark font-medium tracking-wide">Evidence submitted successfully! An admin will review it.</p>'
-          : `<p class="text-ink-muted">${data.message || "Submission failed"}</p>`;
+        if (resp.ok) {
+          showResult(resultEl, "Evidence submitted successfully! An admin will review it.", true);
+          pendingBirthDate = null;
+        } else {
+          showResult(resultEl, data.message || "Submission failed", false);
+        }
       } catch {
-        alert("Failed to submit evidence");
+        showResult(document.getElementById("ev-result"), "Failed to submit evidence", false);
       }
     });
   </script>
