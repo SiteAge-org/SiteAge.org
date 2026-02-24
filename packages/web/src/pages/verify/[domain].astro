@@ -249,12 +249,12 @@ if (!domain || !isValidDomain(domain)) {
         <div class="mt-8 pt-6">
           <div class="ornament-line mb-6"></div>
           <p class="text-sm text-ink-muted font-light mb-2">Already verified? Lost your management link?</p>
-          <button
-            id="btn-resend"
+          <a
+            href={`/resend/${domain}`}
             class="text-sm text-azure hover:text-azure-light transition-colors tracking-wide font-medium"
           >
             Resend Magic Link
-          </button>
+          </a>
         </div>
       </div>
     </div>
@@ -668,32 +668,6 @@ if (!domain || !isValidDomain(domain)) {
       verifyAttempts = 0;
       showStep("step-email");
       setProgress(1);
-    });
-
-    // --- Resend magic link ---
-    document.getElementById("btn-resend").addEventListener("click", async () => {
-      hideAlert();
-      const email = document.getElementById("verify-email").value.trim();
-      if (!email) {
-        showAlert("Please enter your email address first.");
-        return;
-      }
-
-      try {
-        const resp = await fetch(`${API}/verify/resend`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ domain, email }),
-        });
-        const data = await resp.json();
-        if (resp.ok) {
-          showAlert("Magic link sent to your email!", "success");
-        } else {
-          showAlert(data.message || "Failed to resend magic link.");
-        }
-      } catch (e) {
-        showAlert("Failed to resend. Please try again.");
-      }
     });
 
     // --- DNS provider external links: force open in new tab ---

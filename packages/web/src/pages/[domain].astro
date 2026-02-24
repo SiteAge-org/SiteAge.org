@@ -83,22 +83,43 @@ try {
           <Timeline domain={data.domain} firstSnapshotUrl={data.first_snapshot_url} birthAt={data.verified_birth_at || data.birth_at} />
         </div>
 
-        <!-- Claim section -->
-        {data.verification_status !== "verified" && (
-          <div class="animate-fade-up delay-500 text-center pt-6">
-            <div class="ornament-line max-w-64 mx-auto mb-6"></div>
-            <p class="text-ink-muted mb-4 font-light">Own this website?</p>
-            <a
-              href={`/verify/${data.domain}`}
-              class="inline-flex items-center gap-2 px-8 py-3 bg-seal text-ink font-medium tracking-wider uppercase text-sm hover:bg-seal-light transition-colors duration-200"
-            >
-              Claim & Verify
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 19.5l15-15m0 0H8.25m11.25 0v11.25"/>
-              </svg>
-            </a>
-          </div>
-        )}
+        <!-- Claim / Manage section -->
+        <div class="animate-fade-up delay-500 text-center pt-6">
+          <div class="ornament-line max-w-64 mx-auto mb-6"></div>
+          {data.verification_status === "verified" ? (
+            <Fragment>
+              <p class="text-ink-muted mb-4 font-light">This website has a verified owner. Use the Magic Link sent to your email to manage this domain.</p>
+              <p class="text-sm mt-3 font-light">
+                <a
+                  href={`/resend/${data.domain}`}
+                  class="text-azure hover:text-azure-light transition-colors tracking-wide font-medium"
+                >
+                  Resend Magic Link
+                </a>
+                <span class="text-divider mx-2">|</span>
+                <a
+                  href={`/verify/${data.domain}`}
+                  class="text-azure hover:text-azure-light transition-colors tracking-wide font-medium"
+                >
+                  Re-verify ownership
+                </a>
+              </p>
+            </Fragment>
+          ) : (
+            <Fragment>
+              <p class="text-ink-muted mb-4 font-light">Own this website?</p>
+              <a
+                href={`/verify/${data.domain}`}
+                class="inline-flex items-center gap-2 px-8 py-3 bg-seal text-ink font-medium tracking-wider uppercase text-sm hover:bg-seal-light transition-colors duration-200"
+              >
+                Claim & Verify
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 19.5l15-15m0 0H8.25m11.25 0v11.25"/>
+                </svg>
+              </a>
+            </Fragment>
+          )}
+        </div>
       </div>
     )}
   </div>

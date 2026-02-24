@@ -1,0 +1,148 @@
+---
+import Base from "../../layouts/Base.astro";
+import { API_BASE_URL, isValidDomain } from "@siteage/shared";
+
+const { domain } = Astro.params;
+const apiBase = import.meta.env.PUBLIC_API_URL || API_BASE_URL;
+
+if (!domain || !isValidDomain(domain)) {
+  return Astro.redirect("/");
+}
+---
+
+<Base title={`Manage ${domain}`}>
+  <div class="max-w-2xl mx-auto px-6 py-12 sm:py-20">
+    <!-- Page header -->
+    <div class="text-center mb-10">
+      <span class="text-xs tracking-[0.3em] uppercase text-seal-dark font-medium">Management Access</span>
+      <h1 class="font-display text-2xl sm:text-3xl mt-3 text-ink">{domain}</h1>
+      <div class="ornament-line max-w-32 mx-auto mt-4"></div>
+    </div>
+
+    <!-- Inline alert area -->
+    <div id="alert-container" class="mb-6 hidden"></div>
+
+    <div class="card-base p-8 sm:p-10 relative decorative-frame noise-overlay overflow-hidden">
+      <div class="relative">
+        <h2 class="card-title">Resend Magic Link</h2>
+        <p class="text-sm text-ink-muted font-light mb-6">
+          This domain has a verified owner. Enter the email used during verification to receive a management link.
+        </p>
+
+        <div class="space-y-5">
+          <input
+            type="email"
+            id="resend-email"
+            placeholder="you@example.com"
+            class="input-archival"
+          />
+          <button id="btn-resend" class="btn-primary">
+            <span id="btn-resend-text">Send Magic Link</span>
+            <svg id="btn-resend-spinner" class="hidden animate-spin h-4 w-4" viewBox="0 0 24 24" fill="none">
+              <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3" class="opacity-25"></circle>
+              <path d="M4 12a8 8 0 018-8" stroke="currentColor" stroke-width="3" stroke-linecap="round" class="opacity-75"></path>
+            </svg>
+          </button>
+        </div>
+
+        <!-- Bottom link -->
+        <div class="mt-8 pt-6">
+          <div class="ornament-line mb-6"></div>
+          <p class="text-sm text-ink-muted font-light">
+            Need to re-verify ownership?
+            <a
+              href={`/verify/${domain}`}
+              class="text-azure hover:text-azure-light transition-colors tracking-wide font-medium ml-1"
+            >
+              Start Verification
+            </a>
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <style>
+    .inline-alert {
+      padding: 0.75rem 1rem;
+      font-size: 0.875rem;
+      border: 1px solid;
+      animation: fade-up 0.3s ease both;
+    }
+    .inline-alert.alert-error {
+      background: rgba(168, 50, 50, 0.06);
+      border-color: rgba(168, 50, 50, 0.2);
+      color: #8b3030;
+    }
+    .inline-alert.alert-success {
+      background: var(--color-seal-glow);
+      border-color: rgba(200, 164, 78, 0.3);
+      color: var(--color-seal-dark);
+    }
+  </style>
+
+  <script define:vars={{ domain, apiBase }}>
+    const API = apiBase;
+
+    function showAlert(message, type = "error") {
+      const container = document.getElementById("alert-container");
+      container.innerHTML = `<div class="inline-alert alert-${type}">${message}</div>`;
+      container.classList.remove("hidden");
+      if (type !== "error") {
+        setTimeout(() => { container.classList.add("hidden"); }, 8000);
+      }
+    }
+
+    function hideAlert() {
+      document.getElementById("alert-container").classList.add("hidden");
+    }
+
+    document.getElementById("btn-resend").addEventListener("click", async () => {
+      hideAlert();
+      const email = document.getElementById("resend-email").value.trim();
+
+      if (!email) {
+        showAlert("Please enter your email address.");
+        return;
+      }
+
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(email)) {
+        showAlert("Please enter a valid email address.");
+        return;
+      }
+
+      const btn = document.getElementById("btn-resend");
+      const text = document.getElementById("btn-resend-text");
+      const spinner = document.getElementById("btn-resend-spinner");
+
+      btn.disabled = true;
+      btn.style.opacity = "0.7";
+      btn.style.cursor = "wait";
+      text.textContent = "Please wait...";
+      spinner.classList.remove("hidden");
+
+      try {
+        const resp = await fetch(`${API}/verify/resend`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ domain, email }),
+        });
+        const data = await resp.json();
+        if (resp.ok) {
+          showAlert("Magic link sent! Check your inbox.", "success");
+        } else {
+          showAlert(data.message || "Failed to send magic link.");
+        }
+      } catch (e) {
+        showAlert("Failed to send. Please try again.");
+      } finally {
+        btn.disabled = false;
+        btn.style.opacity = "";
+        btn.style.cursor = "";
+        text.textContent = "Send Magic Link";
+        spinner.classList.add("hidden");
+      }
+    });
+  </script>
+</Base>
