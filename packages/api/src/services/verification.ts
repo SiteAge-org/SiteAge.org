@@ -341,7 +341,50 @@ async function checkWellKnown(domain: string, token: string): Promise<boolean> {
 }
 
 /**
+ * Send an HTTPS POST request via node:https (fallback for local dev).
+ * Mirrors the querySystemDns pattern: dynamic import + Promise.race timeout.
+ */
+async function sendViaNodeHttps(apiKey: string, payload: string): Promise<void> {
+  const https = await import("node:https");
+  const timeoutMs = 10000;
+
+  await Promise.race([
+    new Promise<void>((resolve, reject) => {
+      const req = https.request(
+        "https://api.resend.com/emails",
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${apiKey}`,
+            "Content-Type": "application/json",
+          },
+        },
+        (res) => {
+          let body = "";
+          res.on("data", (chunk: unknown) => { body += String(chunk); });
+          res.on("end", () => {
+            if (res.statusCode && res.statusCode >= 200 && res.statusCode < 300) {
+              resolve();
+            } else {
+              reject(new Error(`Resend API returned ${res.statusCode}: ${body}`));
+            }
+          });
+        }
+      );
+      req.on("error", reject);
+      req.write(payload);
+      req.end();
+    }),
+    new Promise<never>((_, reject) =>
+      setTimeout(() => reject(new Error(`node:https timeout after ${timeoutMs}ms`)), timeoutMs)
+    ),
+  ]);
+}
+
+/**
  * Send magic link email via Resend.
+ * Primary: fetch (works in production Cloudflare Workers).
+ * Fallback: node:https (works in local dev with nodejs_compat).
  */
 async function sendMagicLinkEmail(env: Env, email: string, domain: string, magicKey: string): Promise<void> {
   const manageUrl = `https://siteage.org/manage/${domain}?key=${magicKey}`;
@@ -349,6 +392,23 @@ async function sendMagicLinkEmail(env: Env, email: string, domain: string, magic
   console.info(`[Email] Sending magic link for ${domain} to ${email}`);
   console.info(`[Email] Magic link URL: ${manageUrl}`);
 
+  const payload = JSON.stringify({
+    from: "SiteAge.org <noreply@siteage.org>",
+    to: [email],
+    subject: `Management Link for ${domain} - SiteAge.org`,
+    html: `
+      <h2>Your SiteAge Management Link</h2>
+      <p>You have successfully verified ownership of <strong>${domain}</strong>.</p>
+      <p>Use the link below to manage your domain's settings on SiteAge.org:</p>
+      <p><a href="${manageUrl}">${manageUrl}</a></p>
+      <p>Keep this link safe — it grants access to your domain's management page.</p>
+      <p>If you lost this link, you can request a new one at <a href="https://siteage.org/verify/${domain}">siteage.org/verify/${domain}</a>.</p>
+      <hr>
+      <p style="color: #666; font-size: 12px;">SiteAge.org — Website Age Certification</p>
+    `,
+  });
+
+  // Primary: fetch (works in production)
   try {
     const resp = await fetch("https://api.resend.com/emails", {
       method: "POST",
@@ -356,30 +416,29 @@ async function sendMagicLinkEmail(env: Env, email: string, domain: string, magic
         Authorization: `Bearer ${env.RESEND_API_KEY}`,
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({
-        from: "SiteAge.org <noreply@siteage.org>",
-        to: [email],
-        subject: `Management Link for ${domain} - SiteAge.org`,
-        html: `
-          <h2>Your SiteAge Management Link</h2>
-          <p>You have successfully verified ownership of <strong>${domain}</strong>.</p>
-          <p>Use the link below to manage your domain's settings on SiteAge.org:</p>
-          <p><a href="${manageUrl}">${manageUrl}</a></p>
-          <p>Keep this link safe — it grants access to your domain's management page.</p>
-          <p>If you lost this link, you can request a new one at <a href="https://siteage.org/verify/${domain}">siteage.org/verify/${domain}</a>.</p>
-          <hr>
-          <p style="color: #666; font-size: 12px;">SiteAge.org — Website Age Certification</p>
-        `,
-      }),
+      body: payload,
+      signal: AbortSignal.timeout(10000),
     });
 
-    if (!resp.ok) {
-      const body = await resp.text().catch(() => "unknown error");
-      console.error(`[Email] Resend API returned ${resp.status}: ${body}`);
-    } else {
+    if (resp.ok) {
       console.info(`[Email] Successfully sent magic link for ${domain}`);
+      return;
     }
+
+    const body = await resp.text().catch(() => "unknown error");
+    console.error(`[Email] Resend API returned ${resp.status}: ${body}`);
+    return; // API error (auth/payload issue), don't fallback
   } catch (err) {
-    console.error(`[Email] Failed to send magic link for ${domain}:`, err);
+    const message = err instanceof Error ? err.message : String(err);
+    console.warn(`[Email] fetch failed, falling back to node:https: ${message}`);
+  }
+
+  // Fallback: node:https (works in local dev with nodejs_compat)
+  try {
+    await sendViaNodeHttps(env.RESEND_API_KEY, payload);
+    console.info(`[Email] Successfully sent via node:https fallback for ${domain}`);
+  } catch (err) {
+    const message = err instanceof Error ? err.message : String(err);
+    console.error(`[Email] node:https fallback also failed for ${domain}: ${message}`);
   }
 }
