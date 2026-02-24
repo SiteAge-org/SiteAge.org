@@ -45,8 +45,10 @@ pnpm dev:web              # Start Astro dev server only
 - Cross-worker cache clearing: API Worker binds both `API_CACHE` and `BADGE_CACHE` KV namespaces. On domain data changes (admin approval, verification, force refresh, status update), both caches are cleared via `Promise.all`.
 - DNS verification help: Collapsible `<details>` guide with provider-specific steps (Cloudflare, Namecheap, GoDaddy, Squarespace, Name.com, Vercel, Other). Provider dashboard URLs use SSR-interpolated `{domain}`. Chip-based provider selector with toggle behavior.
 - DNS verification: Queries Cloudflare, Google, and AliDNS DoH in parallel; falls back to system DNS (`node:dns`, 5s timeout) when all DoH fail. Handles multi-segment TXT records (`"seg1" "seg2"` → concatenated).
+- Email sending: `fetch` (primary, works in production) → `node:https` fallback (local dev with `nodejs_compat`). Mirrors DNS DoH → system DNS fallback pattern.
 - Diagnostic log prefixes: `[DNS]` for DoH queries/results, `[Verify]` for verification method lifecycle, `[Email]` for email sending attempts/results.
 - Admin DNS diagnostic: `GET /admin/dns-check/:domain` returns raw TXT records from both resolvers + pending verification tokens. Protected by `X-Admin-Key`.
+- Smart birth date update: `POST /manage/:domain/birth-date` auto-approves non-suspicious changes (date >= baseline or within 365-day tolerance), returns `requires_evidence` for suspicious ones, rejects future dates. Baseline = `birth_at` ?? `created_at`.
 - Admin domains page: `GET /admin/domains` returns `magic_key` and `email` from latest verified verification record via subquery. Verified column shows clickable "Verified ↗" link (`/manage/{domain}?key={magicKey}`, `target="_blank"`) when magic_key exists; falls back to plain "Yes" text otherwise.
 
 ### Design System Conventions
