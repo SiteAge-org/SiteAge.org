@@ -27,6 +27,7 @@ app.get("/og/:domain{[a-z0-9.-]+\\.[a-z]{2,}}", async (c) => {
       headers: {
         "Content-Type": "image/png",
         "Cache-Control": "public, max-age=300, s-maxage=86400",
+        "Access-Control-Allow-Origin": "*",
       },
     });
   }
@@ -76,6 +77,7 @@ app.get("/og/:domain{[a-z0-9.-]+\\.[a-z]{2,}}", async (c) => {
     headers: {
       "Content-Type": "image/png",
       "Cache-Control": "public, max-age=300, s-maxage=86400",
+      "Access-Control-Allow-Origin": "*",
     },
   });
 });

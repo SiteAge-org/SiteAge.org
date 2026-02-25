@@ -17,11 +17,11 @@ const deathYear = deathAt ? birthYear(deathAt) : null;
 
 let shareText: string;
 if (isDead && year) {
-  shareText = `R.I.P ${domain} (${year}–${deathYear || "?"}). Gone but not forgotten.\n\nIs YOUR favorite website still alive?`;
+  shareText = `${domain} went offline after ${parseInt(deathYear || "0") - parseInt(year)} years on the web (${year}–${deathYear || "?"}).\n\nHow old is YOUR website?`;
 } else if (year) {
-  shareText = `Did you know ${domain} has been online since ${year}?\n\nEvery website has a birthday. Find yours →`;
+  shareText = `${domain} has been on the internet since ${year}. That's older than most websites alive today.\n\nCheck your site's age:`;
 } else {
-  shareText = `Look up the age of any website →`;
+  shareText = `How old is your website? Find out instantly:`;
 }
 ---
 
