@@ -9,8 +9,9 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "hono": "^4.7.4",
-    "@siteage/shared": "workspace:*"
+    "@resvg/resvg-wasm": "^2.6.2",
+    "@siteage/shared": "workspace:*",
+    "hono": "^4.7.4"
   },
   "devDependencies": {
     "@cloudflare/workers-types": "^4.20250214.0",
