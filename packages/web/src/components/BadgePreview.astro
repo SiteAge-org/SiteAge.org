@@ -27,6 +27,25 @@ const defaultFormat = "year";
         <button class="badge-chip active" data-group="style" data-value="flat">Flat</button>
         <button class="badge-chip" data-group="style" data-value="flat-square">Flat Square</button>
         <button class="badge-chip" data-group="style" data-value="for-the-badge">For the Badge</button>
+        <button class="badge-chip" data-group="style" data-value="plastic">Plastic</button>
+        <button class="badge-chip" data-group="style" data-value="social">Social</button>
+        {isVerified ? (
+          <>
+            <button class="badge-chip badge-chip--verified" data-group="style" data-value="gold">Gold</button>
+            <button class="badge-chip badge-chip--verified" data-group="style" data-value="vintage">Vintage</button>
+            <button class="badge-chip badge-chip--verified" data-group="style" data-value="dark">Dark</button>
+            <button class="badge-chip badge-chip--verified" data-group="style" data-value="seal">Seal</button>
+            <button class="badge-chip badge-chip--verified" data-group="style" data-value="minimal">Minimal</button>
+          </>
+        ) : (
+          <>
+            <span class="badge-chip-locked-wrap" title="Verify ownership to unlock this option"><button class="badge-chip badge-chip--locked" data-group="style" data-value="gold" disabled>Gold</button></span>
+            <span class="badge-chip-locked-wrap" title="Verify ownership to unlock this option"><button class="badge-chip badge-chip--locked" data-group="style" data-value="vintage" disabled>Vintage</button></span>
+            <span class="badge-chip-locked-wrap" title="Verify ownership to unlock this option"><button class="badge-chip badge-chip--locked" data-group="style" data-value="dark" disabled>Dark</button></span>
+            <span class="badge-chip-locked-wrap" title="Verify ownership to unlock this option"><button class="badge-chip badge-chip--locked" data-group="style" data-value="seal" disabled>Seal</button></span>
+            <span class="badge-chip-locked-wrap" title="Verify ownership to unlock this option"><button class="badge-chip badge-chip--locked" data-group="style" data-value="minimal" disabled>Minimal</button></span>
+          </>
+        )}
       </div>
     </div>
 
@@ -69,7 +88,7 @@ const defaultFormat = "year";
 
   <!-- Live Preview -->
   <div class="bg-parchment/60 p-4 rounded-sm mb-8 text-center">
-    <img id="badge-preview" src={`${badgeUrl}?style=flat&type=${defaultType}&format=${defaultFormat}`} alt="SiteAge badge" class="inline-block h-5" data-ftb-class="h-7" data-default-class="h-5" />
+    <img id="badge-preview" src={`${badgeUrl}?style=flat&type=${defaultType}&format=${defaultFormat}`} alt="SiteAge badge" class="inline-block h-5" data-ftb-class="h-7" data-seal-class="h-6" data-default-class="h-5" />
   </div>
 
   <!-- Embed codes -->
@@ -184,9 +203,11 @@ const defaultFormat = "year";
     const img = document.getElementById("badge-preview") as HTMLImageElement;
     img.src = src;
 
-    // Adjust height for "for-the-badge" style
+    // Adjust height for special styles
     if (state.style === "for-the-badge") {
       img.className = "inline-block " + img.dataset.ftbClass;
+    } else if (state.style === "seal") {
+      img.className = "inline-block " + img.dataset.sealClass;
     } else {
       img.className = "inline-block " + img.dataset.defaultClass;
     }

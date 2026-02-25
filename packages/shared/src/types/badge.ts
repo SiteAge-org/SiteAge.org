@@ -1,4 +1,4 @@
-export type BadgeStyle = "flat" | "flat-square" | "for-the-badge";
+export type BadgeStyle = "flat" | "flat-square" | "for-the-badge" | "plastic" | "social" | "gold" | "vintage" | "dark" | "seal" | "minimal";
 export type BadgeColor = "blue" | "gold" | "gray" | "orange";
 export type BadgeMessageType = "since" | "established";
 export type BadgeTimeFormat = "year" | "month" | "date" | "age" | "days";

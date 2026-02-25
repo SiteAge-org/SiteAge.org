@@ -25,7 +25,8 @@ export const HEALTH_CHECK_TIMEOUT = 10000; // 10 seconds
 
 export const BIRTH_DATE_TOLERANCE_DAYS = 365;
 
-export const BADGE_STYLES = ["flat", "flat-square", "for-the-badge"] as const;
+export const BADGE_STYLES = ["flat", "flat-square", "for-the-badge", "plastic", "social", "gold", "vintage", "dark", "seal", "minimal"] as const;
+export const BADGE_VERIFIED_STYLES = ["gold", "vintage", "dark", "seal", "minimal"] as const;
 export const BADGE_COLORS = {
   active: "#007ec6",      // blue
   verified: "#d4a017",    // gold

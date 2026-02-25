@@ -1,5 +1,5 @@
 import { Hono } from "hono";
-import { isValidDomain, BADGE_CACHE_TTL, DOMAIN_CACHE_TTL, API_BASE_URL, BADGE_MESSAGE_TYPES, BADGE_TIME_FORMATS } from "@siteage/shared";
+import { isValidDomain, BADGE_CACHE_TTL, DOMAIN_CACHE_TTL, API_BASE_URL, BADGE_STYLES, BADGE_MESSAGE_TYPES, BADGE_TIME_FORMATS } from "@siteage/shared";
 import type { BadgeData, BadgeStyle, BadgeMessageType, BadgeTimeFormat } from "@siteage/shared";
 import { renderBadge } from "./renderer.js";
 
@@ -16,7 +16,10 @@ app.get("/:domain{[a-z0-9.-]+\\.[a-z]{2,}}", async (c) => {
     return c.text("Invalid domain", 400);
   }
 
-  const style = (c.req.query("style") || "flat") as BadgeStyle;
+  const rawStyle = c.req.query("style") || "flat";
+  const style = (BADGE_STYLES as readonly string[]).includes(rawStyle)
+    ? (rawStyle as BadgeStyle)
+    : "flat" as BadgeStyle;
   const color = c.req.query("color");
   const label = c.req.query("label") || "SiteAge";
   const rawType = c.req.query("type");
