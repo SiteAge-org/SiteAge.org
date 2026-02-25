@@ -91,15 +91,19 @@ const ogImage = `${badgeBase}/og/${domain}`;
         )}
 
         <div class="animate-fade-up delay-300">
-          <BadgePreview domain={data.domain} isVerified={data.verification_status === "verified"} />
+          <ShareButtons domain={data.domain} birthAt={data.verified_birth_at || data.birth_at} deathAt={data.death_at} isDead={data.status === "dead"} />
         </div>
 
         <div class="animate-fade-up delay-400">
+          <BadgePreview domain={data.domain} isVerified={data.verification_status === "verified"} />
+        </div>
+
+        <div class="animate-fade-up delay-500">
           <Timeline domain={data.domain} firstSnapshotUrl={data.first_snapshot_url} birthAt={data.verified_birth_at || data.birth_at} />
         </div>
 
         <!-- Claim / Manage section -->
-        <div class="animate-fade-up delay-500 text-center pt-6">
+        <div class="animate-fade-up delay-600 text-center pt-6">
           <div class="ornament-line max-w-64 mx-auto mb-6"></div>
           {data.verification_status === "verified" ? (
             <Fragment>
