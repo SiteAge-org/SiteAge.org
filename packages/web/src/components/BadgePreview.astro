@@ -133,18 +133,26 @@ const defaultFormat = "year";
     cursor: not-allowed;
   }
   .badge-chip-locked-wrap::after {
-    content: "🔒";
+    content: "";
     position: absolute;
-    top: -6px;
-    right: -6px;
-    font-size: 8px;
-    line-height: 1;
+    top: -5px;
+    right: -5px;
+    width: 12px;
+    height: 12px;
+    background-color: var(--color-seal);
+    border-radius: 50%;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='%23fff'%3E%3Cpath d='M11 7V5a3 3 0 0 0-6 0v2H4v6h8V7h-1ZM6 5a2 2 0 1 1 4 0v2H6V5Z'/%3E%3C/svg%3E");
+    background-size: 8px;
+    background-repeat: no-repeat;
+    background-position: center;
     pointer-events: none;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.15);
   }
   .badge-chip--locked {
-    opacity: 0.35;
+    opacity: 0.5;
     cursor: not-allowed;
     border-style: dashed;
+    border-color: color-mix(in srgb, var(--color-seal) 30%, var(--color-divider));
     pointer-events: none;
   }
 </style>
