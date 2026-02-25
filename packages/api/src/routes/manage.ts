@@ -107,11 +107,12 @@ manageRoutes.post("/:domain/birth-date", async (c) => {
       "UPDATE domains SET verified_birth_at = ? WHERE id = ?"
     ).bind(body.birth_at, domainId).run();
 
-    // Clear both caches
+    // Clear all caches (API + Badge + OG)
     await Promise.all([
       c.env.API_CACHE.delete(`lookup:${domain}`),
       c.env.API_CACHE.delete(`domain:${domain}`),
       c.env.BADGE_CACHE.delete(`domain:${domain}`),
+      c.env.BADGE_CACHE.delete(`og:${domain}`),
     ]);
 
     return c.json<BirthDateUpdateResult>({ outcome: "auto_approved", birth_at: body.birth_at });

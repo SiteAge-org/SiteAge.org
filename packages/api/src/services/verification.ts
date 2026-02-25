@@ -122,11 +122,12 @@ export async function checkVerification(
     "UPDATE domains SET verification_status = 'verified', updated_at = datetime('now') WHERE id = ?"
   ).bind(verification.domain_id).run();
 
-  // Clear all caches (API + Badge)
+  // Clear all caches (API + Badge + OG)
   await Promise.all([
     env.API_CACHE.delete(`lookup:${domain}`),
     env.API_CACHE.delete(`domain:${domain}`),
     env.BADGE_CACHE.delete(`domain:${domain}`),
+    env.BADGE_CACHE.delete(`og:${domain}`),
   ]);
 
   // Send magic link email asynchronously (don't block response)

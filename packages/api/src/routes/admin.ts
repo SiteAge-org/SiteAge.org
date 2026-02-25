@@ -92,13 +92,14 @@ adminRoutes.post("/evidence/:id/review", async (c) => {
       "UPDATE domains SET verified_birth_at = ?, updated_at = datetime('now') WHERE id = ?"
     ).bind(claimedAt, domainId).run();
 
-    // Clear all caches
+    // Clear all caches (API + Badge + OG)
     const domain = await c.env.DB.prepare("SELECT domain FROM domains WHERE id = ?").bind(domainId).first();
     const domainName = domain?.domain as string;
     await Promise.all([
       c.env.API_CACHE.delete(`lookup:${domainName}`),
       c.env.API_CACHE.delete(`domain:${domainName}`),
       c.env.BADGE_CACHE.delete(`domain:${domainName}`),
+      c.env.BADGE_CACHE.delete(`og:${domainName}`),
     ]);
   }
 
@@ -181,7 +182,7 @@ adminRoutes.post("/domains/:id", async (c) => {
     `UPDATE domains SET ${updates.join(", ")} WHERE id = ?`
   ).bind(...params).run();
 
-  // Clear all caches (API + Badge)
+  // Clear all caches (API + Badge + OG)
   const domain = await c.env.DB.prepare("SELECT domain FROM domains WHERE id = ?").bind(id).first();
   if (domain) {
     const name = domain.domain as string;
@@ -189,6 +190,7 @@ adminRoutes.post("/domains/:id", async (c) => {
       c.env.API_CACHE.delete(`lookup:${name}`),
       c.env.API_CACHE.delete(`domain:${name}`),
       c.env.BADGE_CACHE.delete(`domain:${name}`),
+      c.env.BADGE_CACHE.delete(`og:${name}`),
     ]);
   }
 
