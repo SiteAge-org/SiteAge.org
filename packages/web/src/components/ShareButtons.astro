@@ -1,5 +1,5 @@
 ---
-import { WEB_BASE_URL, birthYear } from "@siteage/shared";
+import { WEB_BASE_URL, BADGE_BASE_URL, birthYear } from "@siteage/shared";
 
 interface Props {
   domain: string;
@@ -10,6 +10,8 @@ interface Props {
 
 const { domain, birthAt, deathAt, isDead = false } = Astro.props;
 const pageUrl = `${WEB_BASE_URL}/${domain}`;
+const badgeBase = import.meta.env.PUBLIC_BADGE_URL || BADGE_BASE_URL;
+const ogUrl = `${badgeBase}/og/${domain}`;
 const year = birthAt ? birthYear(birthAt) : null;
 const deathYear = deathAt ? birthYear(deathAt) : null;
 
@@ -78,6 +80,20 @@ if (isDead && year) {
       </svg>
       <span class="copy-label">Copy Link</span>
     </button>
+
+    <!-- Download Certificate -->
+    <button
+      class="share-btn"
+      data-channel="download"
+      data-og-url={ogUrl}
+      data-domain={domain}
+      aria-label="Download certificate image"
+    >
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3"/>
+      </svg>
+      <span class="download-label">Download</span>
+    </button>
   </div>
 </div>
 
@@ -105,7 +121,7 @@ if (isDead && year) {
   const section = document.getElementById("share-section")!;
 
   section.querySelectorAll<HTMLButtonElement>(".share-btn").forEach((btn) => {
-    btn.addEventListener("click", () => {
+    btn.addEventListener("click", async () => {
       const channel = btn.dataset.channel;
 
       if (channel === "copy") {
@@ -117,6 +133,30 @@ if (isDead && year) {
             setTimeout(() => { label.textContent = "Copy Link"; }, 2000);
           }
         });
+        return;
+      }
+
+      if (channel === "download") {
+        const ogUrl = btn.dataset.ogUrl;
+        const domain = btn.dataset.domain;
+        if (!ogUrl) return;
+        const label = btn.querySelector<HTMLSpanElement>(".download-label");
+        if (label) label.textContent = "Downloading\u2026";
+        try {
+          const resp = await fetch(ogUrl);
+          const blob = await resp.blob();
+          const blobUrl = URL.createObjectURL(blob);
+          const a = document.createElement("a");
+          a.href = blobUrl;
+          a.download = `siteage-${domain}.png`;
+          document.body.appendChild(a);
+          a.click();
+          a.remove();
+          URL.revokeObjectURL(blobUrl);
+        } catch {
+          // Silently fail
+        }
+        if (label) label.textContent = "Download";
         return;
       }
 

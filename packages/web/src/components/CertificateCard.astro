@@ -1,5 +1,5 @@
 ---
-import { formatAge, birthYear, BADGE_BASE_URL } from "@siteage/shared";
+import { formatAge, birthYear } from "@siteage/shared";
 import type { DomainDetail } from "@siteage/shared";
 
 interface Props {
@@ -8,7 +8,6 @@ interface Props {
 }
 
 const { data, apiBase } = Astro.props;
-const badgeBase = import.meta.env.PUBLIC_BADGE_URL || BADGE_BASE_URL;
 const birth = data.verified_birth_at || data.birth_at;
 const isVerified = data.verification_status === "verified";
 const catalogedDate = new Date(data.created_at).toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric", timeZone: "UTC" });
@@ -85,22 +84,6 @@ const catalogedDate = new Date(data.created_at).toLocaleDateString("en-US", { ye
       </div>
     )}
 
-    <!-- Download certificate -->
-    <div class="mt-4 mb-2">
-      <button
-        id="download-cert-btn"
-        type="button"
-        class="inline-flex items-center gap-1.5 text-xs tracking-[0.1em] uppercase text-seal-dark hover:text-seal transition-colors cursor-pointer"
-        data-og-url={`${badgeBase}/og/${data.domain}`}
-        data-domain={data.domain}
-      >
-        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3"/>
-        </svg>
-        Download Certificate
-      </button>
-    </div>
-
     <!-- Footer -->
     <div class="pt-6">
       <div class="ornament-line mb-4"></div>
@@ -111,33 +94,6 @@ const catalogedDate = new Date(data.created_at).toLocaleDateString("en-US", { ye
 </div>
 
 <script>
-  // Download certificate handler
-  const dlBtn = document.getElementById("download-cert-btn");
-  if (dlBtn) {
-    dlBtn.addEventListener("click", async () => {
-      const ogUrl = dlBtn.getAttribute("data-og-url");
-      const domain = dlBtn.getAttribute("data-domain");
-      if (!ogUrl) return;
-
-      dlBtn.textContent = "Downloading\u2026";
-      try {
-        const resp = await fetch(ogUrl);
-        const blob = await resp.blob();
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement("a");
-        a.href = url;
-        a.download = `siteage-${domain}.png`;
-        document.body.appendChild(a);
-        a.click();
-        a.remove();
-        URL.revokeObjectURL(url);
-      } catch {
-        // Silently fail
-      }
-      dlBtn.innerHTML = `<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3"/></svg> Download Certificate`;
-    });
-  }
-
   const btn = document.getElementById("recheck-btn");
   if (btn) {
     btn.addEventListener("click", async () => {

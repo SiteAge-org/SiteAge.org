@@ -79,20 +79,22 @@ const ogImage = `${badgeBase}/og/${domain}`;
     )}
 
     {data && (
+      <div class="animate-fade-up delay-100 mt-4">
+        <ShareButtons domain={data.domain} birthAt={data.verified_birth_at || data.birth_at} deathAt={data.death_at} isDead={data.status === "dead"} />
+      </div>
+    )}
+
+    {data && (
       <div class="mt-10 space-y-6">
-        <div class="animate-fade-up delay-100">
+        <div class="animate-fade-up delay-200">
           <AgeDisplay data={data} />
         </div>
 
         {data.rank_percentile !== null && (
-          <div class="animate-fade-up delay-200">
+          <div class="animate-fade-up delay-300">
             <RankingBar percentile={data.rank_percentile} />
           </div>
         )}
-
-        <div class="animate-fade-up delay-300">
-          <ShareButtons domain={data.domain} birthAt={data.verified_birth_at || data.birth_at} deathAt={data.death_at} isDead={data.status === "dead"} />
-        </div>
 
         <div class="animate-fade-up delay-400">
           <BadgePreview domain={data.domain} isVerified={data.verification_status === "verified"} />
