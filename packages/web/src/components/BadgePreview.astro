@@ -38,7 +38,7 @@ const defaultFormat = "year";
         {isVerified ? (
           <button class={`badge-chip badge-chip--verified ${defaultType === "established" ? "active" : ""}`} data-group="type" data-value="established">Established</button>
         ) : (
-          <span title="Verify ownership to unlock this option"><button class="badge-chip badge-chip--locked" data-group="type" data-value="established" disabled>Established</button></span>
+          <span class="badge-chip-locked-wrap" title="Verify ownership to unlock this option"><button class="badge-chip badge-chip--locked" data-group="type" data-value="established" disabled>Established</button></span>
         )}
       </div>
     </div>
@@ -57,10 +57,10 @@ const defaultFormat = "year";
           </>
         ) : (
           <>
-            <span title="Verify ownership to unlock this option"><button class="badge-chip badge-chip--locked" data-group="format" data-value="month" disabled>Month</button></span>
-            <span title="Verify ownership to unlock this option"><button class="badge-chip badge-chip--locked" data-group="format" data-value="date" disabled>Date</button></span>
-            <span title="Verify ownership to unlock this option"><button class="badge-chip badge-chip--locked" data-group="format" data-value="age" disabled>Age</button></span>
-            <span title="Verify ownership to unlock this option"><button class="badge-chip badge-chip--locked" data-group="format" data-value="days" disabled>Days</button></span>
+            <span class="badge-chip-locked-wrap" title="Verify ownership to unlock this option"><button class="badge-chip badge-chip--locked" data-group="format" data-value="month" disabled>Month</button></span>
+            <span class="badge-chip-locked-wrap" title="Verify ownership to unlock this option"><button class="badge-chip badge-chip--locked" data-group="format" data-value="date" disabled>Date</button></span>
+            <span class="badge-chip-locked-wrap" title="Verify ownership to unlock this option"><button class="badge-chip badge-chip--locked" data-group="format" data-value="age" disabled>Age</button></span>
+            <span class="badge-chip-locked-wrap" title="Verify ownership to unlock this option"><button class="badge-chip badge-chip--locked" data-group="format" data-value="days" disabled>Days</button></span>
           </>
         )}
       </div>
@@ -126,6 +126,20 @@ const defaultFormat = "year";
     color: var(--color-seal-dark);
     background-color: color-mix(in srgb, var(--color-seal) 10%, transparent);
     border-style: solid;
+  }
+  .badge-chip-locked-wrap {
+    position: relative;
+    display: inline-block;
+    cursor: not-allowed;
+  }
+  .badge-chip-locked-wrap::after {
+    content: "🔒";
+    position: absolute;
+    top: -6px;
+    right: -6px;
+    font-size: 8px;
+    line-height: 1;
+    pointer-events: none;
   }
   .badge-chip--locked {
     opacity: 0.35;
