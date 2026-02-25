@@ -35,11 +35,7 @@ const defaultFormat = "year";
       <p class="text-[10px] tracking-[0.15em] uppercase text-ink-muted/50 font-medium mb-2">Message</p>
       <div class="flex flex-wrap items-center gap-2">
         <button class={`badge-chip ${defaultType === "since" ? "active" : ""}`} data-group="type" data-value="since">Since</button>
-        {isVerified ? (
-          <button class={`badge-chip badge-chip--verified ${defaultType === "established" ? "active" : ""}`} data-group="type" data-value="established">Established</button>
-        ) : (
-          <span class="text-[10px] text-ink-muted/40 italic ml-1">Verify ownership to unlock more options</span>
-        )}
+        <button class={`badge-chip ${isVerified ? "badge-chip--verified" : "badge-chip--locked"} ${defaultType === "established" ? "active" : ""}`} data-group="type" data-value="established" disabled={!isVerified}>Established</button>
       </div>
     </div>
 
@@ -48,16 +44,10 @@ const defaultFormat = "year";
       <p class="text-[10px] tracking-[0.15em] uppercase text-ink-muted/50 font-medium mb-2">Format</p>
       <div class="flex flex-wrap items-center gap-2">
         <button class="badge-chip active" data-group="format" data-value="year">Year</button>
-        {isVerified ? (
-          <>
-            <button class="badge-chip badge-chip--verified" data-group="format" data-value="month">Month</button>
-            <button class="badge-chip badge-chip--verified" data-group="format" data-value="date">Date</button>
-            <button class="badge-chip badge-chip--verified" data-group="format" data-value="age">Age</button>
-            <button class="badge-chip badge-chip--verified" data-group="format" data-value="days">Days</button>
-          </>
-        ) : (
-          <span class="text-[10px] text-ink-muted/40 italic ml-1">Verify ownership to unlock more options</span>
-        )}
+        <button class={`badge-chip ${isVerified ? "badge-chip--verified" : "badge-chip--locked"}`} data-group="format" data-value="month" disabled={!isVerified}>Month</button>
+        <button class={`badge-chip ${isVerified ? "badge-chip--verified" : "badge-chip--locked"}`} data-group="format" data-value="date" disabled={!isVerified}>Date</button>
+        <button class={`badge-chip ${isVerified ? "badge-chip--verified" : "badge-chip--locked"}`} data-group="format" data-value="age" disabled={!isVerified}>Age</button>
+        <button class={`badge-chip ${isVerified ? "badge-chip--verified" : "badge-chip--locked"}`} data-group="format" data-value="days" disabled={!isVerified}>Days</button>
       </div>
     </div>
   </div>
@@ -122,6 +112,15 @@ const defaultFormat = "year";
     background-color: color-mix(in srgb, var(--color-seal) 10%, transparent);
     border-style: solid;
   }
+  .badge-chip--locked {
+    opacity: 0.35;
+    cursor: not-allowed;
+    border-style: dashed;
+  }
+  .badge-chip--locked:hover {
+    border-color: var(--color-divider);
+    color: var(--color-ink-muted);
+  }
 </style>
 
 <script>
@@ -178,6 +177,7 @@ const defaultFormat = "year";
   // Chip click handlers
   root.querySelectorAll<HTMLButtonElement>(".badge-chip").forEach((chip) => {
     chip.addEventListener("click", () => {
+      if (chip.disabled) return;
       const group = chip.dataset.group!;
       const value = chip.dataset.value!;
 
