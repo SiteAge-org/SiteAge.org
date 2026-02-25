@@ -1,5 +1,5 @@
 ---
-import { WEB_BASE_URL, BADGE_BASE_URL, birthYear } from "@siteage/shared";
+import { WEB_BASE_URL, BADGE_BASE_URL, birthYear, ageYears } from "@siteage/shared";
 
 interface Props {
   domain: string;
@@ -14,12 +14,15 @@ const badgeBase = import.meta.env.PUBLIC_BADGE_URL || BADGE_BASE_URL;
 const ogUrl = `${badgeBase}/og/${domain}`;
 const year = birthAt ? birthYear(birthAt) : null;
 const deathYear = deathAt ? birthYear(deathAt) : null;
+const years = birthAt ? ageYears(birthAt, deathAt || undefined) : 0;
 
 let shareText: string;
 if (isDead && year) {
-  shareText = `${domain} went offline after ${parseInt(deathYear || "0") - parseInt(year)} years on the web (${year}–${deathYear || "?"}).\n\nHow old is YOUR website?`;
+  shareText = `${domain} went offline after ${years} year${years !== 1 ? "s" : ""} on the web (${year}–${deathYear || "?"}).\n\nHow old is YOUR website?`;
+} else if (year && years >= 10) {
+  shareText = `${domain} has been online since ${year} — ${years} years and counting.\n\nHow old is your website?`;
 } else if (year) {
-  shareText = `${domain} has been on the internet since ${year}. That's older than most websites alive today.\n\nCheck your site's age:`;
+  shareText = `${domain} first appeared online in ${year}.\n\nEvery website has a story. What's yours?`;
 } else {
   shareText = `How old is your website? Find out instantly:`;
 }
