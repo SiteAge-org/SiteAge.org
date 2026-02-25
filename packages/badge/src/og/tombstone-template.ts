@@ -36,27 +36,27 @@ export function renderTombstoneSvg(data: BadgeData): string {
   <rect x="60" y="60" width="1080" height="510" fill="none" stroke="#c8c2b8" stroke-width="0.5"/>
 
   <!-- In Memoriam -->
-  <text x="600" y="150" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="600" fill="#9f9f9f" letter-spacing="5">IN MEMORIAM</text>
+  <text x="600" y="150" text-anchor="middle" font-family="'IBM Plex Sans'" font-size="13" font-weight="600" fill="#9f9f9f" letter-spacing="5">IN MEMORIAM</text>
 
   <!-- Divider -->
   <line x1="480" y1="172" x2="720" y2="172" stroke="#9f9f9f" stroke-width="0.6" opacity="0.5"/>
 
   <!-- Domain name -->
-  <text x="600" y="240" text-anchor="middle" font-family="'DM Serif Display', Georgia, serif" font-size="44" fill="#6b6b6b">${domain}</text>
+  <text x="600" y="240" text-anchor="middle" font-family="'DM Serif Display'" font-size="44" fill="#6b6b6b">${domain}</text>
 
   <!-- R.I.P -->
-  <text x="600" y="330" text-anchor="middle" font-family="'DM Serif Display', Georgia, serif" font-size="64" fill="#9f9f9f" opacity="0.7">R.I.P</text>
+  <text x="600" y="330" text-anchor="middle" font-family="'DM Serif Display'" font-size="64" fill="#9f9f9f" opacity="0.7">R.I.P</text>
 
   <!-- Year range -->
-  ${yearRange ? `<text x="600" y="380" text-anchor="middle" font-family="'DM Serif Display', Georgia, serif" font-size="28" fill="#9f9f9f" opacity="0.6">${yearRange}</text>` : ""}
+  ${yearRange ? `<text x="600" y="380" text-anchor="middle" font-family="'DM Serif Display'" font-size="28" fill="#9f9f9f" opacity="0.6">${yearRange}</text>` : ""}
 
   <!-- Survival text -->
-  ${survivalText ? `<text x="600" y="420" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="15" fill="#9f9f9f" opacity="0.5">${survivalText}</text>` : ""}
+  ${survivalText ? `<text x="600" y="420" text-anchor="middle" font-family="'IBM Plex Sans'" font-size="15" fill="#9f9f9f" opacity="0.5">${survivalText}</text>` : ""}
 
   <!-- Divider -->
   <line x1="470" y1="470" x2="730" y2="470" stroke="#c8c2b8" stroke-width="0.6"/>
 
   <!-- Brand footer -->
-  <text x="600" y="530" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="12" fill="#9f9f9f" opacity="0.5">Remembered by siteage.org &#xB7; Data from Internet Archive</text>
+  <text x="600" y="530" text-anchor="middle" font-family="'IBM Plex Sans'" font-size="12" fill="#9f9f9f" opacity="0.5">Remembered by siteage.org &#xB7; Data from Internet Archive</text>
 </svg>`;
 }
