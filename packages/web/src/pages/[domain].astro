@@ -7,7 +7,8 @@ import RankingBar from "../components/RankingBar.astro";
 import BadgePreview from "../components/BadgePreview.astro";
 import Timeline from "../components/Timeline.astro";
 import LookupLoading from "../components/LookupLoading.astro";
-import { API_BASE_URL, isValidDomain } from "@siteage/shared";
+import ShareButtons from "../components/ShareButtons.astro";
+import { API_BASE_URL, BADGE_BASE_URL, isValidDomain, formatAge } from "@siteage/shared";
 import type { DomainDetail } from "@siteage/shared";
 
 const apiBase = import.meta.env.PUBLIC_API_URL || API_BASE_URL;
@@ -35,9 +36,23 @@ try {
 } catch (e) {
   error = "Unable to connect to the API";
 }
+
+// Build dynamic OG meta data
+const birth = data?.verified_birth_at || data?.birth_at;
+const yearStr = birth ? new Date(birth).getUTCFullYear().toString() : null;
+const ageStr = birth ? formatAge(birth) : null;
+const badgeBase = import.meta.env.PUBLIC_BADGE_URL || BADGE_BASE_URL;
+
+const ogTitle = birth
+  ? `${domain} — Online Since ${yearStr}`
+  : `${domain} — Age Certificate`;
+const ogDesc = birth
+  ? `${domain} has been online for ${ageStr}. Discover your website's age at SiteAge.org.`
+  : `Look up the age of ${domain} at SiteAge.org.`;
+const ogImage = `${badgeBase}/og/${domain}`;
 ---
 
-<Base title={domain}>
+<Base title={domain} ogTitle={ogTitle} ogDescription={ogDesc} ogImage={ogImage}>
   {needsLookup && (
     <LookupLoading domain={domain} apiBase={apiBase} />
   )}
