@@ -42,7 +42,7 @@ pnpm dev:web              # Start Astro dev server only
 - Badge caching: CDN Edge (s-maxage=86400) -> KV (TTL 1h) -> real-time render
 - Lookup caching: KV (TTL 24h for success, 5min for CDX failures). CDX failures are NOT persisted to D1.
 - Force refresh: `POST /lookup` with `{ force: true }` clears KV + D1 and re-queries CDX. Rate limited to once per 5 minutes per domain.
-- Cross-worker cache clearing: API Worker binds both `API_CACHE` and `BADGE_CACHE` KV namespaces. On domain data changes (admin approval, verification, force refresh, status update), both caches are cleared via `Promise.all`.
+- Cross-worker cache clearing: API Worker binds both `API_CACHE` and `BADGE_CACHE` KV namespaces. On domain data changes (admin approval, verification, force refresh, status update), all caches (badge, domain, OG) are cleared via `Promise.all`.
 - DNS verification help: Collapsible `<details>` guide with provider-specific steps (Cloudflare, Namecheap, GoDaddy, Squarespace, Name.com, Vercel, Other). Provider dashboard URLs use SSR-interpolated `{domain}`. Chip-based provider selector with toggle behavior.
 - DNS verification: Queries Cloudflare, Google, and AliDNS DoH in parallel; falls back to system DNS (`node:dns`, 5s timeout) when all DoH fail. Handles multi-segment TXT records (`"seg1" "seg2"` → concatenated).
 - Email sending: `fetch` (primary, works in production) → `node:https` fallback (local dev with `nodejs_compat`). Mirrors DNS DoH → system DNS fallback pattern.
@@ -52,6 +52,9 @@ pnpm dev:web              # Start Astro dev server only
 - Admin domains page: `GET /admin/domains` returns `magic_key` and `email` from latest verified verification record via subquery. Verified column shows clickable "Verified ↗" link (`/manage/{domain}?key={magicKey}`, `target="_blank"`) when magic_key exists; falls back to plain "Yes" text otherwise.
 - Badge customization: Three query params — `?style=` controls visual style, `?type=` (`since` | `established`) controls message text, `?format=` (`year` | `month` | `date` | `age` | `days`) controls time display. 10 styles total: `flat`, `flat-square`, `for-the-badge`, `plastic`, `social` (all users) + `gold`, `vintage`, `dark`, `seal`, `minimal` (verified-only via `BADGE_VERIFIED_STYLES`). `established` type and `month`/`date`/`age`/`days` formats are verified-only; unverified sites auto-downgrade to `since` + `year` + `flat`. `gold`/`vintage` ignore `?color=` param (fixed color scheme). `seal` is 24px tall with ✦ prefix. `minimal` has transparent background. Defaults: verified → `established` + `year`, unverified → `since` + `year`.
 - Badge cache key format: `badge:{domain}:{style}:{color}:{label}:{type}:{format}` (use `"default"` for omitted type/format).
+- OG image: `GET badge.siteage.org/og/:domain` generates 1200×630 PNG certificate image for social sharing. Uses `@resvg/resvg-wasm` for SVG→PNG. Three templates: active (certificate), dead (tombstone), unknown (pending). KV cache key: `og:{domain}` (TTL 1h). CDN: `s-maxage=86400`.
+- Social sharing: `ShareButtons.astro` provides X/LinkedIn/Facebook/Copy Link buttons with context-aware share text. `CertificateCard.astro` includes a "Download Certificate" button that fetches the OG image.
+- Meta tags: `Base.astro` accepts `ogImage`, `ogTitle`, `ogDescription` props for OG + Twitter Card tags. `[domain].astro` passes dynamic domain-specific meta. Default OG image: `/og-default.png`.
 
 ### Design System Conventions
 
