@@ -66,7 +66,14 @@ app.get("/og/:domain{[a-z0-9.-]+\\.[a-z]{2,}}", async (c) => {
 
   // 3. Render OG PNG
   const badgeData = data || { domain, birth_at: null, death_at: null, status: "unknown" as const, verification_status: "detected" as const, verified_birth_at: null };
-  const png = await renderOgImage(badgeData);
+
+  let png: Uint8Array;
+  try {
+    png = await renderOgImage(badgeData);
+  } catch (err) {
+    console.error(`[OG] Failed to render image for ${domain}:`, err);
+    return c.text("Failed to render OG image", 500);
+  }
 
   // 4. Cache and return
   const pngBuffer = png.buffer as ArrayBuffer;
