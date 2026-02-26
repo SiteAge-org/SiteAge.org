@@ -10,8 +10,5 @@
       "binding": "BADGE_CACHE",
       "id": "b56f517a07d64db6b8d711136b94ebe6"
     }
-  ],
-  "rules": [
-    { "type": "Data", "globs": ["**/*.ttf"], "fallthrough": false }
   ]
 }
