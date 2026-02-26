@@ -85,6 +85,37 @@ function ornamentLine(y: number, halfWidth: number = 96): string {
   return `<rect x="${CX - halfWidth}" y="${y}" width="${halfWidth * 2}" height="1" fill="url(#ornLine)"/>`;
 }
 
+/** Ornament line with center diamond accent — used for primary dividers */
+function ornamentLineDiamond(y: number, halfWidth: number = 96): string {
+  const d = 3;
+  const gap = d + 2;
+  return `
+  <rect x="${CX - halfWidth}" y="${y}" width="${halfWidth - gap}" height="1" fill="url(#ornLine)"/>
+  <rect x="${CX + gap}" y="${y}" width="${halfWidth - gap}" height="1" fill="url(#ornLine)"/>
+  <path d="M${CX} ${y - d} L${CX + d} ${y + 0.5} L${CX} ${y + d + 1} L${CX - d} ${y + 0.5} Z" fill="${SEAL}" opacity="0.3"/>`;
+}
+
+/** Double ornament line (matches .ornament-line-double CSS) */
+function doubleOrnamentLine(y: number, halfWidth: number = 96): string {
+  return `
+  <rect x="${CX - halfWidth}" y="${y}" width="${halfWidth * 2}" height="1" fill="url(#ornLine)"/>
+  <rect x="${CX - halfWidth}" y="${y + 5}" width="${halfWidth * 2}" height="1" fill="url(#ornLine)"/>`;
+}
+
+/** Seal-tinted decorative frame (matches .decorative-frame::before) */
+function sealFrame(): string {
+  const inset = 10;
+  return `<rect x="${CARD_X + inset}" y="${CARD_Y + inset}" width="${CARD_W - inset * 2}" height="${CARD_H - inset * 2}" fill="none" stroke="${SEAL}" stroke-width="0.5" opacity="0.12"/>`;
+}
+
+/** Small diamond accents at outer corner intersection points */
+function cornerAccents(): string {
+  const d = 2.5;
+  return [[CARD_X, CARD_Y], [CARD_R, CARD_Y], [CARD_X, CARD_B], [CARD_R, CARD_B]]
+    .map(([x, y]) => `<path d="M${x} ${y - d} L${x + d} ${y} L${x} ${y + d} L${x - d} ${y} Z" fill="${SEAL}" opacity="0.2"/>`)
+    .join('\n  ');
+}
+
 /** Verified owner badge — uses same heroicons badge-check icon as CertificateCard.astro */
 function verifiedBadge(y: number): string {
   const bw = 190;
@@ -141,16 +172,19 @@ export function renderCertificateSvg(data: BadgeData): string {
   <rect x="${CARD_X}" y="${CARD_Y}" width="${CARD_W}" height="${CARD_H}" fill="none" stroke="${DIVIDER}" stroke-width="1"/>
 
   ${cornerOrnaments()}
+  ${cornerAccents()}
+
+  <!-- Seal-tinted decorative frame (gold inner border at 10px inset) -->
+  ${sealFrame()}
 
   <!-- Inner decorative border (matches inset-6 = 24px) -->
   <rect x="${CARD_X + 24}" y="${CARD_Y + 24}" width="${CARD_W - 48}" height="${CARD_H - 48}" fill="none" stroke="${DIVIDER}" stroke-width="0.5" opacity="0.5"/>
 
-
   <!-- Title (text-[10px] tracking-[0.4em] uppercase) -->
   <text x="${CX}" y="108" text-anchor="middle" font-family="'IBM Plex Sans'" font-size="10" font-weight="500" fill="${SEAL_DARK}" letter-spacing="4">CERTIFICATE OF WEBSITE LONGEVITY</text>
 
-  <!-- Ornament line -->
-  ${ornamentLine(122)}
+  <!-- Ornament line with center diamond -->
+  ${ornamentLineDiamond(122)}
 
   <!-- Domain name (font-display text-3xl sm:text-4xl) -->
   <text x="${CX}" y="${192 + (isVerified ? 0 : 8)}" text-anchor="middle" font-family="'DM Serif Display'" font-size="46" fill="${INK}">${domain}</text>
@@ -178,9 +212,9 @@ export function renderCertificateSvg(data: BadgeData): string {
     Age: <tspan font-weight="500" fill="${INK}">${ageText}</tspan>
   </text>
 
-  <!-- Footer -->
-  ${ornamentLine(530)}
-  <text x="${CX}" y="552" text-anchor="middle" font-family="'IBM Plex Sans'" font-size="9" fill="${INK_MUTED}" opacity="0.5" letter-spacing="1.5">CERTIFIED BY SITEAGE.ORG &#xB7; DATA FROM INTERNET ARCHIVE</text>
+  <!-- Footer (double ornament line matching .ornament-line-double) -->
+  ${doubleOrnamentLine(528)}
+  <text x="${CX}" y="556" text-anchor="middle" font-family="'IBM Plex Sans'" font-size="9" fill="${INK_MUTED}" opacity="0.5" letter-spacing="1.5">CERTIFIED BY SITEAGE.ORG &#xB7; DATA FROM INTERNET ARCHIVE</text>
 </svg>`;
 }
 
@@ -195,20 +229,21 @@ function renderUnknownSvg(domain: string): string {
   <rect x="${CARD_X}" y="${CARD_Y}" width="${CARD_W}" height="${CARD_H}" fill="none" stroke="${DIVIDER}" stroke-width="1"/>
 
   ${cornerOrnaments()}
+  ${cornerAccents()}
+
+  ${sealFrame()}
 
   <rect x="${CARD_X + 24}" y="${CARD_Y + 24}" width="${CARD_W - 48}" height="${CARD_H - 48}" fill="none" stroke="${DIVIDER}" stroke-width="0.5" opacity="0.5"/>
 
-  <rect x="${CARD_X}" y="${CARD_Y}" width="${CARD_W}" height="${CARD_H}" fill="white" opacity="0.04" filter="url(#noise)"/>
-
   <text x="${CX}" y="175" text-anchor="middle" font-family="'IBM Plex Sans'" font-size="10" font-weight="500" fill="${SEAL_DARK}" letter-spacing="4">WEBSITE AGE CERTIFICATE</text>
 
-  ${ornamentLine(192)}
+  ${ornamentLineDiamond(192)}
 
   <text x="${CX}" y="280" text-anchor="middle" font-family="'DM Serif Display'" font-size="46" fill="${INK}">${domain}</text>
 
   <text x="${CX}" y="355" text-anchor="middle" font-family="'IBM Plex Sans'" font-size="16" fill="${INK_MUTED}" font-weight="300">Age pending...</text>
 
-  ${ornamentLine(500)}
+  ${doubleOrnamentLine(498)}
   <text x="${CX}" y="526" text-anchor="middle" font-family="'IBM Plex Sans'" font-size="9" fill="${INK_MUTED}" opacity="0.5" letter-spacing="1.5">CERTIFIED BY SITEAGE.ORG &#xB7; DATA FROM INTERNET ARCHIVE</text>
 </svg>`;
 }

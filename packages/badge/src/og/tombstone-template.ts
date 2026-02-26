@@ -73,6 +73,8 @@ export function renderTombstoneSvg(data: BadgeData): string {
   <path d="M${CARD_X} ${CARD_B} L${CARD_X + len} ${CARD_B}" stroke="${TOMBSTONE}" stroke-width="2" fill="none" opacity="0.25"/>
   <path d="M${CARD_R} ${CARD_B} L${CARD_R} ${CARD_B - len}" stroke="${TOMBSTONE}" stroke-width="2" fill="none" opacity="0.25"/>
   <path d="M${CARD_R} ${CARD_B} L${CARD_R - len} ${CARD_B}" stroke="${TOMBSTONE}" stroke-width="2" fill="none" opacity="0.25"/>
+  <!-- Corner diamond accents -->
+  ${[[CARD_X, CARD_Y], [CARD_R, CARD_Y], [CARD_X, CARD_B], [CARD_R, CARD_B]].map(([x, y]) => `<path d="M${x} ${y - 2.5} L${x + 2.5} ${y} L${x} ${y + 2.5} L${x - 2.5} ${y} Z" fill="${TOMBSTONE}" opacity="0.15"/>`).join('\n  ')}
   <!-- Inner corners -->
   <path d="M${CARD_X + inset} ${CARD_Y + inset} L${CARD_X + inset} ${CARD_Y + inset + lenI}" stroke="${TOMBSTONE}" stroke-width="1" fill="none" opacity="0.12"/>
   <path d="M${CARD_X + inset} ${CARD_Y + inset} L${CARD_X + inset + lenI} ${CARD_Y + inset}" stroke="${TOMBSTONE}" stroke-width="1" fill="none" opacity="0.12"/>
@@ -83,15 +85,19 @@ export function renderTombstoneSvg(data: BadgeData): string {
   <path d="M${CARD_R - inset} ${CARD_B - inset} L${CARD_R - inset} ${CARD_B - inset - lenI}" stroke="${TOMBSTONE}" stroke-width="1" fill="none" opacity="0.12"/>
   <path d="M${CARD_R - inset} ${CARD_B - inset} L${CARD_R - inset - lenI} ${CARD_B - inset}" stroke="${TOMBSTONE}" stroke-width="1" fill="none" opacity="0.12"/>
 
+  <!-- Tombstone decorative frame (10px inset) -->
+  <rect x="${CARD_X + 10}" y="${CARD_Y + 10}" width="${CARD_W - 20}" height="${CARD_H - 20}" fill="none" stroke="${TOMBSTONE}" stroke-width="0.5" opacity="0.1"/>
+
   <!-- Inner border -->
   <rect x="${CARD_X + 24}" y="${CARD_Y + 24}" width="${CARD_W - 48}" height="${CARD_H - 48}" fill="none" stroke="${DIVIDER}" stroke-width="0.5" opacity="0.4"/>
-
 
   <!-- In Memoriam -->
   <text x="${CX}" y="138" text-anchor="middle" font-family="'IBM Plex Sans'" font-size="10" font-weight="500" fill="${TOMBSTONE}" letter-spacing="4.5">IN MEMORIAM</text>
 
-  <!-- Ornament line -->
-  <rect x="${CX - 80}" y="155" width="160" height="1" fill="url(#ornLine)"/>
+  <!-- Ornament line with diamond -->
+  <rect x="${CX - 80}" y="155" width="${80 - 5}" height="1" fill="url(#ornLine)"/>
+  <rect x="${CX + 5}" y="155" width="${80 - 5}" height="1" fill="url(#ornLine)"/>
+  <path d="M${CX} ${155 - 3} L${CX + 3} 155.5 L${CX} ${155 + 4} L${CX - 3} 155.5 Z" fill="${TOMBSTONE}" opacity="0.2"/>
 
   <!-- Domain -->
   <text x="${CX}" y="232" text-anchor="middle" font-family="'DM Serif Display'" font-size="42" fill="${INK_MUTED}">${domain}</text>
@@ -105,8 +111,9 @@ export function renderTombstoneSvg(data: BadgeData): string {
   <!-- Survival text -->
   ${survivalText ? `<text x="${CX}" y="398" text-anchor="middle" font-family="'IBM Plex Sans'" font-size="13" fill="${TOMBSTONE}" opacity="0.4" font-weight="300">${survivalText}</text>` : ""}
 
-  <!-- Footer -->
-  <rect x="${CX - 120}" y="500" width="240" height="1" fill="url(#ornLine)"/>
+  <!-- Footer (double ornament line) -->
+  <rect x="${CX - 120}" y="498" width="240" height="1" fill="url(#ornLine)"/>
+  <rect x="${CX - 120}" y="503" width="240" height="1" fill="url(#ornLine)"/>
   <text x="${CX}" y="524" text-anchor="middle" font-family="'IBM Plex Sans'" font-size="9" fill="${TOMBSTONE}" opacity="0.4" letter-spacing="1.5">REMEMBERED BY SITEAGE.ORG &#xB7; DATA FROM INTERNET ARCHIVE</text>
 </svg>`;
 }
