@@ -111,11 +111,9 @@ export function renderCertificateSvg(data: BadgeData): string {
   }
 
   const year = birthYear(birth);
-  const d = new Date(birth);
-  const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
-  const fullDate = `${monthNames[d.getUTCMonth()]} ${d.getUTCDate()}, ${d.getUTCFullYear()}`;
+  // Match CertificateCard.astro date formatting exactly (no timeZone = server local)
+  const fullDate = new Date(birth).toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" });
   const ageText = formatAge(birth);
-  const catalogedDate = new Date().toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" });
 
   const v = isVerified ? 20 : 0;
 
