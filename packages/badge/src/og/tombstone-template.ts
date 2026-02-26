@@ -50,9 +50,9 @@ export function renderTombstoneSvg(data: BadgeData): string {
       <stop offset="85%" stop-color="${DIVIDER}"/>
       <stop offset="100%" stop-color="${DIVIDER}" stop-opacity="0"/>
     </linearGradient>
-    <filter id="cardShadow" x="-5%" y="-5%" width="110%" height="115%">
-      <feDropShadow dx="0" dy="2" stdDeviation="4" flood-color="#1a1d2e" flood-opacity="0.04"/>
-      <feDropShadow dx="0" dy="8" stdDeviation="16" flood-color="#1a1d2e" flood-opacity="0.05"/>
+    <filter id="cardShadow" x="-3%" y="-3%" width="106%" height="110%">
+      <feDropShadow dx="0" dy="1" stdDeviation="2" flood-color="#1a1d2e" flood-opacity="0.05"/>
+      <feDropShadow dx="0" dy="4" stdDeviation="8" flood-color="#1a1d2e" flood-opacity="0.04"/>
     </filter>
   </defs>
 
@@ -85,9 +85,6 @@ export function renderTombstoneSvg(data: BadgeData): string {
   <path d="M${CARD_R - inset} ${CARD_B - inset} L${CARD_R - inset} ${CARD_B - inset - lenI}" stroke="${TOMBSTONE}" stroke-width="1" fill="none" opacity="0.12"/>
   <path d="M${CARD_R - inset} ${CARD_B - inset} L${CARD_R - inset - lenI} ${CARD_B - inset}" stroke="${TOMBSTONE}" stroke-width="1" fill="none" opacity="0.12"/>
 
-  <!-- Tombstone decorative frame (10px inset) -->
-  <rect x="${CARD_X + 10}" y="${CARD_Y + 10}" width="${CARD_W - 20}" height="${CARD_H - 20}" fill="none" stroke="${TOMBSTONE}" stroke-width="0.5" opacity="0.1"/>
-
   <!-- Inner border -->
   <rect x="${CARD_X + 24}" y="${CARD_Y + 24}" width="${CARD_W - 48}" height="${CARD_H - 48}" fill="none" stroke="${DIVIDER}" stroke-width="0.5" opacity="0.4"/>
 
@@ -111,9 +108,8 @@ export function renderTombstoneSvg(data: BadgeData): string {
   <!-- Survival text -->
   ${survivalText ? `<text x="${CX}" y="398" text-anchor="middle" font-family="'IBM Plex Sans'" font-size="13" fill="${TOMBSTONE}" opacity="0.4" font-weight="300">${survivalText}</text>` : ""}
 
-  <!-- Footer (double ornament line) -->
-  <rect x="${CX - 120}" y="498" width="240" height="1" fill="url(#ornLine)"/>
-  <rect x="${CX - 120}" y="503" width="240" height="1" fill="url(#ornLine)"/>
+  <!-- Footer -->
+  <rect x="${CX - 120}" y="500" width="240" height="1" fill="url(#ornLine)"/>
   <text x="${CX}" y="524" text-anchor="middle" font-family="'IBM Plex Sans'" font-size="9" fill="${TOMBSTONE}" opacity="0.4" letter-spacing="1.5">REMEMBERED BY SITEAGE.ORG &#xB7; DATA FROM INTERNET ARCHIVE</text>
 </svg>`;
 }

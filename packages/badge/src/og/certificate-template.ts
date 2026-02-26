@@ -45,11 +45,10 @@ function sharedDefs(): string {
       <stop offset="85%" stop-color="${DIVIDER}"/>
       <stop offset="100%" stop-color="${DIVIDER}" stop-opacity="0"/>
     </linearGradient>
-    <!-- Card shadow -->
-    <filter id="cardShadow" x="-5%" y="-5%" width="110%" height="115%">
-      <feDropShadow dx="0" dy="2" stdDeviation="4" flood-color="${INK}" flood-opacity="0.05"/>
-      <feDropShadow dx="0" dy="8" stdDeviation="16" flood-color="${INK}" flood-opacity="0.06"/>
-      <feDropShadow dx="0" dy="12" stdDeviation="28" flood-color="${SEAL}" flood-opacity="0.03"/>
+    <!-- Card shadow (crisp, tight layers) -->
+    <filter id="cardShadow" x="-3%" y="-3%" width="106%" height="110%">
+      <feDropShadow dx="0" dy="1" stdDeviation="2" flood-color="${INK}" flood-opacity="0.06"/>
+      <feDropShadow dx="0" dy="4" stdDeviation="8" flood-color="${INK}" flood-opacity="0.04"/>
     </filter>
   </defs>`;
 }
@@ -93,19 +92,6 @@ function ornamentLineDiamond(y: number, halfWidth: number = 96): string {
   <rect x="${CX - halfWidth}" y="${y}" width="${halfWidth - gap}" height="1" fill="url(#ornLine)"/>
   <rect x="${CX + gap}" y="${y}" width="${halfWidth - gap}" height="1" fill="url(#ornLine)"/>
   <path d="M${CX} ${y - d} L${CX + d} ${y + 0.5} L${CX} ${y + d + 1} L${CX - d} ${y + 0.5} Z" fill="${SEAL}" opacity="0.3"/>`;
-}
-
-/** Double ornament line (matches .ornament-line-double CSS) */
-function doubleOrnamentLine(y: number, halfWidth: number = 96): string {
-  return `
-  <rect x="${CX - halfWidth}" y="${y}" width="${halfWidth * 2}" height="1" fill="url(#ornLine)"/>
-  <rect x="${CX - halfWidth}" y="${y + 5}" width="${halfWidth * 2}" height="1" fill="url(#ornLine)"/>`;
-}
-
-/** Seal-tinted decorative frame (matches .decorative-frame::before) */
-function sealFrame(): string {
-  const inset = 10;
-  return `<rect x="${CARD_X + inset}" y="${CARD_Y + inset}" width="${CARD_W - inset * 2}" height="${CARD_H - inset * 2}" fill="none" stroke="${SEAL}" stroke-width="0.5" opacity="0.12"/>`;
 }
 
 /** Small diamond accents at outer corner intersection points */
@@ -174,9 +160,6 @@ export function renderCertificateSvg(data: BadgeData): string {
   ${cornerOrnaments()}
   ${cornerAccents()}
 
-  <!-- Seal-tinted decorative frame (gold inner border at 10px inset) -->
-  ${sealFrame()}
-
   <!-- Inner decorative border (matches inset-6 = 24px) -->
   <rect x="${CARD_X + 24}" y="${CARD_Y + 24}" width="${CARD_W - 48}" height="${CARD_H - 48}" fill="none" stroke="${DIVIDER}" stroke-width="0.5" opacity="0.5"/>
 
@@ -212,9 +195,9 @@ export function renderCertificateSvg(data: BadgeData): string {
     Age: <tspan font-weight="500" fill="${INK}">${ageText}</tspan>
   </text>
 
-  <!-- Footer (double ornament line matching .ornament-line-double) -->
-  ${doubleOrnamentLine(528)}
-  <text x="${CX}" y="556" text-anchor="middle" font-family="'IBM Plex Sans'" font-size="9" fill="${INK_MUTED}" opacity="0.5" letter-spacing="1.5">CERTIFIED BY SITEAGE.ORG &#xB7; DATA FROM INTERNET ARCHIVE</text>
+  <!-- Footer -->
+  ${ornamentLine(530)}
+  <text x="${CX}" y="552" text-anchor="middle" font-family="'IBM Plex Sans'" font-size="9" fill="${INK_MUTED}" opacity="0.5" letter-spacing="1.5">CERTIFIED BY SITEAGE.ORG &#xB7; DATA FROM INTERNET ARCHIVE</text>
 </svg>`;
 }
 
@@ -231,8 +214,6 @@ function renderUnknownSvg(domain: string): string {
   ${cornerOrnaments()}
   ${cornerAccents()}
 
-  ${sealFrame()}
-
   <rect x="${CARD_X + 24}" y="${CARD_Y + 24}" width="${CARD_W - 48}" height="${CARD_H - 48}" fill="none" stroke="${DIVIDER}" stroke-width="0.5" opacity="0.5"/>
 
   <text x="${CX}" y="175" text-anchor="middle" font-family="'IBM Plex Sans'" font-size="10" font-weight="500" fill="${SEAL_DARK}" letter-spacing="4">WEBSITE AGE CERTIFICATE</text>
@@ -243,7 +224,7 @@ function renderUnknownSvg(domain: string): string {
 
   <text x="${CX}" y="355" text-anchor="middle" font-family="'IBM Plex Sans'" font-size="16" fill="${INK_MUTED}" font-weight="300">Age pending...</text>
 
-  ${doubleOrnamentLine(498)}
+  ${ornamentLine(500)}
   <text x="${CX}" y="526" text-anchor="middle" font-family="'IBM Plex Sans'" font-size="9" fill="${INK_MUTED}" opacity="0.5" letter-spacing="1.5">CERTIFIED BY SITEAGE.ORG &#xB7; DATA FROM INTERNET ARCHIVE</text>
 </svg>`;
 }
