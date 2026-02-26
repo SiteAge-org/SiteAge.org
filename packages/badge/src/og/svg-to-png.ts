@@ -15,7 +15,7 @@ export async function svgToPng(svg: string): Promise<Uint8Array> {
   await ensureInit();
 
   const resvg = new Resvg(svg, {
-    fitTo: { mode: "width", value: 1200 },
+    fitTo: { mode: "width", value: 2400 },
     font: {
       fontBuffers: [dmSerifDisplay, ibmPlexSansRegular, ibmPlexSansSemiBold],
       defaultFontFamily: "IBM Plex Sans",
