@@ -85,20 +85,30 @@ function ornamentLine(y: number, halfWidth: number = 96): string {
   return `<rect x="${CX - halfWidth}" y="${y}" width="${halfWidth * 2}" height="1" fill="url(#ornLine)"/>`;
 }
 
-/** Verified owner badge — gradient bg matching page design */
+/** Verified owner badge — uses same heroicons badge-check icon as CertificateCard.astro */
 function verifiedBadge(y: number): string {
   const bw = 190;
   const bx = CX - bw / 2;
-  const sx = CX - 38;
-  const sy = y + 3;
+  const bh = 28;
+
+  // Heroicons badge-check (viewBox 0 0 20 20), scaled to 14px
+  const iconSize = 14;
+  const sc = iconSize / 20;
+
+  // Layout: [icon 14px] [gap 5px] [text ~110px] = ~129px total, centered at CX
+  const totalW = 129;
+  const iconX = CX - totalW / 2;
+  const iconY = y + (bh - iconSize) / 2;
+  const textX = iconX + iconSize + 5;
+  const textY = y + 18;
+
   return `
-  <!-- Verified badge (bg-gradient from-seal-light/20 to-seal/10 + border-seal/30) -->
-  <rect x="${bx}" y="${y}" width="${bw}" height="28" rx="2" fill="${SEAL}" opacity="0.06"/>
-  <rect x="${bx}" y="${y}" width="${bw}" height="28" rx="2" fill="none" stroke="${SEAL}" stroke-width="0.7" opacity="0.3"/>
-  <!-- Shield icon -->
-  <path d="M${sx} ${sy + 2} l4.8-2.1a1.6 1.6 0 011.6 0l4.8 2.1v7.8a6 6 0 01-2.7 5l-1.9 1.3a1.6 1.6 0 01-1.6 0l-1.9-1.3a6 6 0 01-2.7-5z" fill="${SEAL_DARK}" opacity="0.8"/>
-  <polyline points="${sx + 3.2} ${sy + 9} ${sx + 4.8} ${sy + 11} ${sx + 8} ${sy + 6.5}" fill="none" stroke="white" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
-  <text x="${CX + 12}" y="${y + 19}" text-anchor="middle" font-family="'IBM Plex Sans'" font-size="10" font-weight="600" fill="${SEAL_DARK}" letter-spacing="1.5">VERIFIED OWNER</text>`;
+  <rect x="${bx}" y="${y}" width="${bw}" height="${bh}" rx="2" fill="${SEAL}" opacity="0.06"/>
+  <rect x="${bx}" y="${y}" width="${bw}" height="${bh}" rx="2" fill="none" stroke="${SEAL}" stroke-width="0.7" opacity="0.3"/>
+  <g transform="translate(${iconX},${iconY}) scale(${sc})">
+    <path fill="${SEAL_DARK}" fill-rule="evenodd" d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 001.745.723 3.066 3.066 0 012.812 2.812c.051.643.304 1.254.723 1.745a3.066 3.066 0 010 3.976 3.066 3.066 0 00-.723 1.745 3.066 3.066 0 01-2.812 2.812 3.066 3.066 0 00-1.745.723 3.066 3.066 0 01-3.976 0 3.066 3.066 0 00-1.745-.723 3.066 3.066 0 01-2.812-2.812 3.066 3.066 0 00-.723-1.745 3.066 3.066 0 010-3.976 3.066 3.066 0 00.723-1.745 3.066 3.066 0 012.812-2.812zm7.44 5.252a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+  </g>
+  <text x="${textX}" y="${textY}" font-family="'IBM Plex Sans'" font-size="10" font-weight="600" fill="${SEAL_DARK}" letter-spacing="1.5">VERIFIED OWNER</text>`;
 }
 
 export function renderCertificateSvg(data: BadgeData): string {
