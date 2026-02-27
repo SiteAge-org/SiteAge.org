@@ -1,4 +1,5 @@
 import { Hono } from "hono";
+import { cors } from "hono/cors";
 import { isValidDomain, BADGE_CACHE_TTL, DOMAIN_CACHE_TTL, API_BASE_URL, BADGE_STYLES, BADGE_MESSAGE_TYPES, BADGE_TIME_FORMATS } from "@siteage/shared";
 import type { BadgeData, BadgeStyle, BadgeMessageType, BadgeTimeFormat } from "@siteage/shared";
 import { renderBadge } from "./renderer.js";
@@ -10,6 +11,8 @@ interface Env {
 }
 
 const app = new Hono<{ Bindings: Env }>();
+
+app.use("*", cors());
 
 // OG image endpoint — must be before the badge catch-all route
 app.get("/og/:domain{[a-z0-9.-]+\\.[a-z]{2,}}", async (c) => {
@@ -27,7 +30,6 @@ app.get("/og/:domain{[a-z0-9.-]+\\.[a-z]{2,}}", async (c) => {
       headers: {
         "Content-Type": "image/png",
         "Cache-Control": "public, max-age=300, s-maxage=86400",
-        "Access-Control-Allow-Origin": "*",
       },
     });
   }
@@ -84,7 +86,6 @@ app.get("/og/:domain{[a-z0-9.-]+\\.[a-z]{2,}}", async (c) => {
     headers: {
       "Content-Type": "image/png",
       "Cache-Control": "public, max-age=300, s-maxage=86400",
-      "Access-Control-Allow-Origin": "*",
     },
   });
 });
