@@ -140,7 +140,7 @@ export function renderCertificateSvg(data: BadgeData): string {
   const year = birthYear(birth);
   // Match CertificateCard.astro date formatting exactly (no timeZone = server local)
   const fullDate = new Date(birth).toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" });
-  const ageText = formatAge(birth);
+  const ageText = escapeXml(formatAge(birth));
 
   const v = isVerified ? 20 : 0;
 

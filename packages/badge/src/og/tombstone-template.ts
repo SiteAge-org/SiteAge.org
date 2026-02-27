@@ -29,7 +29,7 @@ export function renderTombstoneSvg(data: BadgeData): string {
     : "";
 
   const survivalText = birth
-    ? `Survived for ${formatAge(birth, data.death_at || undefined)}`
+    ? `Survived for ${escapeXml(formatAge(birth, data.death_at || undefined))}`
     : "";
 
   const len = 48;

@@ -71,9 +71,8 @@ app.get("/og/:domain{[a-z0-9.-]+\\.[a-z]{2,}}", async (c) => {
   try {
     png = await renderOgImage(badgeData);
   } catch (err) {
-    const msg = err instanceof Error ? `${err.message}\n${err.stack}` : String(err);
-    console.error(`[OG] Failed to render image for ${domain}:`, msg);
-    return c.text(`Failed to render OG image: ${msg}`, 500);
+    console.error(`[OG] Failed to render image for ${domain}:`, err);
+    return c.text("Failed to render OG image", 500);
   }
 
   // 4. Cache and return
