@@ -88,8 +88,9 @@ if (isDead && year) {
     <button
       class="share-btn"
       data-channel="download"
-      data-og-url={ogUrl}
+      data-og-fallback={ogUrl}
       data-domain={domain}
+      data-dead={isDead ? "true" : undefined}
       aria-label="Download certificate image"
     >
       <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
@@ -140,24 +141,35 @@ if (isDead && year) {
       }
 
       if (channel === "download") {
-        const ogUrl = btn.dataset.ogUrl;
         const domain = btn.dataset.domain;
-        if (!ogUrl) return;
+        const ogFallback = btn.dataset.ogFallback;
+        if (!domain) return;
         const label = btn.querySelector<HTMLSpanElement>(".download-label");
-        if (label) label.textContent = "Downloading\u2026";
+        if (label) label.textContent = "Generating\u2026";
         try {
-          const resp = await fetch(ogUrl);
-          const blob = await resp.blob();
-          const blobUrl = URL.createObjectURL(blob);
-          const a = document.createElement("a");
-          a.href = blobUrl;
-          a.download = `siteage-${domain}.png`;
-          document.body.appendChild(a);
-          a.click();
-          a.remove();
-          URL.revokeObjectURL(blobUrl);
+          const isDead = btn.dataset.dead === "true";
+          const sourceEl = document.getElementById(isDead ? "tombstone" : "certificate");
+          if (!sourceEl) throw new Error("Card element not found");
+          const { downloadCertificate } = await import("../scripts/certificate-download");
+          await downloadCertificate(sourceEl, domain);
         } catch {
-          // Silently fail
+          // Fallback to server-side OG endpoint
+          if (ogFallback) {
+            try {
+              const resp = await fetch(ogFallback);
+              const blob = await resp.blob();
+              const blobUrl = URL.createObjectURL(blob);
+              const a = document.createElement("a");
+              a.href = blobUrl;
+              a.download = `siteage-${domain}.png`;
+              document.body.appendChild(a);
+              a.click();
+              a.remove();
+              URL.revokeObjectURL(blobUrl);
+            } catch {
+              // Silently fail
+            }
+          }
         }
         if (label) label.textContent = "Download";
         return;
