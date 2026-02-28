@@ -26,6 +26,9 @@ export async function downloadCertificate(
     logging: false,
     onclone: (_doc, clonedEl) => {
       clonedEl.querySelectorAll("#recheck-btn").forEach((n) => n.remove());
+      // Remove noise-overlay: its SVG feTurbulence filter background
+      // can't be rasterised by html2canvas (produces a 0×0 canvas).
+      clonedEl.classList.remove("noise-overlay");
     },
   });
 
