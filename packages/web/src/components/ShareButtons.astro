@@ -6,9 +6,11 @@ interface Props {
   birthAt?: string | null;
   deathAt?: string | null;
   isDead?: boolean;
+  isVerified?: boolean;
+  createdAt?: string;
 }
 
-const { domain, birthAt, deathAt, isDead = false } = Astro.props;
+const { domain, birthAt, deathAt, isDead = false, isVerified = false, createdAt = "" } = Astro.props;
 const pageUrl = `${WEB_BASE_URL}/${domain}`;
 const badgeBase = import.meta.env.PUBLIC_BADGE_URL || BADGE_BASE_URL;
 const ogUrl = `${badgeBase}/og/${domain}`;
@@ -91,6 +93,10 @@ if (isDead && year) {
       data-og-fallback={ogUrl}
       data-domain={domain}
       data-dead={isDead ? "true" : undefined}
+      data-birth-at={birthAt || undefined}
+      data-death-at={deathAt || undefined}
+      data-verified={isVerified ? "true" : undefined}
+      data-created-at={createdAt || undefined}
       aria-label="Download certificate image"
     >
       <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
@@ -147,11 +153,15 @@ if (isDead && year) {
         const label = btn.querySelector<HTMLSpanElement>(".download-label");
         if (label) label.textContent = "Generating\u2026";
         try {
-          const isDead = btn.dataset.dead === "true";
-          const sourceEl = document.getElementById(isDead ? "tombstone" : "certificate");
-          if (!sourceEl) throw new Error("Card element not found");
           const { downloadCertificate } = await import("../scripts/certificate-download");
-          await downloadCertificate(sourceEl, domain);
+          await downloadCertificate({
+            domain,
+            birthAt: btn.dataset.birthAt || null,
+            deathAt: btn.dataset.deathAt || null,
+            isDead: btn.dataset.dead === "true",
+            isVerified: btn.dataset.verified === "true",
+            createdAt: btn.dataset.createdAt || "",
+          });
         } catch (err) {
           console.error("[Download] Client-side capture failed:", err);
           // Fallback to server-side OG endpoint

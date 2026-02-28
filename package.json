@@ -28,9 +28,6 @@
       "esbuild",
       "sharp",
       "workerd"
-    ],
-    "patchedDependencies": {
-      "html2canvas@1.4.1": "patches/html2canvas@1.4.1.patch"
-    }
+    ]
   }
 }

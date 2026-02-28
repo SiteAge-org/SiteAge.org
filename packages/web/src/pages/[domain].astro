@@ -80,7 +80,7 @@ const ogImage = `${badgeBase}/og/${domain}`;
 
     {data && (
       <div class="animate-fade-up delay-100 mt-4">
-        <ShareButtons domain={data.domain} birthAt={data.verified_birth_at || data.birth_at} deathAt={data.death_at} isDead={data.status === "dead"} />
+        <ShareButtons domain={data.domain} birthAt={data.verified_birth_at || data.birth_at} deathAt={data.death_at} isDead={data.status === "dead"} isVerified={data.verification_status === "verified"} createdAt={data.created_at} />
       </div>
     )}
 

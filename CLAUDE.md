@@ -54,7 +54,7 @@ pnpm dev:web              # Start Astro dev server only
 - Badge cache key format: `badge:{domain}:{style}:{color}:{label}:{type}:{format}` (use `"default"` for omitted type/format).
 - OG image: `GET badge.siteage.org/og/:domain` generates 1200×630 PNG certificate image for social sharing. Uses `@resvg/resvg-wasm` for SVG→PNG. Three templates: active (certificate), dead (tombstone), unknown (pending). KV cache key: `og:{domain}` (TTL 1h). CDN: `s-maxage=86400`.
 - Social sharing: `ShareButtons.astro` provides X/LinkedIn/Facebook/Copy Link buttons with context-aware share text.
-- Certificate download: Uses `html2canvas` to capture the rendered DOM card (`#certificate` or `#tombstone`) as a 1200×630 PNG on the client side. Falls back to server-side OG endpoint (`badge.siteage.org/og/:domain`) on failure. Code-split via dynamic `import()`. Core logic in `packages/web/src/scripts/certificate-download.ts`.
+- Certificate download: Uses Canvas 2D API to programmatically draw a 4800×6400 portrait PNG (1200×1600 base at 4x scale). Replicates the OG SVG template design (corner ornaments, gradient lines, year glow, verified badge) with pixel-perfect precision. Falls back to server-side OG endpoint (`badge.siteage.org/og/:domain`) on failure. Code-split via dynamic `import()`. Core logic in `packages/web/src/scripts/certificate-download.ts`.
 - Meta tags: `Base.astro` accepts `ogImage`, `ogTitle`, `ogDescription` props for OG + Twitter Card tags. `[domain].astro` passes dynamic domain-specific meta. Default OG image: `/og-default.png`.
 
 ### Design System Conventions
