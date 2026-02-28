@@ -1,69 +1,69 @@
-import { toPng } from "html-to-image";
+import html2canvas from "html2canvas";
 
-const OG_WIDTH = 1200;
-const OG_HEIGHT = 630;
-const CARD_WIDTH = 880;
+// Portrait 3:4, high-res output (4800×6400)
+const BASE_W = 1200;
+const BASE_H = 1600;
+const SCALE = 4;
+const BG_COLOR = "#faf8f4";
 
 /**
- * Capture a certificate/tombstone card DOM element as a PNG and trigger download.
+ * Capture a certificate/tombstone card as a high-res portrait PNG
+ * and trigger download.
+ *
+ * html2canvas is patched (pnpm patch) to support oklab/oklch colors
+ * that Tailwind v4 generates.
  */
 export async function downloadCertificate(
   sourceEl: HTMLElement,
-  domain: string
+  domain: string,
 ): Promise<void> {
-  // Create offscreen container at fixed OG dimensions
-  const container = document.createElement("div");
-  container.style.cssText = [
-    "position: fixed",
-    "left: -9999px",
-    "top: 0",
-    `width: ${OG_WIDTH}px`,
-    `height: ${OG_HEIGHT}px`,
-    "overflow: hidden",
-    "background: #faf8f4", // parchment base color
-    "display: flex",
-    "align-items: center",
-    "justify-content: center",
-    "z-index: -1",
-  ].join(";");
-  document.body.appendChild(container);
+  await document.fonts.ready;
 
-  try {
-    // Clone the card into the container
-    const clone = sourceEl.cloneNode(true) as HTMLElement;
+  const captured = await html2canvas(sourceEl, {
+    backgroundColor: null,
+    scale: SCALE,
+    useCORS: true,
+    logging: false,
+    onclone: (_doc, clonedEl) => {
+      clonedEl.querySelectorAll("#recheck-btn").forEach((n) => n.remove());
+    },
+  });
 
-    // Remove interactive elements (buttons, links that are actions)
-    clone.querySelectorAll("#recheck-btn").forEach((el) => el.remove());
+  // Compose onto portrait canvas with card centered
+  const outW = BASE_W * SCALE;
+  const outH = BASE_H * SCALE;
+  const canvas = document.createElement("canvas");
+  canvas.width = outW;
+  canvas.height = outH;
+  const ctx = canvas.getContext("2d")!;
 
-    // Set fixed width to match SVG template proportions
-    clone.style.width = `${CARD_WIDTH}px`;
-    clone.style.maxWidth = "none";
-    clone.style.margin = "0";
-    // Remove animation classes that might affect rendering
-    clone.style.animation = "none";
-    clone.style.opacity = "1";
-    clone.style.transform = "none";
+  ctx.fillStyle = BG_COLOR;
+  ctx.fillRect(0, 0, outW, outH);
 
-    container.appendChild(clone);
+  const padding = 0.88;
+  const fitScale = Math.min(
+    (outW * padding) / captured.width,
+    (outH * padding) / captured.height,
+  );
+  const w = captured.width * fitScale;
+  const h = captured.height * fitScale;
+  const x = (outW - w) / 2;
+  const y = (outH - h) / 2;
+  ctx.drawImage(captured, x, y, w, h);
 
-    // Wait for fonts to be ready
-    await document.fonts.ready;
+  const blob = await new Promise<Blob>((resolve, reject) => {
+    canvas.toBlob(
+      (b) => (b ? resolve(b) : reject(new Error("toBlob failed"))),
+      "image/png",
+    );
+  });
 
-    const dataUrl = await toPng(container, {
-      width: OG_WIDTH,
-      height: OG_HEIGHT,
-      pixelRatio: 1,
-      cacheBust: true,
-    });
-
-    // Trigger download
-    const a = document.createElement("a");
-    a.href = dataUrl;
-    a.download = `siteage-${domain}.png`;
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-  } finally {
-    container.remove();
-  }
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `siteage-${domain}.png`;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
 }

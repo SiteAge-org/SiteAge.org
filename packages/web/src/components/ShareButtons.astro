@@ -152,7 +152,8 @@ if (isDead && year) {
           if (!sourceEl) throw new Error("Card element not found");
           const { downloadCertificate } = await import("../scripts/certificate-download");
           await downloadCertificate(sourceEl, domain);
-        } catch {
+        } catch (err) {
+          console.error("[Download] Client-side capture failed:", err);
           // Fallback to server-side OG endpoint
           if (ogFallback) {
             try {
