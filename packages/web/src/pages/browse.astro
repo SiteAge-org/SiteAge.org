@@ -1,0 +1,158 @@
+---
+import Base from "../layouts/Base.astro";
+import JsonLd from "../components/JsonLd.astro";
+import { API_BASE_URL, formatAge } from "@siteage/shared";
+
+interface BrowseDomain {
+  domain: string;
+  best_birth_at: string | null;
+  verified_birth_at: string | null;
+  birth_at: string | null;
+  status: string;
+  verification_status: string;
+  created_at: string;
+}
+
+const apiBase = import.meta.env.PUBLIC_API_URL || API_BASE_URL;
+const page = Math.max(1, parseInt(Astro.url.searchParams.get("page") || "1", 10));
+const limit = 20;
+
+let domains: BrowseDomain[] = [];
+let total = 0;
+let totalPages = 1;
+let error: string | null = null;
+
+try {
+  const resp = await fetch(`${apiBase}/browse?page=${page}&limit=${limit}`);
+  if (resp.ok) {
+    const data = await resp.json() as { domains: BrowseDomain[]; total: number; page: number; limit: number };
+    domains = data.domains || [];
+    total = data.total;
+    totalPages = Math.ceil(total / limit);
+  } else {
+    error = "Failed to load domains";
+  }
+} catch {
+  error = "Unable to connect to the API";
+}
+
+const breadcrumbSchema = {
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  itemListElement: [
+    { "@type": "ListItem", position: 1, name: "Home", item: "https://siteage.org" },
+    { "@type": "ListItem", position: 2, name: "Browse" },
+  ],
+};
+---
+
+<Base
+  title="Browse Certified Websites"
+  description="Browse all certified websites with verified age records from multiple archival sources."
+  ogTitle="Browse Certified Websites"
+  ogDescription="Explore the directory of websites with certified age badges powered by archival sources."
+>
+  <JsonLd data={breadcrumbSchema} />
+
+  <!-- Header -->
+  <section class="relative overflow-hidden">
+    <div class="absolute inset-0 bg-gradient-to-b from-parchment-dark/40 to-parchment noise-overlay"></div>
+    <div class="relative max-w-4xl mx-auto px-6 pt-16 pb-10 text-center">
+      <span class="text-xs tracking-[0.3em] uppercase text-seal-dark font-medium">Directory</span>
+      <h1 class="font-display text-3xl sm:text-4xl mt-4 text-ink">Browse Certified Websites</h1>
+      <p class="text-ink-muted mt-3 font-light">
+        {total > 0 ? `${total} websites certified` : "Explore certified websites"}
+      </p>
+      <div class="ornament-line max-w-32 mx-auto mt-5"></div>
+    </div>
+  </section>
+
+  <div class="max-w-4xl mx-auto px-6 pb-16 sm:pb-24">
+    {error && (
+      <div class="text-center py-16">
+        <p class="text-ink-muted font-light">{error}</p>
+      </div>
+    )}
+
+    {!error && domains.length === 0 && (
+      <div class="text-center py-16">
+        <p class="text-ink-muted font-light">No certified websites found yet.</p>
+        <a href="/" class="btn-primary mt-6">Look Up a Website</a>
+      </div>
+    )}
+
+    {domains.length > 0 && (
+      <div class="space-y-3 mt-8">
+        {domains.map((d) => {
+          const birth = d.verified_birth_at || d.best_birth_at || d.birth_at;
+          const year = birth ? new Date(birth).getUTCFullYear() : null;
+          const age = birth ? formatAge(birth) : null;
+          const isVerified = d.verification_status === "verified";
+          return (
+            <a href={`/${d.domain}`} class="card-base p-5 flex items-center justify-between gap-4 group">
+              <div class="flex items-center gap-3 min-w-0">
+                <span class="font-mono text-sm text-ink truncate">{d.domain}</span>
+                {isVerified && (
+                  <span class="flex-shrink-0 text-[10px] tracking-[0.1em] uppercase text-seal-dark font-medium bg-seal/[0.08] px-1.5 py-0.5">Verified</span>
+                )}
+              </div>
+              <div class="flex items-center gap-4 flex-shrink-0 text-right">
+                {year && (
+                  <span class="text-sm text-ink-muted font-light">Since {year}</span>
+                )}
+                {age && (
+                  <span class="text-xs text-ink-muted/60 font-light hidden sm:inline">{age}</span>
+                )}
+                <svg class="w-4 h-4 text-ink-muted/40 group-hover:text-azure transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
+                </svg>
+              </div>
+            </a>
+          );
+        })}
+      </div>
+    )}
+
+    <!-- Pagination -->
+    {totalPages > 1 && (
+      <nav class="flex items-center justify-center gap-4 mt-10">
+        {page > 1 ? (
+          <a
+            href={`/browse${page > 2 ? `?page=${page - 1}` : ""}`}
+            class="px-4 py-2 text-sm font-medium text-ink-muted hover:text-ink border border-divider hover:border-ink/20 transition-colors"
+          >
+            &larr; Previous
+          </a>
+        ) : (
+          <span class="px-4 py-2 text-sm font-medium text-ink-muted/40 border border-divider/50 cursor-not-allowed">
+            &larr; Previous
+          </span>
+        )}
+
+        <span class="text-sm text-ink-muted font-light">
+          Page {page} of {totalPages}
+        </span>
+
+        {page < totalPages ? (
+          <a
+            href={`/browse?page=${page + 1}`}
+            class="px-4 py-2 text-sm font-medium text-ink-muted hover:text-ink border border-divider hover:border-ink/20 transition-colors"
+          >
+            Next &rarr;
+          </a>
+        ) : (
+          <span class="px-4 py-2 text-sm font-medium text-ink-muted/40 border border-divider/50 cursor-not-allowed">
+            Next &rarr;
+          </span>
+        )}
+      </nav>
+    )}
+
+    <!-- CTA -->
+    <div class="text-center mt-12">
+      <div class="ornament-line max-w-24 mx-auto mb-6"></div>
+      <p class="text-ink-muted font-light mb-4">Don't see your website?</p>
+      <a href="/" class="btn-primary">Look Up Your Website</a>
+    </div>
+  </div>
+</Base>

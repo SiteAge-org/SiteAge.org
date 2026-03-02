@@ -2,6 +2,30 @@
 import Base from "../layouts/Base.astro";
 import SearchBox from "../components/SearchBox.astro";
 import JsonLd from "../components/JsonLd.astro";
+import { API_BASE_URL } from "@siteage/shared";
+
+interface BrowseDomain {
+  domain: string;
+  best_birth_at: string | null;
+  verified_birth_at: string | null;
+  birth_at: string | null;
+  status: string;
+  verification_status: string;
+  created_at: string;
+}
+
+const apiBase = import.meta.env.PUBLIC_API_URL || API_BASE_URL;
+let recentDomains: BrowseDomain[] = [];
+
+try {
+  const resp = await fetch(`${apiBase}/browse?limit=10`);
+  if (resp.ok) {
+    const data = await resp.json() as { domains: BrowseDomain[] };
+    recentDomains = data.domains || [];
+  }
+} catch {
+  // Silently fail — section won't render
+}
 
 const websiteSchema = {
   "@context": "https://schema.org",
@@ -260,6 +284,43 @@ const orgSchema = {
       </div>
     </div>
   </section>
+
+  <!-- Recently Certified -->
+  {recentDomains.length > 0 && (
+    <section class="max-w-6xl mx-auto px-6 py-16 sm:py-24">
+      <div class="text-center mb-14">
+        <span class="text-xs tracking-[0.3em] uppercase text-seal-dark font-medium">Archive</span>
+        <h2 class="font-display text-3xl sm:text-4xl mt-4">Recently Certified</h2>
+      </div>
+
+      <div class="grid sm:grid-cols-2 lg:grid-cols-5 gap-4">
+        {recentDomains.map((d) => {
+          const birth = d.verified_birth_at || d.best_birth_at || d.birth_at;
+          const year = birth ? new Date(birth).getUTCFullYear() : null;
+          const isVerified = d.verification_status === "verified";
+          return (
+            <a href={`/${d.domain}`} class="card-base p-4 flex flex-col items-start gap-2 group">
+              <span class="font-mono text-sm text-ink truncate w-full">{d.domain}</span>
+              <div class="flex items-center gap-2">
+                {year && (
+                  <span class="text-xs text-ink-muted font-light">Since {year}</span>
+                )}
+                {isVerified && (
+                  <span class="text-[10px] tracking-[0.1em] uppercase text-seal-dark font-medium bg-seal/[0.08] px-1.5 py-0.5">Verified</span>
+                )}
+              </div>
+            </a>
+          );
+        })}
+      </div>
+
+      <div class="text-center mt-8">
+        <a href="/browse" class="text-sm text-azure hover:text-azure-light transition-colors tracking-wide font-medium">
+          Browse all &rarr;
+        </a>
+      </div>
+    </section>
+  )}
 
   <!-- CTA section -->
   <section class="max-w-6xl mx-auto px-6 py-16 sm:py-24">
