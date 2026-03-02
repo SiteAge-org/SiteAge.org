@@ -9,6 +9,7 @@ interface Props {
   ogImage?: string;
   ogTitle?: string;
   ogDescription?: string;
+  noindex?: boolean;
 }
 
 const {
@@ -17,7 +18,10 @@ const {
   ogImage = "https://siteage.org/og-default.png",
   ogTitle,
   ogDescription,
+  noindex = false,
 } = Astro.props;
+
+const canonicalURL = new URL(Astro.url.pathname, "https://siteage.org").href;
 ---
 
 <!doctype html>
@@ -28,6 +32,8 @@ const {
     <meta name="description" content={description} />
     <title>{title} | SiteAge.org</title>
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="canonical" href={canonicalURL} />
+    {noindex && <meta name="robots" content="noindex, nofollow" />}
 
     <!-- Open Graph -->
     <meta property="og:type" content="website" />
