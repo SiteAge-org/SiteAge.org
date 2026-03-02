@@ -51,7 +51,7 @@ app.get("/og/:domain{[a-z0-9.-]+\\.[a-z]{2,}}", async (c) => {
         const detail = await resp.json() as Record<string, unknown>;
         data = {
           domain: detail.domain as string,
-          birth_at: detail.birth_at as string | null,
+          birth_at: (detail.best_birth_at || detail.birth_at) as string | null,
           death_at: detail.death_at as string | null,
           status: detail.status as BadgeData["status"],
           verification_status: detail.verification_status as BadgeData["verification_status"],
@@ -138,7 +138,7 @@ app.get("/:domain{[a-z0-9.-]+\\.[a-z]{2,}}", async (c) => {
         const detail = await resp.json() as Record<string, unknown>;
         data = {
           domain: detail.domain as string,
-          birth_at: detail.birth_at as string | null,
+          birth_at: (detail.best_birth_at || detail.birth_at) as string | null,
           death_at: detail.death_at as string | null,
           status: detail.status as BadgeData["status"],
           verification_status: detail.verification_status as BadgeData["verification_status"],
