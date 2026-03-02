@@ -9,6 +9,7 @@ import { evidenceRoutes } from "./routes/evidence.js";
 import { statsRoutes } from "./routes/stats.js";
 import { manageRoutes } from "./routes/manage.js";
 import { adminRoutes } from "./routes/admin.js";
+import { publicRoutes } from "./routes/public.js";
 import { handleScheduled } from "./cron/scheduler.js";
 
 const app = new Hono<{ Bindings: Env }>();
@@ -23,6 +24,7 @@ app.route("/evidence", evidenceRoutes);
 app.route("/", statsRoutes);
 app.route("/manage", manageRoutes);
 app.route("/admin", adminRoutes);
+app.route("/", publicRoutes);
 
 app.get("/health", (c) => c.json({ status: "ok", timestamp: new Date().toISOString() }));
 
