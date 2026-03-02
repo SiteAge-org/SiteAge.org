@@ -3,35 +3,41 @@ import Base from "../../layouts/Base.astro";
 ---
 
 <Base title="Admin - Domains" noindex>
-  <div class="max-w-5xl mx-auto px-4 py-12">
+  <div class="max-w-6xl mx-auto px-4 py-12">
     <div class="flex items-center justify-between mb-6">
-      <h1 class="text-2xl font-bold">Domain Management</h1>
-      <a href="/admin" class="text-sm text-blue-600 hover:underline">&larr; Dashboard</a>
+      <h1 class="text-2xl font-bold text-ink">Domain Management</h1>
+      <a href="/admin" class="text-sm text-azure hover:underline">&larr; Dashboard</a>
     </div>
 
     <!-- Filters -->
     <div class="flex gap-3 mb-4">
-      <select id="filter-status" class="px-3 py-1.5 border border-gray-300 rounded-lg text-sm">
+      <select id="filter-status" class="select-archival !w-auto !py-1.5 !px-3 text-sm">
         <option value="">All statuses</option>
         <option value="active">Active</option>
         <option value="unreachable">Unreachable</option>
         <option value="dead">Dead</option>
         <option value="unknown">Unknown</option>
       </select>
-      <input type="text" id="filter-search" placeholder="Search domain..." class="px-3 py-1.5 border border-gray-300 rounded-lg text-sm flex-1 max-w-xs" />
-      <button id="btn-search" class="px-4 py-1.5 bg-blue-600 text-white rounded-lg text-sm hover:bg-blue-700">Search</button>
+      <input type="text" id="filter-search" placeholder="Search domain..." class="input-archival !w-auto !py-1.5 !px-3 text-sm flex-1 max-w-xs" />
+      <button id="btn-search" class="btn-primary !py-1.5 !px-4 !text-xs">Search</button>
     </div>
 
-    <div id="domains-table" class="bg-white rounded-lg border border-gray-200 overflow-hidden">
-      <p class="p-4 text-gray-500">Loading...</p>
+    <div id="domains-table" class="card-base rounded-lg overflow-hidden !transform-none">
+      <p class="p-4 text-ink-muted">Loading...</p>
     </div>
 
     <div class="flex items-center justify-between mt-4">
-      <button id="btn-prev" class="px-3 py-1 border border-gray-300 rounded text-sm disabled:opacity-50" disabled>Previous</button>
-      <span id="page-info" class="text-sm text-gray-500"></span>
-      <button id="btn-next" class="px-3 py-1 border border-gray-300 rounded text-sm disabled:opacity-50" disabled>Next</button>
+      <button id="btn-prev" class="px-3 py-1 border border-divider rounded text-sm text-ink disabled:opacity-50" disabled>Previous</button>
+      <span id="page-info" class="text-sm text-ink-muted"></span>
+      <button id="btn-next" class="px-3 py-1 border border-divider rounded text-sm text-ink disabled:opacity-50" disabled>Next</button>
     </div>
   </div>
+
+  <style>
+    .card-base { hover:transform: none; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .animate-spin { animation: spin 1s linear infinite; }
+  </style>
 
   <script>
     const API = import.meta.env.PUBLIC_API_URL || "https://api.siteage.org";
@@ -40,6 +46,243 @@ import Base from "../../layouts/Base.astro";
 
     let page = 1;
     const limit = 20;
+
+    // Client-side cache for domain detail data
+    const detailCache = new Map<string, any>();
+
+    const SOURCE_LABELS: Record<string, string> = {
+      cdx: "Wayback Machine",
+      crt: "Certificate Transparency",
+      rdap: "Domain Registry (RDAP)",
+      whois: "WHOIS",
+      commoncrawl: "Common Crawl",
+    };
+
+    const sourceIcons: Record<string, string> = {
+      cdx: "M12 21a9.004 9.004 0 008.716-6.747M12 21a9.004 9.004 0 01-8.716-6.747M12 21c2.485 0 4.5-4.03 4.5-9S14.485 3 12 3m0 18c-2.485 0-4.5-4.03-4.5-9S9.515 3 12 3m0 0a8.997 8.997 0 017.843 4.582M12 3a8.997 8.997 0 00-7.843 4.582m15.686 0A11.953 11.953 0 0112 10.5c-2.998 0-5.74-1.1-7.843-2.918m15.686 0A8.959 8.959 0 0121 12c0 .778-.099 1.533-.284 2.253m0 0A17.919 17.919 0 0112 16.5c-3.162 0-6.133-.815-8.716-2.247m0 0A9.015 9.015 0 013 12c0-1.605.42-3.113 1.157-4.418",
+      crt: "M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z",
+      rdap: "M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z",
+      whois: "M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z",
+      commoncrawl: "M20.25 6.375c0 2.278-3.694 4.125-8.25 4.125S3.75 8.653 3.75 6.375m16.5 0c0-2.278-3.694-4.125-8.25-4.125S3.75 4.097 3.75 6.375m16.5 0v11.25c0 2.278-3.694 4.125-8.25 4.125s-8.25-1.847-8.25-4.125V6.375m16.5 0v3.75c0 2.278-3.694 4.125-8.25 4.125s-8.25-1.847-8.25-4.125v-3.75m16.5 3.75v3.75c0 2.278-3.694 4.125-8.25 4.125s-8.25-1.847-8.25-4.125v-3.75",
+    };
+
+    const confidenceColors: Record<string, string> = {
+      high: "color: var(--color-ink); background: rgba(26,29,46,0.05); border-color: rgba(26,29,46,0.1);",
+      medium: "color: var(--color-seal-dark); background: rgba(200,164,78,0.1); border-color: rgba(200,164,78,0.2);",
+      low: "color: var(--color-ink-muted); background: rgba(226,221,211,0.3); border-color: var(--color-divider);",
+    };
+
+    const statusColors: Record<string, string> = {
+      active: "background: var(--color-seal-glow); color: var(--color-seal-dark);",
+      dead: "background: rgba(26,29,46,0.05); color: var(--color-ink-muted);",
+      unreachable: "background: rgba(200,164,78,0.08); color: var(--color-seal-dark);",
+      unknown: "background: rgba(226,221,211,0.5); color: var(--color-ink-muted);",
+    };
+
+    function formatDate(iso: string): string {
+      return new Date(iso).toLocaleDateString("en-US", {
+        year: "numeric", month: "short", day: "numeric", timeZone: "UTC",
+      });
+    }
+
+    function getSummaryText(source: any): string {
+      const s = source.summary || {};
+      switch (source.source) {
+        case "cdx": return s.snapshot_count ? `${s.snapshot_count} snapshots` : "";
+        case "crt": return s.cert_count ? `${s.cert_count} certificates` : "";
+        case "rdap": case "whois": return s.registrar ? `Registrar: ${s.registrar}` : "";
+        case "commoncrawl": return s.indexes_queried ? `${s.indexes_queried} indexes queried` : "";
+        default: return "";
+      }
+    }
+
+    function renderBirthCell(d: any): string {
+      const verified = d.verified_birth_at;
+      const best = d.best_birth_at;
+      const birth = d.birth_at;
+
+      const primary = verified || best || birth;
+      if (!primary) return '<span class="text-ink-muted">-</span>';
+
+      const primaryLabel = verified ? "✓ " : "";
+      const primaryDate = formatDate(primary);
+
+      // Secondary date: show the next available date that differs
+      let secondary = "";
+      if (verified) {
+        const alt = best || birth;
+        if (alt && alt !== verified) secondary = formatDate(alt);
+      } else if (best && birth && best !== birth) {
+        secondary = `birth: ${formatDate(birth)}`;
+      }
+
+      return `
+        <span class="text-ink">${primaryLabel}${primaryDate}</span>
+        ${secondary ? `<br><span class="text-[10px] text-ink-muted">${secondary}</span>` : ""}
+      `;
+    }
+
+    function renderSourcesPanel(detail: any): string {
+      const sources = detail.sources || [];
+      if (!sources.length) {
+        return '<p class="text-sm text-ink-muted py-2">No data sources available</p>';
+      }
+
+      const successCount = sources.filter((s: any) => !s.error && s.earliest_date).length;
+      const bestDate = detail.best_birth_at;
+
+      const sourceRows = sources.map((source: any) => {
+        const icon = sourceIcons[source.source] || sourceIcons.cdx;
+        const summaryText = getSummaryText(source);
+        const hasError = !!source.error;
+        const hasDate = !!source.earliest_date;
+        const confStyle = confidenceColors[source.confidence] || confidenceColors.low;
+
+        return `
+          <div style="display:flex; align-items:flex-start; gap:0.75rem; padding:0.75rem; border-radius:0.375rem; border:1px solid ${hasError ? 'rgba(226,221,211,0.5)' : 'var(--color-divider)'}; ${hasError ? 'opacity:0.6;' : ''}">
+            <svg style="width:1.25rem; height:1.25rem; margin-top:0.125rem; flex-shrink:0; color:${hasError ? 'rgba(107,112,148,0.4)' : 'var(--color-azure)'};" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="${icon}" />
+            </svg>
+            <div style="flex:1; min-width:0;">
+              <div style="display:flex; align-items:center; justify-content:space-between; gap:0.5rem;">
+                <span style="font-family:var(--font-display); font-size:0.875rem; color:var(--color-ink);">${source.source_label}</span>
+                ${hasDate ? `<span style="font-size:0.875rem; font-weight:500; color:var(--color-ink); white-space:nowrap;">${formatDate(source.earliest_date)}</span>` : ""}
+                ${!hasDate && !hasError ? '<span style="font-size:0.75rem; color:var(--color-ink-muted);">No records</span>' : ""}
+                ${hasError ? `<span style="font-size:0.75rem; color:var(--color-ink-muted);">Unavailable</span>` : ""}
+              </div>
+              <div style="display:flex; align-items:center; gap:0.5rem; margin-top:0.25rem; flex-wrap:wrap;">
+                ${!hasError ? `<span style="display:inline-flex; align-items:center; padding:0.125rem 0.375rem; font-size:10px; letter-spacing:0.05em; text-transform:uppercase; border:1px solid; border-radius:0.25rem; ${confStyle}">${source.confidence}</span>` : ""}
+                ${summaryText ? `<span style="font-size:0.75rem; color:var(--color-ink-muted);">${summaryText}</span>` : ""}
+              </div>
+              ${hasError ? `<p style="font-size:0.75rem; color:var(--color-tombstone); margin-top:0.25rem;">${source.error}</p>` : ""}
+              ${source.detail_url && !hasError ? `
+                <a href="${source.detail_url}" target="_blank" rel="noopener noreferrer" style="display:inline-flex; align-items:center; gap:0.25rem; font-size:0.75rem; color:var(--color-azure); margin-top:0.375rem; text-decoration:none;">
+                  View source
+                  <svg style="width:0.75rem; height:0.75rem;" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 19.5l15-15m0 0H8.25m11.25 0v11.25"/>
+                  </svg>
+                </a>
+              ` : ""}
+            </div>
+          </div>
+        `;
+      }).join("");
+
+      const bestEstimate = bestDate && successCount > 0 ? `
+        <div style="margin-top:1rem; padding-top:0.75rem; border-top:1px solid var(--color-divider);">
+          <div style="display:flex; align-items:center; justify-content:space-between;">
+            <span style="font-size:0.625rem; letter-spacing:0.15em; text-transform:uppercase; color:var(--color-ink-muted); font-weight:500;">Best Estimate</span>
+            <span style="font-family:var(--font-display); font-size:1.125rem; color:var(--color-ink);">${formatDate(bestDate)}</span>
+          </div>
+          <p style="font-size:0.75rem; color:var(--color-ink-muted); margin-top:0.25rem;">
+            Earliest date across ${successCount} data source${successCount !== 1 ? "s" : ""}
+          </p>
+        </div>
+      ` : "";
+
+      return `
+        <div style="display:flex; flex-direction:column; gap:0.5rem;">
+          ${sourceRows}
+        </div>
+        ${bestEstimate}
+      `;
+    }
+
+    async function loadDomainSources(domain: string): Promise<any> {
+      if (detailCache.has(domain)) return detailCache.get(domain);
+
+      const resp = await fetch(`${API}/${domain}`);
+      if (!resp.ok) throw new Error(`Failed to load ${domain}`);
+      const detail = await resp.json();
+      detailCache.set(domain, detail);
+      return detail;
+    }
+
+    (window as any).toggleDetail = async (domain: string) => {
+      const row = document.getElementById(`detail-${domain}`);
+      const btn = document.getElementById(`toggle-${domain}`);
+      if (!row || !btn) return;
+
+      if (row.classList.contains("hidden")) {
+        row.classList.remove("hidden");
+        btn.textContent = "▼";
+
+        const container = document.getElementById(`sources-${domain}`)!;
+        if (container.dataset.loaded !== "true") {
+          container.innerHTML = '<p class="text-sm text-ink-muted">Loading data sources...</p>';
+          try {
+            const detail = await loadDomainSources(domain);
+            container.innerHTML = renderSourcesPanel(detail);
+            container.dataset.loaded = "true";
+          } catch {
+            container.innerHTML = '<p class="text-sm" style="color:var(--color-tombstone);">Failed to load data sources</p>';
+          }
+        }
+      } else {
+        row.classList.add("hidden");
+        btn.textContent = "▶";
+      }
+    };
+
+    (window as any).refreshDomain = async (domain: string, event: Event) => {
+      const btn = (event.currentTarget as HTMLButtonElement);
+      const icon = btn.querySelector("svg")!;
+
+      btn.disabled = true;
+      icon.classList.add("animate-spin");
+
+      try {
+        const resp = await fetch(`${API}/lookup`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ url: domain, force: true }),
+        });
+
+        if (resp.status === 429) {
+          alert("Rate limited — please wait 5 minutes before retrying.");
+          return;
+        }
+        if (!resp.ok) throw new Error("Refresh failed");
+
+        // Clear cache and reload detail
+        detailCache.delete(domain);
+        const container = document.getElementById(`sources-${domain}`);
+        if (container) {
+          container.dataset.loaded = "";
+          // If detail row is visible, reload it
+          const row = document.getElementById(`detail-${domain}`);
+          if (row && !row.classList.contains("hidden")) {
+            container.innerHTML = '<p class="text-sm text-ink-muted">Refreshing data sources...</p>';
+            try {
+              const detail = await loadDomainSources(domain);
+              container.innerHTML = renderSourcesPanel(detail);
+              container.dataset.loaded = "true";
+
+              // Update birth cell in the main table
+              const birthCell = document.getElementById(`birth-${domain}`);
+              if (birthCell) {
+                const d = {
+                  verified_birth_at: detail.verified_birth_at,
+                  best_birth_at: detail.best_birth_at,
+                  birth_at: detail.birth_at,
+                };
+                birthCell.innerHTML = renderBirthCell(d);
+              }
+            } catch {
+              container.innerHTML = '<p class="text-sm" style="color:var(--color-tombstone);">Failed to reload data sources</p>';
+            }
+          }
+        }
+
+        // Also reload the table to get fresh data
+        load();
+      } catch {
+        alert("Failed to refresh domain data.");
+      } finally {
+        btn.disabled = false;
+        icon.classList.remove("animate-spin");
+      }
+    };
 
     async function load() {
       const status = (document.getElementById("filter-status") as HTMLSelectElement).value;
@@ -58,46 +301,59 @@ import Base from "../../layouts/Base.astro";
 
         const table = document.getElementById("domains-table")!;
         if (!data.domains?.length) {
-          table.innerHTML = '<p class="p-4 text-gray-500">No domains found</p>';
+          table.innerHTML = '<p class="p-4 text-ink-muted">No domains found</p>';
           return;
         }
 
         table.innerHTML = `
           <table class="w-full text-sm">
-            <thead class="bg-gray-50 text-left">
+            <thead style="background:var(--color-parchment-dark);" class="text-left">
               <tr>
-                <th class="px-4 py-2 font-medium text-gray-500">Domain</th>
-                <th class="px-4 py-2 font-medium text-gray-500">Status</th>
-                <th class="px-4 py-2 font-medium text-gray-500">Birth</th>
-                <th class="px-4 py-2 font-medium text-gray-500">Email</th>
-                <th class="px-4 py-2 font-medium text-gray-500">Verified</th>
-                <th class="px-4 py-2 font-medium text-gray-500">Actions</th>
+                <th class="px-2 py-2 font-medium text-ink-muted w-8"></th>
+                <th class="px-4 py-2 font-medium text-ink-muted">Domain</th>
+                <th class="px-4 py-2 font-medium text-ink-muted">Status</th>
+                <th class="px-4 py-2 font-medium text-ink-muted">Birth</th>
+                <th class="px-4 py-2 font-medium text-ink-muted">Email</th>
+                <th class="px-4 py-2 font-medium text-ink-muted">Verified</th>
+                <th class="px-4 py-2 font-medium text-ink-muted">Actions</th>
               </tr>
             </thead>
-            <tbody class="divide-y divide-gray-100">
+            <tbody style="border-color:var(--color-divider);" class="divide-y divide-divider">
               ${data.domains.map((d: any) => `
-                <tr>
-                  <td class="px-4 py-2"><a href="/${d.domain}" class="text-blue-600 hover:underline">${d.domain}</a></td>
-                  <td class="px-4 py-2"><span class="px-2 py-0.5 rounded-full text-xs ${
-                    d.status === "active" ? "bg-green-100 text-green-700" :
-                    d.status === "dead" ? "bg-gray-100 text-gray-700" :
-                    d.status === "unreachable" ? "bg-yellow-100 text-yellow-700" :
-                    "bg-orange-100 text-orange-700"
-                  }">${d.status}</span></td>
-                  <td class="px-4 py-2 text-gray-500">${(d.verified_birth_at || d.birth_at) ? `${d.verified_birth_at ? "✓ " : ""}${new Date(d.verified_birth_at || d.birth_at).toLocaleDateString()}` : "-"}</td>
-                  <td class="px-4 py-2 text-gray-500">${d.email || "-"}</td>
+                <tr class="hover:bg-parchment/50">
+                  <td class="px-2 py-2 text-center">
+                    <button id="toggle-${d.domain}" onclick="toggleDetail('${d.domain}')" class="text-ink-muted hover:text-ink text-xs cursor-pointer w-5 h-5 inline-flex items-center justify-center" title="Toggle details">▶</button>
+                  </td>
+                  <td class="px-4 py-2"><a href="/${d.domain}" class="text-azure hover:underline">${d.domain}</a></td>
+                  <td class="px-4 py-2"><span class="px-2 py-0.5 rounded-full text-xs" style="${statusColors[d.status] || statusColors.unknown}">${d.status}</span></td>
+                  <td class="px-4 py-2" id="birth-${d.domain}">${renderBirthCell(d)}</td>
+                  <td class="px-4 py-2 text-ink-muted">${d.email || "-"}</td>
                   <td class="px-4 py-2">${d.verification_status === "verified"
                     ? (d.magic_key
-                      ? `<a href="/manage/${d.domain}?key=${d.magic_key}" target="_blank" class="text-green-600 hover:underline">Verified ↗</a>`
-                      : '<span class="text-green-600">Yes</span>')
-                    : "No"}</td>
+                      ? `<a href="/manage/${d.domain}?key=${d.magic_key}" target="_blank" style="color:var(--color-seal-dark);" class="hover:underline">Verified ↗</a>`
+                      : `<span style="color:var(--color-seal-dark);">Yes</span>`)
+                    : '<span class="text-ink-muted">No</span>'}</td>
                   <td class="px-4 py-2">
-                    <select onchange="updateStatus(${d.id}, this.value)" class="text-xs border border-gray-200 rounded px-1 py-0.5">
-                      <option value="">Change...</option>
-                      <option value="active">Active</option>
-                      <option value="dead">Dead</option>
-                      <option value="unknown">Unknown</option>
-                    </select>
+                    <div class="flex items-center gap-1.5">
+                      <select onchange="updateStatus(${d.id}, this.value)" class="select-archival !w-auto !py-0.5 !px-1 !pr-6 text-xs">
+                        <option value="">Change...</option>
+                        <option value="active">Active</option>
+                        <option value="dead">Dead</option>
+                        <option value="unknown">Unknown</option>
+                      </select>
+                      <button onclick="refreshDomain('${d.domain}', event)" title="Force refresh" class="p-1 rounded hover:bg-parchment-dark text-ink-muted hover:text-azure cursor-pointer transition-colors">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
+                          <path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.992 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182M2.985 19.644l3.181-3.182" />
+                        </svg>
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+                <tr id="detail-${d.domain}" class="hidden">
+                  <td colspan="7" style="background:var(--color-parchment); border-top:1px solid var(--color-divider);">
+                    <div class="px-6 py-4" id="sources-${d.domain}">
+                      <p class="text-sm text-ink-muted">Loading data sources...</p>
+                    </div>
                   </td>
                 </tr>
               `).join("")}
@@ -109,7 +365,7 @@ import Base from "../../layouts/Base.astro";
         (document.getElementById("btn-prev") as HTMLButtonElement).disabled = page <= 1;
         (document.getElementById("btn-next") as HTMLButtonElement).disabled = page >= Math.ceil(data.total / limit);
       } catch {
-        document.getElementById("domains-table")!.innerHTML = '<p class="p-4 text-red-600">Failed to load</p>';
+        document.getElementById("domains-table")!.innerHTML = '<p class="p-4" style="color:var(--color-tombstone);">Failed to load</p>';
       }
     }
 
@@ -128,6 +384,7 @@ import Base from "../../layouts/Base.astro";
     };
 
     document.getElementById("btn-search")?.addEventListener("click", () => { page = 1; load(); });
+    document.getElementById("filter-search")?.addEventListener("keydown", (e) => { if (e.key === "Enter") { page = 1; load(); } });
     document.getElementById("btn-prev")?.addEventListener("click", () => { page--; load(); });
     document.getElementById("btn-next")?.addEventListener("click", () => { page++; load(); });
 
