@@ -66,6 +66,16 @@ pnpm dev:web              # Start Astro dev server only
 - **Colors**: Always use design system colors (`ink`, `seal`, `azure`, `parchment`, `divider`, `tombstone`). Do not use raw Tailwind colors (e.g., `gray-200`, `blue-600`, `green-100`, `red-100`).
 - **Shadows**: Use theme tokens (`--shadow-card`, `--shadow-card-hover`, `--shadow-certificate`, `--shadow-seal-glow`) instead of arbitrary shadow values.
 
+### SEO Conventions
+
+- **Canonical URLs**: `Base.astro` auto-generates `<link rel="canonical">` from `Astro.url.pathname` + `https://siteage.org`. No trailing slashes (`trailingSlash: "never"`).
+- **noindex**: Private pages (`/admin/*`, `/manage/*`, `/resend/*`, `/verify/*`, `/404`) use `<Base noindex>` to add `<meta name="robots" content="noindex, nofollow">`.
+- **robots.txt**: `packages/web/public/robots.txt` — blocks `/admin/`, `/manage/`, `/resend/`, `/verify/`; references `/sitemap.xml`.
+- **Sitemap**: `packages/web/src/pages/sitemap.xml.ts` — SSR endpoint calling `/sitemap-domains` API. CDN cached 1h.
+- **Structured data**: Use `JsonLd.astro` component for JSON-LD injection. Homepage has `WebSite` (with `SearchAction`) + `Organization` schemas. Domain pages have `BreadcrumbList` + `WebPage` schemas. Content pages have `BreadcrumbList`.
+- **Public API endpoints**: `GET /sitemap-domains` (KV 1h) and `GET /browse?page=&limit=` (KV 5min) in `packages/api/src/routes/public.ts`. No auth required.
+- **Browse page**: `/browse` — SSR paginated domain directory. Homepage "Recently Certified" section uses same `/browse?limit=10` endpoint.
+
 ## Multi-Source Domain Age Lookup
 
 The archaeology service queries 4 data sources in parallel to determine domain age:
