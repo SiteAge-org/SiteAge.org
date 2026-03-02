@@ -8,7 +8,8 @@ interface Props {
 }
 
 const { data, apiBase } = Astro.props;
-const birth = data.verified_birth_at || data.birth_at;
+const birth = data.verified_birth_at || data.best_birth_at || data.birth_at;
+const successfulSources = data.sources?.filter((s) => !s.error && s.earliest_date) ?? [];
 const isVerified = data.verification_status === "verified";
 const catalogedDate = new Date(data.created_at).toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric", timeZone: "UTC" });
 ---
@@ -61,7 +62,7 @@ const catalogedDate = new Date(data.created_at).toLocaleDateString("en-US", { ye
     ) : (
       <div class="my-8">
         <p class="font-display text-3xl text-ink-muted">Birth Date Unknown</p>
-        <p class="text-sm text-ink-muted/70 mt-3 font-light">The archives could not be reached. Try again later.</p>
+        <p class="text-sm text-ink-muted/70 mt-3 font-light">Our data sources could not be reached. Try again later.</p>
         <button
           id="recheck-btn"
           type="button"
@@ -69,7 +70,7 @@ const catalogedDate = new Date(data.created_at).toLocaleDateString("en-US", { ye
           data-domain={data.domain}
           data-api-base={apiBase}
         >
-          Re-check Archives
+          Re-check Sources
         </button>
       </div>
     )}
@@ -88,7 +89,7 @@ const catalogedDate = new Date(data.created_at).toLocaleDateString("en-US", { ye
     <div class="pt-6">
       <div class="ornament-line mb-4"></div>
       <p class="text-[10px] text-ink-muted/70 tracking-[0.15em] uppercase mb-2">Cataloged on {catalogedDate}</p>
-      <p class="text-[10px] text-ink-muted/50 tracking-[0.15em] uppercase">Certified by SiteAge.org &middot; Data from Internet Archive</p>
+      <p class="text-[10px] text-ink-muted/50 tracking-[0.15em] uppercase">Certified by SiteAge.org &middot; {successfulSources.length > 0 ? `Data from ${successfulSources.map((s) => s.source_label).join(", ")}` : "Data from Internet Archive"}</p>
     </div>
   </div>
 </div>
@@ -112,7 +113,7 @@ const catalogedDate = new Date(data.created_at).toLocaleDateString("en-US", { ye
         if (resp.status === 429) {
           btn.textContent = "Please wait before retrying";
           setTimeout(() => {
-            btn.textContent = "Re-check Archives";
+            btn.textContent = "Re-check Sources";
             btn.removeAttribute("disabled");
           }, 5000);
           return;
@@ -123,14 +124,14 @@ const catalogedDate = new Date(data.created_at).toLocaleDateString("en-US", { ye
         } else {
           btn.textContent = "Check failed — try again later";
           setTimeout(() => {
-            btn.textContent = "Re-check Archives";
+            btn.textContent = "Re-check Sources";
             btn.removeAttribute("disabled");
           }, 3000);
         }
       } catch {
         btn.textContent = "Network error — try again";
         setTimeout(() => {
-          btn.textContent = "Re-check Archives";
+          btn.textContent = "Re-check Sources";
           btn.removeAttribute("disabled");
         }, 3000);
       }

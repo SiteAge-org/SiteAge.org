@@ -18,7 +18,7 @@ import Base from "../layouts/Base.astro";
     <div class="border-l-3 border-l-seal/50 pl-6 py-2">
       <p class="text-lg text-ink-muted font-light italic leading-relaxed">
         SiteAge.org is a website age certification platform. We trace the origins of websites
-        using the Internet Archive's Wayback Machine and generate verifiable age badges.
+        using multiple archival and registry sources and generate verifiable age badges.
       </p>
     </div>
 
@@ -32,11 +32,11 @@ import Base from "../layouts/Base.astro";
         </li>
         <li class="flex gap-4 items-start">
           <span class="flex-shrink-0 w-7 h-7 flex items-center justify-center font-display text-sm text-seal-dark bg-seal/[0.08]">2</span>
-          <span class="text-ink-muted font-light leading-relaxed pt-0.5">We query the Wayback Machine CDX API for the earliest archived snapshot</span>
+          <span class="text-ink-muted font-light leading-relaxed pt-0.5">We query the Wayback Machine, certificate transparency logs, domain registries, and Common Crawl for the earliest evidence</span>
         </li>
         <li class="flex gap-4 items-start">
           <span class="flex-shrink-0 w-7 h-7 flex items-center justify-center font-display text-sm text-seal-dark bg-seal/[0.08]">3</span>
-          <span class="text-ink-muted font-light leading-relaxed pt-0.5">The earliest successful snapshot date becomes the "birth date"</span>
+          <span class="text-ink-muted font-light leading-relaxed pt-0.5">The earliest date found across all sources becomes the "birth date"</span>
         </li>
         <li class="flex gap-4 items-start">
           <span class="flex-shrink-0 w-7 h-7 flex items-center justify-center font-display text-sm text-seal-dark bg-seal/[0.08]">4</span>
@@ -51,7 +51,7 @@ import Base from "../layouts/Base.astro";
       <p class="text-ink-muted font-light leading-relaxed">
         Website owners can claim their domain through DNS TXT record or meta tag verification.
         Verified domains receive a gold "Established" badge and can submit evidence for an
-        earlier birth date if the Wayback Machine didn't capture the earliest version.
+        earlier birth date if our automated sources didn't capture the earliest version.
       </p>
     </div>
 

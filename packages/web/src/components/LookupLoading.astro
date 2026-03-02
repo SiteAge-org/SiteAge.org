@@ -67,7 +67,7 @@ const { domain, apiBase } = Astro.props;
           <!-- Footer -->
           <div class="pt-6">
             <div class="ornament-line mb-4"></div>
-            <p class="text-[10px] text-ink-muted/50 tracking-[0.15em] uppercase">Certified by SiteAge.org &middot; Data from Internet Archive</p>
+            <p class="text-[10px] text-ink-muted/50 tracking-[0.15em] uppercase">Certified by SiteAge.org &middot; Cross-referencing multiple sources</p>
           </div>
         </div>
       </div>
@@ -174,9 +174,11 @@ const { domain, apiBase } = Astro.props;
   const retryBtn = document.getElementById("retry-btn")!;
 
   const messages = [
-    "Searching the archives...",
-    "Consulting the Wayback Machine...",
-    "Digging through web history...",
+    "Querying the Wayback Machine...",
+    "Checking certificate transparency logs...",
+    "Querying domain registration records...",
+    "Searching Common Crawl archives...",
+    "Cross-referencing multiple data sources...",
     "Tracing the digital footprint...",
     "Almost there...",
   ];

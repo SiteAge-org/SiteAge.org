@@ -1,10 +1,10 @@
 # SiteAge.org
 
-Website age certification platform. Discover when any website first appeared on the internet and get a certified age badge powered by the Wayback Machine.
+Website age certification platform. Discover when any website first appeared on the internet and get a certified age badge powered by multiple archival sources.
 
 ## Features
 
-- **Instant Lookup** — Query any domain to find its earliest Wayback Machine snapshot
+- **Instant Lookup** — Query any domain to find its earliest recorded appearance across multiple sources
 - **Age Certificates** — Beautiful certificate pages with birth date, longevity ranking, and timeline
 - **Embeddable Badges** — SVG badges in 3 styles (flat, flat-square, for-the-badge)
 - **Owner Verification** — Claim your domain via DNS TXT or meta tag, earn a gold "Established" badge
