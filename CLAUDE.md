@@ -1,6 +1,6 @@
 # SiteAge.org
 
-Website age certification platform. Queries Wayback Machine CDX API to determine when a website first appeared, generates SVG badges, supports ownership verification.
+Website age certification platform. Queries multiple data sources (Wayback Machine, Certificate Transparency, RDAP, WHOIS, Common Crawl) to determine when a website first appeared, generates SVG badges, supports ownership verification.
 
 ## Architecture
 
@@ -38,15 +38,15 @@ pnpm dev:web              # Start Astro dev server only
 - Verification status: `detected`, `pending`, `verified`
 - Verification methods: `dns_txt` (DNS TXT record), `meta_tag` (HTML meta tag), `well_known` (/.well-known/siteage-verify.txt file)
 - Verification success: API returns `magicKey` for immediate redirect to manage page; email sent asynchronously as backup
-- Birth date display priority: `verified_birth_at` (admin-reviewed evidence) > `birth_at` (CDX auto-detected). Admin domains page shows ✓ prefix for verified dates.
+- Birth date display priority: `verified_birth_at` (admin-reviewed evidence) > `best_birth_at` (earliest across all data sources) > `birth_at` (CDX auto-detected). Admin domains page shows ✓ prefix for verified dates.
 - Badge caching: CDN Edge (s-maxage=86400) -> KV (TTL 1h) -> real-time render
-- Lookup caching: KV (TTL 24h for success, 5min for CDX failures). CDX failures are NOT persisted to D1.
-- Force refresh: `POST /lookup` with `{ force: true }` clears KV + D1 and re-queries CDX. Rate limited to once per 5 minutes per domain.
+- Lookup caching: KV (TTL 24h for success, 5min when all sources fail). Source failures are NOT persisted to D1 when all sources fail.
+- Force refresh: `POST /lookup` with `{ force: true }` clears KV + D1 (including `source_queries`) and re-queries all data sources. Rate limited to once per 5 minutes per domain.
 - Cross-worker cache clearing: API Worker binds both `API_CACHE` and `BADGE_CACHE` KV namespaces. On domain data changes (admin approval, verification, force refresh, status update), all caches (badge, domain, OG) are cleared via `Promise.all`.
 - DNS verification help: Collapsible `<details>` guide with provider-specific steps (Cloudflare, Namecheap, GoDaddy, Squarespace, Name.com, Vercel, Other). Provider dashboard URLs use SSR-interpolated `{domain}`. Chip-based provider selector with toggle behavior.
 - DNS verification: Queries Cloudflare, Google, and AliDNS DoH in parallel; falls back to system DNS (`node:dns`, 5s timeout) when all DoH fail. Handles multi-segment TXT records (`"seg1" "seg2"` → concatenated).
 - Email sending: `fetch` (primary, works in production) → `node:https` fallback (local dev with `nodejs_compat`). Mirrors DNS DoH → system DNS fallback pattern.
-- Diagnostic log prefixes: `[DNS]` for DoH queries/results, `[Verify]` for verification method lifecycle, `[Email]` for email sending attempts/results.
+- Diagnostic log prefixes: `[DNS]` for DoH queries/results, `[Verify]` for verification method lifecycle, `[Email]` for email sending attempts/results, `[CDX]` for Wayback Machine, `[CRT]` for crt.sh, `[RDAP]` for RDAP queries, `[WHOIS]` for WHOIS fallback, `[CC]` for Common Crawl, `[Sources]` for multi-source orchestration.
 - Admin DNS diagnostic: `GET /admin/dns-check/:domain` returns raw TXT records from both resolvers + pending verification tokens. Protected by `X-Admin-Key`.
 - Smart birth date update: `POST /manage/:domain/birth-date` auto-approves non-suspicious changes (date >= baseline or within 365-day tolerance), returns `requires_evidence` for suspicious ones, rejects future dates. Baseline = `birth_at` ?? `created_at`.
 - Admin domains page: `GET /admin/domains` returns `magic_key` and `email` from latest verified verification record via subquery. Verified column shows clickable "Verified ↗" link (`/manage/{domain}?key={magicKey}`, `target="_blank"`) when magic_key exists; falls back to plain "Yes" text otherwise.
@@ -65,6 +65,24 @@ pnpm dev:web              # Start Astro dev server only
 - **Decorative**: Use `.ornament-line` (single) and `.ornament-line-double` (double) for dividers. Use `.decorative-frame` for inner border overlays. Use `.noise-overlay` on hero/certificate sections.
 - **Colors**: Always use design system colors (`ink`, `seal`, `azure`, `parchment`, `divider`, `tombstone`). Do not use raw Tailwind colors (e.g., `gray-200`, `blue-600`, `green-100`, `red-100`).
 - **Shadows**: Use theme tokens (`--shadow-card`, `--shadow-card-hover`, `--shadow-certificate`, `--shadow-seal-glow`) instead of arbitrary shadow values.
+
+## Multi-Source Domain Age Lookup
+
+The archaeology service queries 4 data sources in parallel to determine domain age:
+
+| Source | Confidence | Timeout | Notes |
+|--------|-----------|---------|-------|
+| CDX (Wayback Machine) | high | 30s | Web archive snapshots |
+| crt.sh (Certificate Transparency) | medium | 15s | Earliest SSL certificate `not_before` date |
+| RDAP (Domain Registry) | high | 10s | Registration date; falls back to WHOIS if RDAP fails |
+| Common Crawl | high | 15s | Alternative web archive index |
+
+- **DataSource interface**: `packages/api/src/services/sources/types.ts` defines `DataSource` and `SourceResult`
+- **Registry**: `sources/registry.ts` returns all active sources. WHOIS is not in the registry — it's RDAP's internal fallback.
+- **Best date resolution**: `sources/resolve.ts` picks the earliest date across all successful results
+- **Partial failure**: If some sources succeed, results are persisted normally (24h TTL). Only when ALL sources fail does the short TTL (5min) / no-D1 path apply.
+- **Audit table**: `source_queries` stores every source query result (domain, source, earliest_date, confidence, raw_data, error). `cdx_queries` is preserved for backward compatibility.
+- **`DomainDetail.sources`**: API returns `SourceInfo[]` array with each source's result, label, confidence, detail URL, and summary data
 
 ## Domain Lookup: Two-Phase Rendering
 
