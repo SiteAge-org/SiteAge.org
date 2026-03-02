@@ -9,6 +9,7 @@ import Timeline from "../components/Timeline.astro";
 import DataSources from "../components/DataSources.astro";
 import LookupLoading from "../components/LookupLoading.astro";
 import ShareButtons from "../components/ShareButtons.astro";
+import JsonLd from "../components/JsonLd.astro";
 import { API_BASE_URL, BADGE_BASE_URL, isValidDomain, formatAge } from "@siteage/shared";
 import type { DomainDetail } from "@siteage/shared";
 
@@ -54,6 +55,32 @@ const ogImage = `${badgeBase}/og/${domain}`;
 ---
 
 <Base title={domain} ogTitle={ogTitle} ogDescription={ogDesc} ogImage={ogImage}>
+  {data && (
+    <Fragment>
+      <JsonLd data={{
+        "@context": "https://schema.org",
+        "@type": "BreadcrumbList",
+        itemListElement: [
+          { "@type": "ListItem", position: 1, name: "Home", item: "https://siteage.org" },
+          { "@type": "ListItem", position: 2, name: domain },
+        ],
+      }} />
+      <JsonLd data={{
+        "@context": "https://schema.org",
+        "@type": "WebPage",
+        name: ogTitle,
+        description: ogDesc,
+        url: `https://siteage.org/${domain}`,
+        mainEntity: {
+          "@type": "WebSite",
+          name: domain,
+          url: `https://${domain}`,
+          ...(birth ? { dateCreated: birth } : {}),
+        },
+      }} />
+    </Fragment>
+  )}
+
   {needsLookup && (
     <LookupLoading domain={domain} apiBase={apiBase} />
   )}

@@ -1,6 +1,31 @@
 ---
 import Base from "../layouts/Base.astro";
 import SearchBox from "../components/SearchBox.astro";
+import JsonLd from "../components/JsonLd.astro";
+
+const websiteSchema = {
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  name: "SiteAge.org",
+  url: "https://siteage.org",
+  description: "Website age certification platform. Trace the origins of any website through multiple archival and registry sources.",
+  potentialAction: {
+    "@type": "SearchAction",
+    target: {
+      "@type": "EntryPoint",
+      urlTemplate: "https://siteage.org/{domain}",
+    },
+    "query-input": "required name=domain",
+  },
+};
+
+const orgSchema = {
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  name: "SiteAge.org",
+  url: "https://siteage.org",
+  logo: "https://siteage.org/favicon.svg",
+};
 ---
 
 <Base
@@ -8,6 +33,8 @@ import SearchBox from "../components/SearchBox.astro";
   ogDescription="Discover how long any website has been alive. Certified age badges powered by multiple archival sources."
   ogImage="https://siteage.org/og-default.png"
 >
+  <JsonLd data={websiteSchema} />
+  <JsonLd data={orgSchema} />
   <!-- Hero -->
   <section class="relative overflow-hidden">
     <!-- Background: subtle radial gradient + noise -->
