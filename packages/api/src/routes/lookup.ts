@@ -38,28 +38,31 @@ lookupRoutes.post("/lookup", async (c) => {
       c.env.BADGE_CACHE.delete(`og:${domain}`),
     ]);
 
-    // Clear D1 records
+    // Clear D1 records (including source_queries)
     await Promise.all([
       c.env.DB.prepare("DELETE FROM cdx_queries WHERE domain = ?").bind(domain).run(),
+      c.env.DB.prepare("DELETE FROM source_queries WHERE domain = ?").bind(domain).run(),
       c.env.DB.prepare("DELETE FROM domains WHERE domain = ?").bind(domain).run(),
     ]);
   }
 
   const result = await archaeologyService(c.env, domain);
 
-  if (result.cdx_failed) {
-    // Clear cached failure so next retry hits CDX directly
+  if (result.all_failed) {
+    // Clear cached failure so next retry hits sources directly
     await c.env.API_CACHE.delete(`lookup:${domain}`);
     return c.json({
-      error: "cdx_failed",
-      message: "Unable to query the Internet Archive. Please try again later.",
+      error: "sources_failed",
+      message: "Unable to query data sources. Please try again later.",
     }, 503);
   }
 
+  const birthAt = result.best_birth_at || result.birth_at;
+
   const response: LookupResponse = {
     domain: result.domain,
-    birth_at: result.birth_at,
-    age_days: result.birth_at ? ageDays(result.birth_at) : null,
+    birth_at: birthAt,
+    age_days: birthAt ? ageDays(birthAt) : null,
     status: result.status,
     verification_status: result.verification_status,
     badge_url: `${BADGE_BASE_URL}/${domain}`,
