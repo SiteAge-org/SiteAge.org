@@ -37,3 +37,22 @@ export const BADGE_COLORS = {
 export const BADGE_MESSAGE_TYPES = ["since", "established"] as const;
 export const BADGE_TIME_FORMATS = ["year", "month", "date", "age", "days"] as const;
 export const BADGE_VERIFIED_FORMATS = ["month", "date", "age", "days"] as const;
+
+// Multi-source data providers
+export const CRT_API_BASE = "https://crt.sh";
+export const RDAP_API_BASE = "https://rdap.org";
+export const COMMONCRAWL_INDEX_API = "https://index.commoncrawl.org";
+export const WHOIS_API_BASE = "https://who-dat.as93.net";
+
+export const CRT_QUERY_TIMEOUT = 15000;
+export const RDAP_QUERY_TIMEOUT = 10000;
+export const WHOIS_QUERY_TIMEOUT = 10000;
+export const COMMONCRAWL_QUERY_TIMEOUT = 15000;
+
+export const SOURCE_LABELS: Record<string, string> = {
+  cdx: "Wayback Machine",
+  crt: "Certificate Transparency",
+  rdap: "Domain Registry (RDAP)",
+  whois: "WHOIS",
+  commoncrawl: "Common Crawl",
+};

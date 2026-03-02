@@ -13,9 +13,20 @@ export interface LookupResponse {
   detail_url: string;
 }
 
+export interface SourceInfo {
+  source: string;
+  source_label: string;
+  earliest_date: string | null;
+  confidence: "high" | "medium" | "low";
+  detail_url: string | null;
+  summary: Record<string, unknown>;
+  error?: string;
+}
+
 export interface DomainDetail {
   domain: string;
   birth_at: string | null;
+  best_birth_at: string | null;
   death_at: string | null;
   verified_birth_at: string | null;
   status: string;
@@ -26,6 +37,7 @@ export interface DomainDetail {
   badge_url: string;
   badge_embedded: boolean;
   created_at: string;
+  sources: SourceInfo[];
 }
 
 export interface VerifyInitRequest {
