@@ -7,7 +7,7 @@ interface Props {
 }
 
 const { data } = Astro.props;
-const birth = data.verified_birth_at || data.birth_at;
+const birth = data.verified_birth_at || data.best_birth_at || data.birth_at;
 const days = data.age_days || 0;
 ---
 

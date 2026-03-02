@@ -6,6 +6,7 @@ import AgeDisplay from "../components/AgeDisplay.astro";
 import RankingBar from "../components/RankingBar.astro";
 import BadgePreview from "../components/BadgePreview.astro";
 import Timeline from "../components/Timeline.astro";
+import DataSources from "../components/DataSources.astro";
 import LookupLoading from "../components/LookupLoading.astro";
 import ShareButtons from "../components/ShareButtons.astro";
 import { API_BASE_URL, BADGE_BASE_URL, isValidDomain, formatAge } from "@siteage/shared";
@@ -38,7 +39,7 @@ try {
 }
 
 // Build dynamic OG meta data
-const birth = data?.verified_birth_at || data?.birth_at;
+const birth = data?.verified_birth_at || data?.best_birth_at || data?.birth_at;
 const yearStr = birth ? new Date(birth).getUTCFullYear().toString() : null;
 const ageStr = birth ? formatAge(birth) : null;
 const badgeBase = import.meta.env.PUBLIC_BADGE_URL || BADGE_BASE_URL;
@@ -80,7 +81,7 @@ const ogImage = `${badgeBase}/og/${domain}`;
 
     {data && (
       <div class="animate-fade-up delay-100 mt-4">
-        <ShareButtons domain={data.domain} birthAt={data.verified_birth_at || data.birth_at} deathAt={data.death_at} isDead={data.status === "dead"} isVerified={data.verification_status === "verified"} createdAt={data.created_at} />
+        <ShareButtons domain={data.domain} birthAt={data.verified_birth_at || data.best_birth_at || data.birth_at} deathAt={data.death_at} isDead={data.status === "dead"} isVerified={data.verification_status === "verified"} createdAt={data.created_at} />
       </div>
     )}
 
@@ -96,12 +97,18 @@ const ogImage = `${badgeBase}/og/${domain}`;
           </div>
         )}
 
+        {data.sources && data.sources.length > 0 && (
+          <div class="animate-fade-up delay-350">
+            <DataSources sources={data.sources} bestBirthAt={data.verified_birth_at || data.best_birth_at || data.birth_at} />
+          </div>
+        )}
+
         <div class="animate-fade-up delay-400">
           <BadgePreview domain={data.domain} isVerified={data.verification_status === "verified"} />
         </div>
 
         <div class="animate-fade-up delay-500">
-          <Timeline domain={data.domain} firstSnapshotUrl={data.first_snapshot_url} birthAt={data.verified_birth_at || data.birth_at} />
+          <Timeline domain={data.domain} firstSnapshotUrl={data.first_snapshot_url} birthAt={data.verified_birth_at || data.best_birth_at || data.birth_at} sources={data.sources} />
         </div>
 
         <!-- Claim / Manage section -->
