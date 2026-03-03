@@ -56,6 +56,7 @@ pnpm dev:web              # Start Astro dev server only
 - Social sharing: `ShareButtons.astro` provides X/LinkedIn/Facebook/Copy Link buttons with context-aware share text.
 - Certificate download: Uses Canvas 2D API to programmatically draw a 4800×6400 portrait PNG (1200×1600 base at 4x scale). Replicates the OG SVG template design (corner ornaments, gradient lines, year glow, verified badge) with pixel-perfect precision. Falls back to server-side OG endpoint (`badge.siteage.org/og/:domain`) on failure. Code-split via dynamic `import()`. Core logic in `packages/web/src/scripts/certificate-download.ts`.
 - Meta tags: `Base.astro` accepts `ogImage`, `ogTitle`, `ogDescription` props for OG + Twitter Card tags. `[domain].astro` passes dynamic domain-specific meta. Default OG image: `/og-default.png`.
+- NoLogin Verified: `<meta name="nologin-verified" content="siteage-org">` in `Base.astro` `<head>`. Badge displayed in `Footer.astro` linking to `https://nologin.tools/badge/siteage-org`.
 
 ### Design System Conventions
 

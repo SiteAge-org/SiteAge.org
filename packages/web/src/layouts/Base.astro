@@ -35,6 +35,9 @@ const canonicalURL = new URL(Astro.url.pathname, "https://siteage.org").href;
     <link rel="canonical" href={canonicalURL} />
     {noindex && <meta name="robots" content="noindex, nofollow" />}
 
+    <!-- NoLogin Verified -->
+    <meta name="nologin-verified" content="siteage-org" />
+
     <!-- Open Graph -->
     <meta property="og:type" content="website" />
     <meta property="og:title" content={ogTitle || title} />
