@@ -1,7 +1,10 @@
 import { Hono } from "hono";
 import type { Env } from "../env.js";
 import type { AdminDashboard, GlobalStats } from "@siteage/shared";
+import { normalizeDomain, isValidDomain, ageDays, BADGE_BASE_URL, WEB_BASE_URL } from "@siteage/shared";
+import type { LookupResponse } from "@siteage/shared";
 import { queryDohTxt, querySystemDns } from "../services/verification.js";
+import { archaeologyService } from "../services/archaeology.js";
 
 export const adminRoutes = new Hono<{ Bindings: Env }>();
 
@@ -195,6 +198,55 @@ adminRoutes.post("/domains/:id", async (c) => {
   }
 
   return c.json({ success: true });
+});
+
+// POST /admin/refresh/:domain - Force refresh without cooldown or rate limit
+adminRoutes.post("/refresh/:domain", async (c) => {
+  const raw = c.req.param("domain");
+  const domain = normalizeDomain(raw);
+  if (!isValidDomain(domain)) {
+    return c.json({ error: "bad_request", message: "Invalid domain" }, 400);
+  }
+
+  // Clear all KV caches (API + Badge + OG)
+  await Promise.all([
+    c.env.API_CACHE.delete(`lookup:${domain}`),
+    c.env.API_CACHE.delete(`domain:${domain}`),
+    c.env.API_CACHE.delete(`refresh:${domain}`),
+    c.env.BADGE_CACHE.delete(`domain:${domain}`),
+    c.env.BADGE_CACHE.delete(`og:${domain}`),
+  ]);
+
+  // Clear D1 records (including source_queries)
+  await Promise.all([
+    c.env.DB.prepare("DELETE FROM cdx_queries WHERE domain = ?").bind(domain).run(),
+    c.env.DB.prepare("DELETE FROM source_queries WHERE domain = ?").bind(domain).run(),
+    c.env.DB.prepare("DELETE FROM domains WHERE domain = ?").bind(domain).run(),
+  ]);
+
+  const result = await archaeologyService(c.env, domain);
+
+  if (result.all_failed) {
+    await c.env.API_CACHE.delete(`lookup:${domain}`);
+    return c.json({
+      error: "sources_failed",
+      message: "All data sources failed. You can retry immediately.",
+    }, 503);
+  }
+
+  const birthAt = result.best_birth_at || result.birth_at;
+
+  const response: LookupResponse = {
+    domain: result.domain,
+    birth_at: birthAt,
+    age_days: birthAt ? ageDays(birthAt) : null,
+    status: result.status,
+    verification_status: result.verification_status,
+    badge_url: `${BADGE_BASE_URL}/${domain}`,
+    detail_url: `${WEB_BASE_URL}/${domain}`,
+  };
+
+  return c.json(response);
 });
 
 // GET /admin/dns-check/:domain - DNS TXT diagnostic endpoint

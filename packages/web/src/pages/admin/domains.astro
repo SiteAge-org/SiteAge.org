@@ -232,17 +232,22 @@ import Base from "../../layouts/Base.astro";
       icon.classList.add("animate-spin");
 
       try {
-        const resp = await fetch(`${API}/lookup`, {
+        const resp = await fetch(`${API}/admin/refresh/${domain}`, {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ url: domain, force: true }),
+          headers: { "Content-Type": "application/json", "X-Admin-Key": key! },
         });
 
-        if (resp.status === 429) {
-          alert("Rate limited — please wait 5 minutes before retrying.");
+        if (!resp.ok) {
+          const data = await resp.json().catch(() => null);
+          if (resp.status === 503) {
+            alert("All data sources failed — you can retry immediately.");
+          } else if (resp.status === 429) {
+            alert("Rate limited — please wait before retrying.");
+          } else {
+            alert(data?.message || "Failed to refresh domain data.");
+          }
           return;
         }
-        if (!resp.ok) throw new Error("Refresh failed");
 
         // Clear cache and reload detail
         detailCache.delete(domain);
@@ -277,7 +282,7 @@ import Base from "../../layouts/Base.astro";
         // Also reload the table to get fresh data
         load();
       } catch {
-        alert("Failed to refresh domain data.");
+        alert("Network error — failed to refresh domain data.");
       } finally {
         btn.disabled = false;
         icon.classList.remove("animate-spin");

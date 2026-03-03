@@ -27,9 +27,6 @@ lookupRoutes.post("/lookup", async (c) => {
       return c.json({ error: "rate_limited", message: "Please wait before refreshing again" }, 429);
     }
 
-    // Set cooldown
-    await c.env.API_CACHE.put(cooldownKey, "1", { expirationTtl: REFRESH_COOLDOWN_TTL });
-
     // Clear all KV caches (API + Badge + OG)
     await Promise.all([
       c.env.API_CACHE.delete(`lookup:${domain}`),
@@ -55,6 +52,12 @@ lookupRoutes.post("/lookup", async (c) => {
       error: "sources_failed",
       message: "Unable to query data sources. Please try again later.",
     }, 503);
+  }
+
+  // Set cooldown only after successful query (not when all sources failed)
+  if (body.force) {
+    const cooldownKey = `refresh:${domain}`;
+    await c.env.API_CACHE.put(cooldownKey, "1", { expirationTtl: REFRESH_COOLDOWN_TTL });
   }
 
   const birthAt = result.best_birth_at || result.birth_at;
