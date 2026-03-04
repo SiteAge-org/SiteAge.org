@@ -4,6 +4,7 @@ import { isValidDomain, BADGE_CACHE_TTL, DOMAIN_CACHE_TTL, API_BASE_URL, BADGE_S
 import type { BadgeData, BadgeStyle, BadgeMessageType, BadgeTimeFormat } from "@siteage/shared";
 import { renderBadge } from "./renderer.js";
 import { renderOgImage } from "./og/render-og.js";
+import { generateWidgetScript } from "./widget.js";
 
 interface Env {
   BADGE_CACHE: KVNamespace;
@@ -168,6 +169,15 @@ app.get("/:domain{[a-z0-9.-]+\\.[a-z]{2,}}", async (c) => {
 
   return c.body(svg, 200, {
     "Content-Type": "image/svg+xml",
+    "Cache-Control": "public, max-age=300, s-maxage=86400",
+  });
+});
+
+// Widget JS embed script
+app.get("/widget.js", (c) => {
+  const script = generateWidgetScript();
+  return c.body(script, 200, {
+    "Content-Type": "application/javascript; charset=utf-8",
     "Cache-Control": "public, max-age=300, s-maxage=86400",
   });
 });

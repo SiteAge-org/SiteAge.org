@@ -1,0 +1,350 @@
+---
+import Base from "../layouts/Base.astro";
+import JsonLd from "../components/JsonLd.astro";
+import { API_BASE_URL, BADGE_BASE_URL, WEB_BASE_URL } from "@siteage/shared";
+
+const breadcrumbSchema = {
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  itemListElement: [
+    { "@type": "ListItem", position: 1, name: "Home", item: "https://siteage.org" },
+    { "@type": "ListItem", position: 2, name: "Badge Customizer" },
+  ],
+};
+
+const apiBase = import.meta.env.PUBLIC_API_URL || API_BASE_URL;
+const badgeBase = import.meta.env.PUBLIC_BADGE_URL || BADGE_BASE_URL;
+---
+
+<Base
+  title="Badge Customizer"
+  description="Customize and generate your SiteAge badge. Choose from 10 styles, formats, and embed options."
+  ogTitle="Badge Customizer | SiteAge.org"
+  ogDescription="Create a custom SiteAge badge for your website with our interactive customizer."
+>
+  <JsonLd data={breadcrumbSchema} />
+
+  <!-- Header -->
+  <section class="relative overflow-hidden">
+    <div class="absolute inset-0 bg-gradient-to-b from-parchment-dark/40 to-parchment noise-overlay"></div>
+    <div class="relative max-w-3xl mx-auto px-6 pt-16 pb-10 text-center">
+      <span class="text-xs tracking-[0.3em] uppercase text-seal-dark font-medium">Customize</span>
+      <h1 class="font-display text-3xl sm:text-4xl mt-4 text-ink">Badge Customizer</h1>
+      <p class="text-ink-muted mt-4 max-w-xl mx-auto font-light leading-relaxed">
+        Enter your domain to preview and customize your badge. Verified domains unlock premium styles.
+      </p>
+      <div class="ornament-line max-w-32 mx-auto mt-5"></div>
+    </div>
+  </section>
+
+  <div class="max-w-3xl mx-auto px-6 pb-16 sm:pb-24">
+    <!-- Domain input -->
+    <div class="mb-8">
+      <div class="flex gap-3">
+        <input
+          type="text"
+          id="badge-domain-input"
+          placeholder="example.com"
+          class="input-archival flex-1"
+          autocomplete="off"
+          autocapitalize="none"
+          spellcheck="false"
+        />
+        <button id="badge-lookup-btn" class="btn-primary">
+          Preview
+        </button>
+      </div>
+      <p id="badge-status-msg" class="text-xs text-ink-muted/60 font-light mt-2 hidden"></p>
+    </div>
+
+    <!-- Customizer (hidden until domain loaded) -->
+    <div id="badge-customizer-container"
+      data-api-base={apiBase}
+      data-badge-base={badgeBase}
+      data-web-base={WEB_BASE_URL}
+    >
+      <!-- Loading state -->
+      <div id="badge-loading" class="hidden text-center py-12">
+        <div class="inline-block w-6 h-6 border-2 border-seal/30 border-t-seal rounded-full animate-spin"></div>
+        <p class="text-sm text-ink-muted font-light mt-3">Looking up domain...</p>
+      </div>
+
+      <!-- Customizer UI -->
+      <div id="badge-customizer-ui" class="card-base p-6 sm:p-8">
+        <h2 class="card-title">Customize Badge</h2>
+
+        <!-- Selectors -->
+        <div class="space-y-4 mb-6">
+          <!-- Style selector -->
+          <div>
+            <p class="text-[10px] tracking-[0.15em] uppercase text-ink-muted/50 font-medium mb-2">Style</p>
+            <div class="flex flex-wrap gap-2" id="style-chips">
+              <button class="badge-chip active" data-group="style" data-value="flat">Flat</button>
+              <button class="badge-chip" data-group="style" data-value="flat-square">Flat Square</button>
+              <button class="badge-chip" data-group="style" data-value="for-the-badge">For the Badge</button>
+              <button class="badge-chip" data-group="style" data-value="plastic">Plastic</button>
+              <button class="badge-chip" data-group="style" data-value="social">Social</button>
+              <button class="badge-chip badge-chip--verified" data-group="style" data-value="gold" data-verified-only>Gold</button>
+              <button class="badge-chip badge-chip--verified" data-group="style" data-value="vintage" data-verified-only>Vintage</button>
+              <button class="badge-chip badge-chip--verified" data-group="style" data-value="dark" data-verified-only>Dark</button>
+              <button class="badge-chip badge-chip--verified" data-group="style" data-value="seal" data-verified-only>Seal</button>
+              <button class="badge-chip badge-chip--verified" data-group="style" data-value="minimal" data-verified-only>Minimal</button>
+            </div>
+          </div>
+
+          <!-- Message type selector -->
+          <div>
+            <p class="text-[10px] tracking-[0.15em] uppercase text-ink-muted/50 font-medium mb-2">Message</p>
+            <div class="flex flex-wrap items-center gap-2" id="type-chips">
+              <button class="badge-chip active" data-group="type" data-value="since">Since</button>
+              <button class="badge-chip badge-chip--verified" data-group="type" data-value="established" data-verified-only>Established</button>
+            </div>
+          </div>
+
+          <!-- Format selector -->
+          <div>
+            <p class="text-[10px] tracking-[0.15em] uppercase text-ink-muted/50 font-medium mb-2">Format</p>
+            <div class="flex flex-wrap items-center gap-2" id="format-chips">
+              <button class="badge-chip active" data-group="format" data-value="year">Year</button>
+              <button class="badge-chip badge-chip--verified" data-group="format" data-value="month" data-verified-only>Month</button>
+              <button class="badge-chip badge-chip--verified" data-group="format" data-value="date" data-verified-only>Date</button>
+              <button class="badge-chip badge-chip--verified" data-group="format" data-value="age" data-verified-only>Age</button>
+              <button class="badge-chip badge-chip--verified" data-group="format" data-value="days" data-verified-only>Days</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Verify prompt (shown for unverified) -->
+        <div id="verify-prompt" class="hidden bg-seal/[0.05] border border-seal/20 rounded-sm px-4 py-3 mb-6 text-xs text-ink-muted">
+          <span class="text-seal-dark font-medium">Locked options</span> — <a href="/why-verify" class="text-azure hover:text-azure-light transition-colors">Verify ownership</a> to unlock premium styles, "Established" message, and additional formats.
+        </div>
+
+        <!-- Live Preview -->
+        <div class="bg-parchment/60 p-4 rounded-sm mb-8 text-center">
+          <img id="badge-preview-img" src="" alt="SiteAge badge" class="inline-block h-5" />
+        </div>
+
+        <!-- Embed codes -->
+        <div class="space-y-4">
+          <div>
+            <label class="text-[10px] tracking-[0.15em] uppercase text-ink-muted/50 font-medium block mb-2">HTML</label>
+            <div class="relative">
+              <code class="block bg-parchment-dark rounded px-4 py-3 text-xs text-ink-muted font-mono overflow-x-auto" id="embed-html"></code>
+              <button data-copy-target="embed-html" class="copy-btn absolute top-2 right-2 text-[10px] tracking-[0.1em] uppercase px-2 py-1 bg-white border border-divider text-ink-muted hover:text-seal-dark hover:border-seal/30 transition-colors">Copy</button>
+            </div>
+          </div>
+          <div>
+            <label class="text-[10px] tracking-[0.15em] uppercase text-ink-muted/50 font-medium block mb-2">Markdown</label>
+            <div class="relative">
+              <code class="block bg-parchment-dark rounded px-4 py-3 text-xs text-ink-muted font-mono overflow-x-auto" id="embed-md"></code>
+              <button data-copy-target="embed-md" class="copy-btn absolute top-2 right-2 text-[10px] tracking-[0.1em] uppercase px-2 py-1 bg-white border border-divider text-ink-muted hover:text-seal-dark hover:border-seal/30 transition-colors">Copy</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</Base>
+
+<style>
+  .badge-chip {
+    padding: 0.25rem 0.625rem;
+    font-size: 0.7rem;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    border: 1px solid var(--color-divider);
+    color: var(--color-ink-muted);
+    background: transparent;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+  .badge-chip:hover:not(:disabled) {
+    border-color: var(--color-azure);
+    color: var(--color-azure);
+  }
+  .badge-chip.active {
+    border-color: var(--color-azure);
+    color: var(--color-azure);
+    background-color: color-mix(in srgb, var(--color-azure) 8%, transparent);
+  }
+  .badge-chip--verified {
+    border-style: dashed;
+    border-color: color-mix(in srgb, var(--color-seal) 40%, var(--color-divider));
+  }
+  .badge-chip--verified:hover:not(:disabled) {
+    border-color: var(--color-seal);
+    color: var(--color-seal-dark);
+    border-style: solid;
+  }
+  .badge-chip--verified.active {
+    border-color: var(--color-seal);
+    color: var(--color-seal-dark);
+    background-color: color-mix(in srgb, var(--color-seal) 10%, transparent);
+    border-style: solid;
+  }
+  .badge-chip:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+</style>
+
+<script>
+  const container = document.getElementById("badge-customizer-container")!;
+  const apiBase = container.dataset.apiBase!;
+  const badgeBase = container.dataset.badgeBase!;
+  const webBase = container.dataset.webBase!;
+
+  const input = document.getElementById("badge-domain-input") as HTMLInputElement;
+  const lookupBtn = document.getElementById("badge-lookup-btn") as HTMLButtonElement;
+  const statusMsg = document.getElementById("badge-status-msg")!;
+  const loadingEl = document.getElementById("badge-loading")!;
+  const customizerUI = document.getElementById("badge-customizer-ui")!;
+  const verifyPrompt = document.getElementById("verify-prompt")!;
+  const previewImg = document.getElementById("badge-preview-img") as HTMLImageElement;
+
+  let currentDomain = "siteage.org";
+  let isVerified = false;
+
+  const state: Record<string, string> = {
+    style: "flat",
+    type: "since",
+    format: "year",
+  };
+
+  function updateVerifiedState(verified: boolean): void {
+    isVerified = verified;
+    const verifiedChips = container.querySelectorAll<HTMLButtonElement>("[data-verified-only]");
+    verifiedChips.forEach((chip) => {
+      if (!verified) {
+        chip.disabled = true;
+        // Reset to default if currently active
+        if (chip.classList.contains("active")) {
+          chip.classList.remove("active");
+          const group = chip.dataset.group!;
+          const defaultChip = container.querySelector<HTMLButtonElement>(`.badge-chip[data-group="${group}"]:not([data-verified-only])`);
+          if (defaultChip) {
+            defaultChip.classList.add("active");
+            state[group] = defaultChip.dataset.value!;
+          }
+        }
+      } else {
+        chip.disabled = false;
+      }
+    });
+
+    verifyPrompt.classList.toggle("hidden", verified);
+
+    // If verified, default to "established"
+    if (verified) {
+      const sinceChip = container.querySelector<HTMLButtonElement>('.badge-chip[data-group="type"][data-value="since"]');
+      const estChip = container.querySelector<HTMLButtonElement>('.badge-chip[data-group="type"][data-value="established"]');
+      if (sinceChip && estChip) {
+        sinceChip.classList.remove("active");
+        estChip.classList.add("active");
+        state.type = "established";
+      }
+    }
+  }
+
+  function buildBadgeSrc(): string {
+    const params = new URLSearchParams();
+    if (state.style !== "flat") params.set("style", state.style);
+    if (state.type !== "since") params.set("type", state.type);
+    if (state.format !== "year") params.set("format", state.format);
+    const qs = params.toString();
+    return qs ? `${badgeBase}/${currentDomain}?${qs}` : `${badgeBase}/${currentDomain}`;
+  }
+
+  function updatePreview(): void {
+    const src = buildBadgeSrc();
+    previewImg.src = src;
+
+    // Adjust height for special styles
+    if (state.style === "for-the-badge") {
+      previewImg.className = "inline-block h-7";
+    } else if (state.style === "seal") {
+      previewImg.className = "inline-block h-6";
+    } else {
+      previewImg.className = "inline-block h-5";
+    }
+
+    const linkUrl = `${webBase}/${currentDomain}`;
+    document.getElementById("embed-html")!.textContent =
+      `<a href="${linkUrl}"><img src="${src}" alt="SiteAge badge"></a>`;
+    document.getElementById("embed-md")!.textContent =
+      `[![SiteAge](${src})](${linkUrl})`;
+  }
+
+  async function loadDomain(domain: string): Promise<void> {
+    currentDomain = domain;
+    loadingEl.classList.remove("hidden");
+    customizerUI.classList.add("hidden");
+    statusMsg.classList.add("hidden");
+
+    try {
+      const resp = await fetch(`${apiBase}/${domain}`);
+      if (resp.ok) {
+        const data = await resp.json() as { verification_status: string };
+        const verified = data.verification_status === "verified";
+        updateVerifiedState(verified);
+        statusMsg.textContent = verified ? `${domain} — Verified owner` : `${domain} — Auto-detected`;
+        statusMsg.classList.remove("hidden");
+      } else if (resp.status === 404) {
+        updateVerifiedState(false);
+        statusMsg.textContent = `${domain} — Not yet certified. The badge will work after lookup.`;
+        statusMsg.classList.remove("hidden");
+      } else {
+        updateVerifiedState(false);
+      }
+    } catch {
+      updateVerifiedState(false);
+    }
+
+    loadingEl.classList.add("hidden");
+    customizerUI.classList.remove("hidden");
+    updatePreview();
+  }
+
+  // Initial load with siteage.org example
+  loadDomain("siteage.org");
+
+  // Handle lookup
+  function handleLookup(): void {
+    const val = input.value.trim().toLowerCase().replace(/^https?:\/\//, "").replace(/\/.*$/, "");
+    if (val) loadDomain(val);
+  }
+
+  lookupBtn.addEventListener("click", handleLookup);
+  input.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") handleLookup();
+  });
+
+  // Chip click handlers
+  container.querySelectorAll<HTMLButtonElement>(".badge-chip").forEach((chip) => {
+    chip.addEventListener("click", () => {
+      if (chip.disabled) return;
+      const group = chip.dataset.group!;
+      const value = chip.dataset.value!;
+      container.querySelectorAll<HTMLButtonElement>(`.badge-chip[data-group="${group}"]`).forEach(
+        (c) => c.classList.remove("active"),
+      );
+      chip.classList.add("active");
+      state[group] = value;
+      updatePreview();
+    });
+  });
+
+  // Copy buttons
+  document.querySelectorAll<HTMLButtonElement>("[data-copy-target]").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const targetId = btn.dataset.copyTarget;
+      if (!targetId) return;
+      const el = document.getElementById(targetId);
+      if (!el) return;
+      navigator.clipboard.writeText(el.textContent || "").then(() => {
+        btn.textContent = "Copied!";
+        setTimeout(() => { btn.textContent = "Copy"; }, 2000);
+      });
+    });
+  });
+</script>
