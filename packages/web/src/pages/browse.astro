@@ -15,25 +15,54 @@ interface BrowseDomain {
 
 const apiBase = import.meta.env.PUBLIC_API_URL || API_BASE_URL;
 const page = Math.max(1, parseInt(Astro.url.searchParams.get("page") || "1", 10));
+const sort = Astro.url.searchParams.get("sort") || "recent";
+const verifiedOnly = Astro.url.searchParams.get("verified") === "true";
 const limit = 20;
 
 let domains: BrowseDomain[] = [];
 let total = 0;
 let totalPages = 1;
 let error: string | null = null;
+let hallOfFame: BrowseDomain[] = [];
 
-try {
-  const resp = await fetch(`${apiBase}/browse?page=${page}&limit=${limit}`);
-  if (resp.ok) {
-    const data = await resp.json() as { domains: BrowseDomain[]; total: number; page: number; limit: number };
-    domains = data.domains || [];
-    total = data.total;
-    totalPages = Math.ceil(total / limit);
-  } else {
-    error = "Failed to load domains";
-  }
-} catch {
-  error = "Unable to connect to the API";
+// Build query string for browse API
+const browseParams = new URLSearchParams({ page: String(page), limit: String(limit) });
+if (sort !== "recent") browseParams.set("sort", sort);
+if (verifiedOnly) browseParams.set("verified", "true");
+
+// Fetch main listing + Hall of Fame in parallel
+const [browseResp, fameResp] = await Promise.allSettled([
+  fetch(`${apiBase}/browse?${browseParams}`),
+  fetch(`${apiBase}/browse?sort=oldest&limit=5`),
+]);
+
+if (browseResp.status === "fulfilled" && browseResp.value.ok) {
+  const data = await browseResp.value.json() as { domains: BrowseDomain[]; total: number; page: number; limit: number };
+  domains = data.domains || [];
+  total = data.total;
+  totalPages = Math.ceil(total / limit);
+} else {
+  error = browseResp.status === "rejected" ? "Unable to connect to the API" : "Failed to load domains";
+}
+
+if (fameResp.status === "fulfilled" && fameResp.value.ok) {
+  const data = await fameResp.value.json() as { domains: BrowseDomain[] };
+  hallOfFame = (data.domains || []).slice(0, 5);
+}
+
+// Helper to build URLs preserving current filters
+function buildUrl(overrides: Record<string, string | null>): string {
+  const params = new URLSearchParams();
+  const newSort = overrides.sort !== undefined ? overrides.sort : sort;
+  const newVerified = overrides.verified !== undefined ? overrides.verified : (verifiedOnly ? "true" : null);
+  const newPage = overrides.page !== undefined ? overrides.page : (overrides.sort !== undefined || overrides.verified !== undefined ? null : String(page));
+
+  if (newPage && newPage !== "1") params.set("page", newPage);
+  if (newSort && newSort !== "recent") params.set("sort", newSort);
+  if (newVerified === "true") params.set("verified", "true");
+
+  const qs = params.toString();
+  return qs ? `/browse?${qs}` : "/browse";
 }
 
 const breadcrumbSchema = {
@@ -44,6 +73,9 @@ const breadcrumbSchema = {
     { "@type": "ListItem", position: 2, name: "Browse" },
   ],
 };
+
+const rankColors = ["text-seal-dark", "text-ink-muted", "text-seal-dark/60"];
+const rankBgs = ["bg-gradient-to-r from-seal/[0.06] to-transparent", "bg-gradient-to-r from-ink/[0.03] to-transparent", "bg-gradient-to-r from-seal/[0.03] to-transparent"];
 ---
 
 <Base
@@ -68,84 +100,136 @@ const breadcrumbSchema = {
   </section>
 
   <div class="max-w-4xl mx-auto px-6 pb-16 sm:pb-24">
+    <!-- Hall of Fame -->
+    {hallOfFame.length > 0 && page === 1 && sort === "recent" && !verifiedOnly && (
+      <section class="mb-12">
+        <div class="text-center mb-6">
+          <span class="text-xs tracking-[0.3em] uppercase text-seal-dark font-medium">Hall of Fame</span>
+          <h2 class="font-display text-xl mt-2">Oldest Websites on Record</h2>
+        </div>
+        <div class="space-y-2">
+          {hallOfFame.map((d, i) => {
+            const birth = d.verified_birth_at || d.best_birth_at || d.birth_at;
+            const year = birth ? new Date(birth).getUTCFullYear() : null;
+            const isVerified = d.verification_status === "verified";
+            const colorClass = rankColors[i] || "text-ink-muted/40";
+            const bgClass = rankBgs[i] || "";
+            return (
+              <a href={`/${d.domain}`} class={`card-base p-4 flex items-center gap-4 group ${bgClass}`}>
+                <span class={`font-display text-xl w-8 text-center flex-shrink-0 ${colorClass}`}>
+                  {i + 1}
+                </span>
+                <span class="flex-1 font-mono text-sm text-ink group-hover:text-azure transition-colors truncate">{d.domain}</span>
+                {isVerified && (
+                  <span class="flex-shrink-0 text-[10px] tracking-[0.1em] uppercase text-seal-dark font-medium bg-seal/[0.08] px-1.5 py-0.5">Verified</span>
+                )}
+                {year && (
+                  <span class="flex-shrink-0 text-sm text-ink-muted font-light">Since {year}</span>
+                )}
+              </a>
+            );
+          })}
+        </div>
+        <div class="ornament-line max-w-24 mx-auto mt-8"></div>
+      </section>
+    )}
+
     {error && (
       <div class="text-center py-16">
         <p class="text-ink-muted font-light">{error}</p>
       </div>
     )}
 
-    {!error && domains.length === 0 && (
-      <div class="text-center py-16">
-        <p class="text-ink-muted font-light">No certified websites found yet.</p>
-        <a href="/" class="btn-primary mt-6">Look Up a Website</a>
-      </div>
-    )}
+    {!error && (
+      <>
+        <!-- Filters -->
+        <div class="flex flex-wrap items-center gap-3 mb-6">
+          <span class="text-[10px] tracking-[0.15em] uppercase text-ink-muted/50 font-medium">Sort:</span>
+          <a href={buildUrl({ sort: "recent" })} class={`filter-chip ${sort === "recent" ? "active" : ""}`}>Recent</a>
+          <a href={buildUrl({ sort: "oldest" })} class={`filter-chip ${sort === "oldest" ? "active" : ""}`}>Oldest</a>
+          <a href={buildUrl({ sort: "newest" })} class={`filter-chip ${sort === "newest" ? "active" : ""}`}>Newest</a>
 
-    {domains.length > 0 && (
-      <div class="space-y-3 mt-8">
-        {domains.map((d) => {
-          const birth = d.verified_birth_at || d.best_birth_at || d.birth_at;
-          const year = birth ? new Date(birth).getUTCFullYear() : null;
-          const age = birth ? formatAge(birth) : null;
-          const isVerified = d.verification_status === "verified";
-          return (
-            <a href={`/${d.domain}`} class="card-base p-5 flex items-center justify-between gap-4 group">
-              <div class="flex items-center gap-3 min-w-0">
-                <span class="font-mono text-sm text-ink truncate">{d.domain}</span>
-                {isVerified && (
-                  <span class="flex-shrink-0 text-[10px] tracking-[0.1em] uppercase text-seal-dark font-medium bg-seal/[0.08] px-1.5 py-0.5">Verified</span>
-                )}
-              </div>
-              <div class="flex items-center gap-4 flex-shrink-0 text-right">
-                {year && (
-                  <span class="text-sm text-ink-muted font-light">Since {year}</span>
-                )}
-                {age && (
-                  <span class="text-xs text-ink-muted/60 font-light hidden sm:inline">{age}</span>
-                )}
-                <svg class="w-4 h-4 text-ink-muted/40 group-hover:text-azure transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
-                </svg>
-              </div>
-            </a>
-          );
-        })}
-      </div>
-    )}
+          <span class="w-px h-4 bg-divider mx-1"></span>
 
-    <!-- Pagination -->
-    {totalPages > 1 && (
-      <nav class="flex items-center justify-center gap-4 mt-10">
-        {page > 1 ? (
-          <a
-            href={`/browse${page > 2 ? `?page=${page - 1}` : ""}`}
-            class="px-4 py-2 text-sm font-medium text-ink-muted hover:text-ink border border-divider hover:border-ink/20 transition-colors"
-          >
-            &larr; Previous
+          <a href={buildUrl({ verified: verifiedOnly ? null : "true" })} class={`filter-chip ${verifiedOnly ? "active" : ""}`}>
+            Verified Only
           </a>
-        ) : (
-          <span class="px-4 py-2 text-sm font-medium text-ink-muted/40 border border-divider/50 cursor-not-allowed">
-            &larr; Previous
-          </span>
+        </div>
+
+        {domains.length === 0 && (
+          <div class="text-center py-16">
+            <p class="text-ink-muted font-light">No certified websites found for this filter.</p>
+            <a href="/browse" class="text-sm text-azure hover:text-azure-light transition-colors mt-4 inline-block">Clear filters</a>
+          </div>
         )}
 
-        <span class="text-sm text-ink-muted font-light">
-          Page {page} of {totalPages}
-        </span>
-
-        {page < totalPages ? (
-          <a
-            href={`/browse?page=${page + 1}`}
-            class="px-4 py-2 text-sm font-medium text-ink-muted hover:text-ink border border-divider hover:border-ink/20 transition-colors"
-          >
-            Next &rarr;
-          </a>
-        ) : (
-          <span class="px-4 py-2 text-sm font-medium text-ink-muted/40 border border-divider/50 cursor-not-allowed">
-            Next &rarr;
-          </span>
+        {domains.length > 0 && (
+          <div class="space-y-3">
+            {domains.map((d) => {
+              const birth = d.verified_birth_at || d.best_birth_at || d.birth_at;
+              const year = birth ? new Date(birth).getUTCFullYear() : null;
+              const age = birth ? formatAge(birth) : null;
+              const isVerified = d.verification_status === "verified";
+              return (
+                <a href={`/${d.domain}`} class="card-base p-5 flex items-center justify-between gap-4 group">
+                  <div class="flex items-center gap-3 min-w-0">
+                    <span class="font-mono text-sm text-ink truncate">{d.domain}</span>
+                    {isVerified && (
+                      <span class="flex-shrink-0 text-[10px] tracking-[0.1em] uppercase text-seal-dark font-medium bg-seal/[0.08] px-1.5 py-0.5">Verified</span>
+                    )}
+                  </div>
+                  <div class="flex items-center gap-4 flex-shrink-0 text-right">
+                    {year && (
+                      <span class="text-sm text-ink-muted font-light">Since {year}</span>
+                    )}
+                    {age && (
+                      <span class="text-xs text-ink-muted/60 font-light hidden sm:inline">{age}</span>
+                    )}
+                    <svg class="w-4 h-4 text-ink-muted/40 group-hover:text-azure transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
+                    </svg>
+                  </div>
+                </a>
+              );
+            })}
+          </div>
         )}
-      </nav>
+
+        <!-- Pagination -->
+        {totalPages > 1 && (
+          <nav class="flex items-center justify-center gap-4 mt-10">
+            {page > 1 ? (
+              <a
+                href={buildUrl({ page: page > 2 ? String(page - 1) : "1" })}
+                class="px-4 py-2 text-sm font-medium text-ink-muted hover:text-ink border border-divider hover:border-ink/20 transition-colors"
+              >
+                &larr; Previous
+              </a>
+            ) : (
+              <span class="px-4 py-2 text-sm font-medium text-ink-muted/40 border border-divider/50 cursor-not-allowed">
+                &larr; Previous
+              </span>
+            )}
+
+            <span class="text-sm text-ink-muted font-light">
+              Page {page} of {totalPages}
+            </span>
+
+            {page < totalPages ? (
+              <a
+                href={buildUrl({ page: String(page + 1) })}
+                class="px-4 py-2 text-sm font-medium text-ink-muted hover:text-ink border border-divider hover:border-ink/20 transition-colors"
+              >
+                Next &rarr;
+              </a>
+            ) : (
+              <span class="px-4 py-2 text-sm font-medium text-ink-muted/40 border border-divider/50 cursor-not-allowed">
+                Next &rarr;
+              </span>
+            )}
+          </nav>
+        )}
+      </>
     )}
 
     <!-- CTA -->
@@ -156,3 +240,25 @@ const breadcrumbSchema = {
     </div>
   </div>
 </Base>
+
+<style>
+  .filter-chip {
+    padding: 0.25rem 0.75rem;
+    font-size: 0.7rem;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    border: 1px solid var(--color-divider);
+    color: var(--color-ink-muted);
+    text-decoration: none;
+    transition: all 0.2s ease;
+  }
+  .filter-chip:hover {
+    border-color: var(--color-azure);
+    color: var(--color-azure);
+  }
+  .filter-chip.active {
+    border-color: var(--color-azure);
+    color: var(--color-azure);
+    background-color: color-mix(in srgb, var(--color-azure) 8%, transparent);
+  }
+</style>

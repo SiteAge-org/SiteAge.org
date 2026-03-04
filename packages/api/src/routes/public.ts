@@ -45,21 +45,38 @@ publicRoutes.get("/browse", async (c) => {
   const page = Math.max(1, parseInt(c.req.query("page") || "1", 10));
   const limit = Math.min(50, Math.max(1, parseInt(c.req.query("limit") || "20", 10)));
   const offset = (page - 1) * limit;
+  const sort = c.req.query("sort") || "recent";
+  const verifiedOnly = c.req.query("verified") === "true";
 
-  const cacheKey = `public:browse:${page}:${limit}`;
+  const cacheKey = `public:browse:${page}:${limit}:${sort}:${verifiedOnly}`;
   const cached = await c.env.API_CACHE.get(cacheKey);
   if (cached) {
     return c.json(JSON.parse(cached));
   }
 
-  const whereClause = "WHERE status = 'active' AND (birth_at IS NOT NULL OR best_birth_at IS NOT NULL)";
+  let whereClause = "WHERE status = 'active' AND (birth_at IS NOT NULL OR best_birth_at IS NOT NULL)";
+  if (verifiedOnly) {
+    whereClause += " AND verification_status = 'verified'";
+  }
+
+  let orderClause: string;
+  switch (sort) {
+    case "oldest":
+      orderClause = "ORDER BY COALESCE(verified_birth_at, best_birth_at, birth_at) ASC";
+      break;
+    case "newest":
+      orderClause = "ORDER BY COALESCE(verified_birth_at, best_birth_at, birth_at) DESC";
+      break;
+    default:
+      orderClause = "ORDER BY created_at DESC";
+  }
 
   const [countResult, domainsResult] = await Promise.all([
     c.env.DB.prepare(`SELECT COUNT(*) as count FROM domains ${whereClause}`).first(),
     c.env.DB.prepare(
       `SELECT domain, best_birth_at, verified_birth_at, birth_at, status, verification_status, created_at
        FROM domains ${whereClause}
-       ORDER BY created_at DESC
+       ${orderClause}
        LIMIT ? OFFSET ?`
     )
       .bind(limit, offset)
@@ -83,8 +100,10 @@ publicRoutes.get("/browse", async (c) => {
     limit,
   };
 
+  // Shorter TTL for filtered requests to control cache key proliferation
+  const cacheTtl = (sort !== "recent" || verifiedOnly) ? 120 : 300;
   await c.env.API_CACHE.put(cacheKey, JSON.stringify(data), {
-    expirationTtl: 300,
+    expirationTtl: cacheTtl,
   });
 
   return c.json(data);
