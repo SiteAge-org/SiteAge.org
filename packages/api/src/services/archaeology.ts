@@ -20,32 +20,36 @@ export interface ArchaeologyResult {
 /**
  * Archaeology service: look up a domain's birth date using multiple data sources.
  * Check flow: KV cache → D1 → parallel source queries → store → return
+ * Pass force: true to skip caches and re-query all sources (for force refresh).
  */
-export async function archaeologyService(env: Env, domain: string): Promise<ArchaeologyResult> {
-  // 1. Check KV cache
+export async function archaeologyService(env: Env, domain: string, options?: { force?: boolean }): Promise<ArchaeologyResult> {
   const cacheKey = `lookup:${domain}`;
-  const cached = await env.API_CACHE.get(cacheKey);
-  if (cached) {
-    return JSON.parse(cached);
-  }
 
-  // 2. Check D1
-  const existing = await env.DB.prepare(
-    "SELECT domain, birth_at, best_birth_at, status, verification_status FROM domains WHERE domain = ?"
-  ).bind(domain).first();
+  if (!options?.force) {
+    // 1. Check KV cache
+    const cached = await env.API_CACHE.get(cacheKey);
+    if (cached) {
+      return JSON.parse(cached);
+    }
 
-  if (existing) {
-    const result: ArchaeologyResult = {
-      domain: existing.domain as string,
-      birth_at: existing.birth_at as string | null,
-      best_birth_at: existing.best_birth_at as string | null,
-      status: existing.status as string,
-      verification_status: existing.verification_status as string,
-      sources_queried: [],
-      sources_failed: [],
-    };
-    await env.API_CACHE.put(cacheKey, JSON.stringify(result), { expirationTtl: LOOKUP_CACHE_TTL });
-    return result;
+    // 2. Check D1
+    const existing = await env.DB.prepare(
+      "SELECT domain, birth_at, best_birth_at, status, verification_status FROM domains WHERE domain = ?"
+    ).bind(domain).first();
+
+    if (existing) {
+      const result: ArchaeologyResult = {
+        domain: existing.domain as string,
+        birth_at: existing.birth_at as string | null,
+        best_birth_at: existing.best_birth_at as string | null,
+        status: existing.status as string,
+        verification_status: existing.verification_status as string,
+        sources_queried: [],
+        sources_failed: [],
+      };
+      await env.API_CACHE.put(cacheKey, JSON.stringify(result), { expirationTtl: LOOKUP_CACHE_TTL });
+      return result;
+    }
   }
 
   // 3. Query all data sources in parallel
@@ -122,10 +126,23 @@ export async function archaeologyService(env: Env, domain: string): Promise<Arch
     }
   }
 
-  // 6. Insert into D1 domains table
-  await env.DB.prepare(
-    "INSERT OR IGNORE INTO domains (domain, birth_at, best_birth_at, status) VALUES (?, ?, ?, ?)"
-  ).bind(domain, cdxBirthAt, bestBirthAt, status).run();
+  // 6. Upsert into D1 domains table
+  if (options?.force) {
+    // Force refresh: update existing record, preserving verified_birth_at and verification_status
+    const updated = await env.DB.prepare(
+      "UPDATE domains SET birth_at = ?, best_birth_at = ?, status = ?, updated_at = datetime('now') WHERE domain = ?"
+    ).bind(cdxBirthAt, bestBirthAt, status, domain).run();
+    // If domain didn't exist yet, insert it
+    if (!updated.meta.changes) {
+      await env.DB.prepare(
+        "INSERT OR IGNORE INTO domains (domain, birth_at, best_birth_at, status) VALUES (?, ?, ?, ?)"
+      ).bind(domain, cdxBirthAt, bestBirthAt, status).run();
+    }
+  } else {
+    await env.DB.prepare(
+      "INSERT OR IGNORE INTO domains (domain, birth_at, best_birth_at, status) VALUES (?, ?, ?, ?)"
+    ).bind(domain, cdxBirthAt, bestBirthAt, status).run();
+  }
 
   // Re-query to get the actual stored record (may differ if another request won the race)
   const inserted = await env.DB.prepare(

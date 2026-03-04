@@ -35,15 +35,14 @@ lookupRoutes.post("/lookup", async (c) => {
       c.env.BADGE_CACHE.delete(`og:${domain}`),
     ]);
 
-    // Clear D1 records (including source_queries)
+    // Clear D1 audit records (keep domains row to preserve FK relationships)
     await Promise.all([
       c.env.DB.prepare("DELETE FROM cdx_queries WHERE domain = ?").bind(domain).run(),
       c.env.DB.prepare("DELETE FROM source_queries WHERE domain = ?").bind(domain).run(),
-      c.env.DB.prepare("DELETE FROM domains WHERE domain = ?").bind(domain).run(),
     ]);
   }
 
-  const result = await archaeologyService(c.env, domain);
+  const result = await archaeologyService(c.env, domain, body.force ? { force: true } : undefined);
 
   if (result.all_failed) {
     // Clear cached failure so next retry hits sources directly
