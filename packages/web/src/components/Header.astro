@@ -1,4 +1,9 @@
 ---
+const navLinks = [
+  { href: "/browse", label: "Browse" },
+  { href: "/docs", label: "Docs" },
+  { href: "/about", label: "About" },
+];
 ---
 
 <header class="bg-parchment/80 backdrop-blur-md sticky top-0 z-50">
@@ -15,10 +20,47 @@
       </div>
       <span class="font-display text-xl tracking-wide text-ink">SiteAge</span>
     </a>
-    <nav class="flex items-center gap-8">
-      <a href="/about" class="relative text-sm text-ink-muted hover:text-ink transition-colors duration-200 tracking-wide uppercase font-medium after:absolute after:bottom-[-4px] after:left-0 after:w-0 after:h-px after:bg-seal after:transition-all after:duration-300 hover:after:w-full">About</a>
+
+    <!-- Desktop nav -->
+    <nav class="hidden sm:flex items-center gap-8">
+      {navLinks.map(({ href, label }) => (
+        <a href={href} class="nav-link relative text-sm text-ink-muted hover:text-ink transition-colors duration-200 tracking-wide uppercase font-medium after:absolute after:bottom-[-4px] after:left-0 after:w-0 after:h-px after:bg-seal after:transition-all after:duration-300 hover:after:w-full">{label}</a>
+      ))}
     </nav>
+
+    <!-- Mobile hamburger -->
+    <button id="mobile-menu-btn" class="sm:hidden flex items-center justify-center w-9 h-9 text-ink-muted hover:text-ink transition-colors" aria-label="Toggle menu">
+      <svg class="w-5 h-5 hamburger-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5"/>
+      </svg>
+      <svg class="w-5 h-5 close-icon hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+      </svg>
+    </button>
   </div>
+
+  <!-- Mobile nav dropdown -->
+  <nav id="mobile-menu" class="hidden sm:hidden border-t border-divider/50 bg-parchment/95 backdrop-blur-md">
+    <div class="max-w-6xl mx-auto px-6 py-3 flex flex-col gap-1">
+      {navLinks.map(({ href, label }) => (
+        <a href={href} class="py-2 text-sm text-ink-muted hover:text-ink transition-colors tracking-wide uppercase font-medium">{label}</a>
+      ))}
+    </div>
+  </nav>
+
   <!-- Gradient decorative bottom line with center gold highlight -->
   <div class="h-px bg-gradient-to-r from-transparent via-seal/60 to-transparent"></div>
 </header>
+
+<script>
+  const btn = document.getElementById("mobile-menu-btn")!;
+  const menu = document.getElementById("mobile-menu")!;
+  const hamburger = btn.querySelector(".hamburger-icon")!;
+  const close = btn.querySelector(".close-icon")!;
+
+  btn.addEventListener("click", () => {
+    const open = menu.classList.toggle("hidden");
+    hamburger.classList.toggle("hidden", !open);
+    close.classList.toggle("hidden", open);
+  });
+</script>

@@ -3,6 +3,7 @@ import Base from "../layouts/Base.astro";
 import SearchBox from "../components/SearchBox.astro";
 import JsonLd from "../components/JsonLd.astro";
 import { API_BASE_URL } from "@siteage/shared";
+import type { GlobalStats } from "@siteage/shared";
 
 interface BrowseDomain {
   domain: string;
@@ -16,15 +17,23 @@ interface BrowseDomain {
 
 const apiBase = import.meta.env.PUBLIC_API_URL || API_BASE_URL;
 let recentDomains: BrowseDomain[] = [];
+let stats: GlobalStats | null = null;
 
-try {
-  const resp = await fetch(`${apiBase}/browse?limit=10`);
-  if (resp.ok) {
-    const data = await resp.json() as { domains: BrowseDomain[] };
-    recentDomains = data.domains || [];
-  }
-} catch {
-  // Silently fail — section won't render
+// Fetch stats and recent domains in parallel
+const [statsResp, browseResp] = await Promise.allSettled([
+  fetch(`${apiBase}/stats`),
+  fetch(`${apiBase}/browse?limit=10`),
+]);
+
+if (statsResp.status === "fulfilled" && statsResp.value.ok) {
+  stats = await statsResp.value.json() as GlobalStats;
+  // Hide stats when numbers are too small to build trust
+  if (stats && stats.total_domains < 100) stats = null;
+}
+
+if (browseResp.status === "fulfilled" && browseResp.value.ok) {
+  const data = await browseResp.value.json() as { domains: BrowseDomain[] };
+  recentDomains = data.domains || [];
 }
 
 const websiteSchema = {
@@ -148,6 +157,39 @@ const orgSchema = {
       </span>
     </div>
   </section>
+
+  <!-- Platform Statistics -->
+  {stats && (
+    <section class="max-w-6xl mx-auto px-6 py-12 sm:py-16">
+      <div class="grid grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-10">
+        <div class="text-center">
+          <div class="font-display text-4xl text-ink">{stats.total_domains.toLocaleString()}</div>
+          <div class="text-xs tracking-[0.15em] uppercase text-ink-muted/50 font-medium mt-2">Websites Certified</div>
+        </div>
+        <div class="text-center">
+          <div class="font-display text-4xl text-ink">{stats.verified_domains.toLocaleString()}</div>
+          <div class="text-xs tracking-[0.15em] uppercase text-ink-muted/50 font-medium mt-2">Verified Owners</div>
+        </div>
+        <div class="text-center">
+          <div class="font-display text-4xl text-ink">{stats.active_domains.toLocaleString()}</div>
+          <div class="text-xs tracking-[0.15em] uppercase text-ink-muted/50 font-medium mt-2">Active Monitoring</div>
+        </div>
+        <div class="text-center">
+          {stats.oldest_domain && stats.oldest_birth_at ? (
+            <a href={`/${stats.oldest_domain}`} class="group">
+              <div class="font-display text-4xl text-ink group-hover:text-azure transition-colors">{new Date(stats.oldest_birth_at).getUTCFullYear()}</div>
+              <div class="text-xs tracking-[0.15em] uppercase text-ink-muted/50 font-medium mt-2">Oldest Record</div>
+            </a>
+          ) : (
+            <>
+              <div class="font-display text-4xl text-ink">&mdash;</div>
+              <div class="text-xs tracking-[0.15em] uppercase text-ink-muted/50 font-medium mt-2">Oldest Record</div>
+            </>
+          )}
+        </div>
+      </div>
+    </section>
+  )}
 
   <!-- Features -->
   <section class="max-w-6xl mx-auto px-6 py-16 sm:py-24">
@@ -281,6 +323,63 @@ const orgSchema = {
           <h3 class="font-display text-lg mb-2 text-ink">Memorial</h3>
           <p class="text-xs text-ink-muted leading-relaxed">For domains that have gone offline. A dignified record of their time on the web.</p>
         </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Data Sources -->
+  <section class="max-w-6xl mx-auto px-6 py-16 sm:py-24">
+    <div class="text-center mb-14">
+      <span class="text-xs tracking-[0.3em] uppercase text-seal-dark font-medium">Powered By</span>
+      <h2 class="font-display text-3xl sm:text-4xl mt-4">Authoritative Data Sources</h2>
+      <p class="text-ink-muted mt-4 max-w-lg mx-auto font-light">
+        Every certification is cross-verified against multiple independent public archives and registries.
+      </p>
+    </div>
+
+    <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div class="card-base p-6 text-center">
+        <div class="w-10 h-10 mx-auto mb-4 flex items-center justify-center bg-ink/[0.04] text-ink-muted">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.331 0 4.476.89 6.078 2.352M12 6.042A8.967 8.967 0 0118 3.75c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18c-2.331 0-4.476.89-6.078 2.352M12 6.042V20.352"/>
+          </svg>
+        </div>
+        <h3 class="font-display text-sm mb-1">Internet Archive</h3>
+        <p class="text-xs text-ink-muted/60 font-light leading-relaxed mb-3">Wayback Machine web snapshots dating back to 1996</p>
+        <span class="text-[10px] tracking-[0.1em] uppercase text-ink-muted/40 font-medium">High Confidence</span>
+      </div>
+
+      <div class="card-base p-6 text-center">
+        <div class="w-10 h-10 mx-auto mb-4 flex items-center justify-center bg-ink/[0.04] text-ink-muted">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z"/>
+          </svg>
+        </div>
+        <h3 class="font-display text-sm mb-1">Certificate Transparency</h3>
+        <p class="text-xs text-ink-muted/60 font-light leading-relaxed mb-3">SSL certificate logs via crt.sh public database</p>
+        <span class="text-[10px] tracking-[0.1em] uppercase text-ink-muted/40 font-medium">Medium Confidence</span>
+      </div>
+
+      <div class="card-base p-6 text-center">
+        <div class="w-10 h-10 mx-auto mb-4 flex items-center justify-center bg-ink/[0.04] text-ink-muted">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M20.25 6.375c0 2.278-3.694 4.125-8.25 4.125S3.75 8.653 3.75 6.375m16.5 0c0-2.278-3.694-4.125-8.25-4.125S3.75 4.097 3.75 6.375m16.5 0v11.25c0 2.278-3.694 4.125-8.25 4.125s-8.25-1.847-8.25-4.125V6.375m16.5 0v3.75m-16.5-3.75v3.75m16.5 0v3.75C20.25 16.153 16.556 18 12 18s-8.25-1.847-8.25-4.125v-3.75m16.5 0c0 2.278-3.694 4.125-8.25 4.125s-8.25-1.847-8.25-4.125"/>
+          </svg>
+        </div>
+        <h3 class="font-display text-sm mb-1">Domain Registry</h3>
+        <p class="text-xs text-ink-muted/60 font-light leading-relaxed mb-3">RDAP / WHOIS registration records from domain registries</p>
+        <span class="text-[10px] tracking-[0.1em] uppercase text-ink-muted/40 font-medium">High Confidence</span>
+      </div>
+
+      <div class="card-base p-6 text-center">
+        <div class="w-10 h-10 mx-auto mb-4 flex items-center justify-center bg-ink/[0.04] text-ink-muted">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 21a9.004 9.004 0 008.716-6.747M12 21a9.004 9.004 0 01-8.716-6.747M12 21c2.485 0 4.5-4.03 4.5-9S14.485 3 12 3m0 18c-2.485 0-4.5-4.03-4.5-9S9.515 3 12 3m0 0a8.997 8.997 0 017.843 4.582M12 3a8.997 8.997 0 00-7.843 4.582m15.686 0A11.953 11.953 0 0112 10.5c-2.998 0-5.74-1.1-7.843-2.918m15.686 0A8.959 8.959 0 0121 12c0 .778-.099 1.533-.284 2.253m0 0A17.919 17.919 0 0112 16.5c-3.162 0-6.133-.815-8.716-2.247m0 0A9.015 9.015 0 013 12c0-1.605.42-3.113 1.157-4.418"/>
+          </svg>
+        </div>
+        <h3 class="font-display text-sm mb-1">Common Crawl</h3>
+        <p class="text-xs text-ink-muted/60 font-light leading-relaxed mb-3">Open web crawl index with petabytes of archived pages</p>
+        <span class="text-[10px] tracking-[0.1em] uppercase text-ink-muted/40 font-medium">High Confidence</span>
       </div>
     </div>
   </section>
