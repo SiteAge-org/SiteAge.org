@@ -75,8 +75,12 @@ pnpm dev:web              # Start Astro dev server only
 - **robots.txt**: `packages/web/public/robots.txt` — blocks `/admin/`, `/manage/`, `/resend/`, `/verify/`; references `/sitemap.xml`.
 - **Sitemap**: `packages/web/src/pages/sitemap.xml.ts` — SSR endpoint calling `/sitemap-domains` API. CDN cached 1h.
 - **Structured data**: Use `JsonLd.astro` component for JSON-LD injection. Homepage has `WebSite` (with `SearchAction`) + `Organization` schemas. Domain pages have `BreadcrumbList` + `WebPage` schemas. Content pages have `BreadcrumbList`.
-- **Public API endpoints**: `GET /sitemap-domains` (KV 1h) and `GET /browse?page=&limit=` (KV 5min) in `packages/api/src/routes/public.ts`. No auth required.
-- **Browse page**: `/browse` — SSR paginated domain directory. Homepage "Recently Certified" section uses same `/browse?limit=10` endpoint.
+- **Public API endpoints**: `GET /sitemap-domains` (KV 1h), `GET /browse?page=&limit=&sort=&verified=` (KV 5min default, 2min filtered), `GET /stats/distribution` (KV 1h), `GET /stats/top-oldest?limit=` (KV 1h) in `packages/api/src/routes/public.ts`. No auth required.
+- **Browse page**: `/browse` — SSR paginated domain directory with sort (oldest/newest/recent) and verified filter via URL query params. Hall of Fame section shows top 5 oldest domains on first unfiltered page. Filter chips use `.filter-chip` scoped styles. Homepage "Recently Certified" section uses same `/browse?limit=10` endpoint.
+- **Content pages**: `/why-verify` (verification marketing), `/integrate` (badge integration guide), `/docs` (public API documentation with `TechArticle` schema), `/stats` (platform statistics with `Dataset` schema), `/badge` (standalone badge customizer).
+- **Homepage sections**: Platform Statistics (SSR from `/stats`, hidden when < 100 domains), Data Sources ("Powered By" section with 4 source cards), alongside existing Trust Indicators, How It Works, Badge Gallery, Recently Certified.
+- **Navigation**: Header has Browse, Docs, About links with mobile hamburger menu. Footer has Browse, Docs, Integrate, About page links row.
+- **JS Widget**: `badge.siteage.org/widget.js` — one-line script embed for any website. Reads `data-domain`, `data-style`, `data-type`, `data-format` attributes. CDN cached (s-maxage=86400). Source: `packages/badge/src/widget.ts`.
 
 ## Multi-Source Domain Age Lookup
 
