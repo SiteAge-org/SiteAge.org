@@ -7,6 +7,10 @@ const staticPages = [
   { url: "/", priority: "1.0", changefreq: "daily" },
   { url: "/about", priority: "0.5", changefreq: "monthly" },
   { url: "/browse", priority: "0.8", changefreq: "daily" },
+  { url: "/why-verify", priority: "0.7", changefreq: "monthly" },
+  { url: "/integrate", priority: "0.6", changefreq: "monthly" },
+  { url: "/docs", priority: "0.6", changefreq: "monthly" },
+  { url: "/stats", priority: "0.7", changefreq: "weekly" },
 ];
 
 export const GET: APIRoute = async () => {

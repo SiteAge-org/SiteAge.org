@@ -1,0 +1,177 @@
+---
+import Base from "../layouts/Base.astro";
+import JsonLd from "../components/JsonLd.astro";
+
+const breadcrumbSchema = {
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  itemListElement: [
+    { "@type": "ListItem", position: 1, name: "Home", item: "https://siteage.org" },
+    { "@type": "ListItem", position: 2, name: "Integrate" },
+  ],
+};
+
+const htmlEmbed = `<a href="https://siteage.org/example.com">
+  <img src="https://badge.siteage.org/example.com" alt="SiteAge badge">
+</a>`;
+
+const markdownEmbed = `[![SiteAge](https://badge.siteage.org/example.com)](https://siteage.org/example.com)`;
+
+const reactCode = `function SiteAgeBadge({ domain, style = "flat" }: { domain: string; style?: string }) {
+  const badgeUrl = \`https://badge.siteage.org/\${domain}?style=\${style}\`;
+  const linkUrl = \`https://siteage.org/\${domain}\`;
+  return (
+    <a href={linkUrl} target="_blank" rel="noopener noreferrer">
+      <img src={badgeUrl} alt="SiteAge badge" height="20" />
+    </a>
+  );
+}`;
+
+const wordpressCode = `<!-- Add to Appearance → Widgets → Custom HTML -->
+<a href="https://siteage.org/example.com">
+  <img src="https://badge.siteage.org/example.com?style=gold&type=established"
+       alt="SiteAge badge" style="height:20px">
+</a>`;
+
+const widgetCode = `<script src="https://badge.siteage.org/widget.js"
+  data-domain="example.com"
+  data-style="gold"
+  async><\/script>`;
+---
+
+<Base
+  title="Integrate SiteAge Badge"
+  description="Add a SiteAge badge to your website, README, or app. Integration guides for HTML, WordPress, React, and more."
+  ogTitle="Integrate SiteAge Badge"
+  ogDescription="One line of code to display your website's certified age. Guides for every platform."
+>
+  <JsonLd data={breadcrumbSchema} />
+
+  <!-- Header -->
+  <section class="relative overflow-hidden">
+    <div class="absolute inset-0 bg-gradient-to-b from-parchment-dark/40 to-parchment noise-overlay"></div>
+    <div class="relative max-w-3xl mx-auto px-6 pt-16 pb-10 text-center">
+      <span class="text-xs tracking-[0.3em] uppercase text-seal-dark font-medium">Integration Guide</span>
+      <h1 class="font-display text-3xl sm:text-4xl mt-4 text-ink">Add Your Badge</h1>
+      <p class="text-ink-muted mt-4 max-w-xl mx-auto font-light leading-relaxed">
+        Display your website's certified age with a single line of code. Works everywhere.
+      </p>
+      <div class="ornament-line max-w-32 mx-auto mt-5"></div>
+    </div>
+  </section>
+
+  <div class="max-w-3xl mx-auto px-6 pb-16 sm:pb-24 space-y-10">
+    <!-- Quick Start -->
+    <div class="card-base p-8 sm:p-10">
+      <h2 class="card-title">Quick Start</h2>
+      <p class="text-sm text-ink-muted font-light mb-6">Replace <code class="font-mono text-xs bg-parchment-dark px-1.5 py-0.5">example.com</code> with your domain.</p>
+
+      <div class="space-y-6">
+        <div>
+          <label class="text-[10px] tracking-[0.15em] uppercase text-ink-muted/50 font-medium block mb-2">HTML</label>
+          <div class="relative">
+            <pre class="bg-parchment-dark rounded px-4 py-3 text-xs text-ink-muted font-mono overflow-x-auto whitespace-pre-wrap" id="quick-html">{htmlEmbed}</pre>
+            <button data-copy-target="quick-html" class="copy-btn absolute top-2 right-2 text-[10px] tracking-[0.1em] uppercase px-2 py-1 bg-white border border-divider text-ink-muted hover:text-seal-dark hover:border-seal/30 transition-colors">Copy</button>
+          </div>
+        </div>
+
+        <div>
+          <label class="text-[10px] tracking-[0.15em] uppercase text-ink-muted/50 font-medium block mb-2">Markdown</label>
+          <div class="relative">
+            <pre class="bg-parchment-dark rounded px-4 py-3 text-xs text-ink-muted font-mono overflow-x-auto whitespace-pre-wrap" id="quick-md">{markdownEmbed}</pre>
+            <button data-copy-target="quick-md" class="copy-btn absolute top-2 right-2 text-[10px] tracking-[0.1em] uppercase px-2 py-1 bg-white border border-divider text-ink-muted hover:text-seal-dark hover:border-seal/30 transition-colors">Copy</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- JS Widget -->
+    <div class="card-base p-8 sm:p-10">
+      <div class="flex items-center gap-3 mb-1">
+        <h2 class="card-title !mb-0">JavaScript Widget</h2>
+        <span class="text-[10px] tracking-[0.1em] uppercase text-seal-dark font-medium bg-seal/[0.08] px-1.5 py-0.5">Recommended</span>
+      </div>
+      <p class="text-sm text-ink-muted font-light mb-6 mt-2">One script tag automatically renders a linked badge. No build step required.</p>
+
+      <div class="relative">
+        <pre class="bg-parchment-dark rounded px-4 py-3 text-xs text-ink-muted font-mono overflow-x-auto whitespace-pre-wrap" id="widget-code">{widgetCode}</pre>
+        <button data-copy-target="widget-code" class="copy-btn absolute top-2 right-2 text-[10px] tracking-[0.1em] uppercase px-2 py-1 bg-white border border-divider text-ink-muted hover:text-seal-dark hover:border-seal/30 transition-colors">Copy</button>
+      </div>
+
+      <div class="mt-4 text-xs text-ink-muted/60 font-light space-y-1">
+        <p><strong class="font-medium text-ink-muted/80">Attributes:</strong></p>
+        <p><code class="font-mono bg-parchment-dark px-1 py-0.5">data-domain</code> — your domain (required)</p>
+        <p><code class="font-mono bg-parchment-dark px-1 py-0.5">data-style</code> — badge style: flat, gold, vintage, etc.</p>
+        <p><code class="font-mono bg-parchment-dark px-1 py-0.5">data-type</code> — since or established</p>
+        <p><code class="font-mono bg-parchment-dark px-1 py-0.5">data-format</code> — year, month, date, age, or days</p>
+      </div>
+    </div>
+
+    <!-- Platform guides -->
+    <div class="card-base p-8 sm:p-10">
+      <h2 class="card-title">Platform Guides</h2>
+
+      <div class="space-y-8 mt-4">
+        <!-- WordPress -->
+        <div>
+          <h3 class="text-sm font-medium text-ink mb-3 flex items-center gap-2">
+            <span class="w-1 h-4 bg-seal/40 rounded-full"></span>
+            WordPress
+          </h3>
+          <p class="text-xs text-ink-muted font-light mb-3">Go to Appearance &rarr; Widgets, add a Custom HTML widget to your sidebar or footer.</p>
+          <div class="relative">
+            <pre class="bg-parchment-dark rounded px-4 py-3 text-xs text-ink-muted font-mono overflow-x-auto whitespace-pre-wrap" id="wp-code">{wordpressCode}</pre>
+            <button data-copy-target="wp-code" class="copy-btn absolute top-2 right-2 text-[10px] tracking-[0.1em] uppercase px-2 py-1 bg-white border border-divider text-ink-muted hover:text-seal-dark hover:border-seal/30 transition-colors">Copy</button>
+          </div>
+        </div>
+
+        <!-- React / Next.js -->
+        <div>
+          <h3 class="text-sm font-medium text-ink mb-3 flex items-center gap-2">
+            <span class="w-1 h-4 bg-seal/40 rounded-full"></span>
+            React / Next.js
+          </h3>
+          <div class="relative">
+            <pre class="bg-parchment-dark rounded px-4 py-3 text-xs text-ink-muted font-mono overflow-x-auto whitespace-pre-wrap" id="react-code">{reactCode}</pre>
+            <button data-copy-target="react-code" class="copy-btn absolute top-2 right-2 text-[10px] tracking-[0.1em] uppercase px-2 py-1 bg-white border border-divider text-ink-muted hover:text-seal-dark hover:border-seal/30 transition-colors">Copy</button>
+          </div>
+        </div>
+
+        <!-- GitHub README -->
+        <div>
+          <h3 class="text-sm font-medium text-ink mb-3 flex items-center gap-2">
+            <span class="w-1 h-4 bg-seal/40 rounded-full"></span>
+            GitHub README
+          </h3>
+          <p class="text-xs text-ink-muted font-light mb-3">Add the Markdown snippet to your README.md. Works with any Markdown renderer.</p>
+          <div class="relative">
+            <pre class="bg-parchment-dark rounded px-4 py-3 text-xs text-ink-muted font-mono overflow-x-auto whitespace-pre-wrap" id="gh-code">{markdownEmbed}</pre>
+            <button data-copy-target="gh-code" class="copy-btn absolute top-2 right-2 text-[10px] tracking-[0.1em] uppercase px-2 py-1 bg-white border border-divider text-ink-muted hover:text-seal-dark hover:border-seal/30 transition-colors">Copy</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Badge customizer link -->
+    <div class="text-center">
+      <div class="ornament-line max-w-24 mx-auto mb-6"></div>
+      <p class="text-ink-muted font-light mb-4">Want to customize your badge style and format?</p>
+      <a href="/badge" class="btn-primary">Open Badge Customizer</a>
+    </div>
+  </div>
+</Base>
+
+<script>
+  document.querySelectorAll<HTMLButtonElement>("[data-copy-target]").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const targetId = btn.dataset.copyTarget;
+      if (!targetId) return;
+      const el = document.getElementById(targetId);
+      if (!el) return;
+      navigator.clipboard.writeText(el.textContent || "").then(() => {
+        btn.textContent = "Copied!";
+        setTimeout(() => { btn.textContent = "Copy"; }, 2000);
+      });
+    });
+  });
+</script>

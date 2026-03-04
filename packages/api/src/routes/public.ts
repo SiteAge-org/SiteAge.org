@@ -1,5 +1,6 @@
 import { Hono } from "hono";
 import type { Env } from "../env.js";
+import { STATS_CACHE_TTL } from "@siteage/shared";
 
 export const publicRoutes = new Hono<{ Bindings: Env }>();
 
@@ -84,6 +85,89 @@ publicRoutes.get("/browse", async (c) => {
 
   await c.env.API_CACHE.put(cacheKey, JSON.stringify(data), {
     expirationTtl: 300,
+  });
+
+  return c.json(data);
+});
+
+/**
+ * GET /stats/distribution
+ * Returns domain counts grouped by decade (1990s, 2000s, 2010s, 2020s).
+ * KV cached for 1 hour.
+ */
+publicRoutes.get("/stats/distribution", async (c) => {
+  const cacheKey = "public:stats:distribution";
+  const cached = await c.env.API_CACHE.get(cacheKey);
+  if (cached) {
+    return c.json(JSON.parse(cached));
+  }
+
+  const decades = [
+    { label: "1990s", start: "1990-01-01", end: "2000-01-01" },
+    { label: "2000s", start: "2000-01-01", end: "2010-01-01" },
+    { label: "2010s", start: "2010-01-01", end: "2020-01-01" },
+    { label: "2020s", start: "2020-01-01", end: "2030-01-01" },
+  ];
+
+  const results = await Promise.all(
+    decades.map(async (d) => {
+      const row = await c.env.DB.prepare(
+        `SELECT COUNT(*) as count FROM domains
+         WHERE status = 'active'
+         AND COALESCE(verified_birth_at, best_birth_at, birth_at) >= ?
+         AND COALESCE(verified_birth_at, best_birth_at, birth_at) < ?`
+      )
+        .bind(d.start, d.end)
+        .first();
+      return { decade: d.label, count: (row?.count as number) || 0 };
+    })
+  );
+
+  const data = { distribution: results };
+
+  await c.env.API_CACHE.put(cacheKey, JSON.stringify(data), {
+    expirationTtl: STATS_CACHE_TTL,
+  });
+
+  return c.json(data);
+});
+
+/**
+ * GET /stats/top-oldest
+ * Returns the N oldest domains by birth date.
+ * KV cached for 1 hour.
+ */
+publicRoutes.get("/stats/top-oldest", async (c) => {
+  const limit = Math.min(20, Math.max(1, parseInt(c.req.query("limit") || "10", 10)));
+
+  const cacheKey = `public:stats:top-oldest:${limit}`;
+  const cached = await c.env.API_CACHE.get(cacheKey);
+  if (cached) {
+    return c.json(JSON.parse(cached));
+  }
+
+  const result = await c.env.DB.prepare(
+    `SELECT domain, COALESCE(verified_birth_at, best_birth_at, birth_at) as birth_at,
+            verification_status
+     FROM domains
+     WHERE status = 'active'
+     AND (birth_at IS NOT NULL OR best_birth_at IS NOT NULL)
+     ORDER BY COALESCE(verified_birth_at, best_birth_at, birth_at) ASC
+     LIMIT ?`
+  )
+    .bind(limit)
+    .all();
+
+  const data = {
+    domains: (result.results || []).map((r: Record<string, unknown>) => ({
+      domain: r.domain,
+      birth_at: r.birth_at,
+      verification_status: r.verification_status,
+    })),
+  };
+
+  await c.env.API_CACHE.put(cacheKey, JSON.stringify(data), {
+    expirationTtl: STATS_CACHE_TTL,
   });
 
   return c.json(data);

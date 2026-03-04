@@ -1,0 +1,181 @@
+---
+import Base from "../layouts/Base.astro";
+import JsonLd from "../components/JsonLd.astro";
+import { BADGE_BASE_URL } from "@siteage/shared";
+
+const badgeBase = import.meta.env.PUBLIC_BADGE_URL || BADGE_BASE_URL;
+
+const breadcrumbSchema = {
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  itemListElement: [
+    { "@type": "ListItem", position: 1, name: "Home", item: "https://siteage.org" },
+    { "@type": "ListItem", position: 2, name: "Why Verify" },
+  ],
+};
+---
+
+<Base
+  title="Why Verify Your Website"
+  description="Unlock premium badge styles, the gold Established seal, and downloadable certificates by verifying your website ownership."
+  ogTitle="Why Verify Your Website | SiteAge.org"
+  ogDescription="Prove your website's heritage. Unlock exclusive badge styles and certificates."
+>
+  <JsonLd data={breadcrumbSchema} />
+
+  <!-- Hero -->
+  <section class="relative overflow-hidden">
+    <div class="absolute inset-0 bg-gradient-to-b from-parchment-dark/40 to-parchment noise-overlay"></div>
+    <div class="relative max-w-3xl mx-auto px-6 pt-16 pb-10 text-center">
+      <span class="text-xs tracking-[0.3em] uppercase text-seal-dark font-medium">Ownership Verification</span>
+      <h1 class="font-display text-3xl sm:text-4xl lg:text-5xl mt-4 text-ink">Prove Your Website's Heritage</h1>
+      <p class="text-ink-muted mt-4 max-w-xl mx-auto font-light leading-relaxed">
+        Any domain gets a basic badge automatically. Verify ownership to unlock the gold seal and premium features that set your site apart.
+      </p>
+      <div class="ornament-line max-w-32 mx-auto mt-6"></div>
+    </div>
+  </section>
+
+  <div class="max-w-4xl mx-auto px-6 pb-16 sm:pb-24 space-y-16">
+    <!-- Comparison -->
+    <section>
+      <h2 class="font-display text-2xl text-center mb-10">Detected vs. Verified</h2>
+      <div class="grid sm:grid-cols-2 gap-6">
+        <!-- Unverified -->
+        <div class="card-base p-8 text-center">
+          <div class="text-xs tracking-[0.15em] uppercase text-ink-muted/50 font-medium mb-6">Auto-Detected</div>
+          <div class="space-y-4 mb-6">
+            <div>
+              <img src={`${badgeBase}/siteage.org?style=flat`} alt="Flat badge" class="inline-block h-5" loading="lazy" />
+            </div>
+            <div>
+              <img src={`${badgeBase}/siteage.org?style=plastic`} alt="Plastic badge" class="inline-block h-5" loading="lazy" />
+            </div>
+          </div>
+          <ul class="text-sm text-ink-muted font-light space-y-2 text-left">
+            <li class="flex items-start gap-2">
+              <span class="text-ink-muted/40 mt-0.5">&#x2022;</span>
+              <span>"Since" message only</span>
+            </li>
+            <li class="flex items-start gap-2">
+              <span class="text-ink-muted/40 mt-0.5">&#x2022;</span>
+              <span>Year format only</span>
+            </li>
+            <li class="flex items-start gap-2">
+              <span class="text-ink-muted/40 mt-0.5">&#x2022;</span>
+              <span>5 basic badge styles</span>
+            </li>
+          </ul>
+        </div>
+
+        <!-- Verified -->
+        <div class="card-base p-8 text-center relative border-seal/30 shadow-[var(--shadow-certificate)]">
+          <div class="absolute -inset-px rounded-sm border border-seal/20 pointer-events-none"></div>
+          <div class="absolute top-3 right-3">
+            <span class="text-[10px] tracking-[0.15em] uppercase text-seal-dark font-medium bg-gradient-to-r from-seal-light/40 to-seal-light/20 px-2.5 py-0.5">Premium</span>
+          </div>
+          <div class="text-xs tracking-[0.15em] uppercase text-seal-dark font-medium mb-6">Verified Owner</div>
+          <div class="space-y-4 mb-6">
+            <div>
+              <img src={`${badgeBase}/siteage.org?style=gold&type=established`} alt="Gold badge" class="inline-block h-5" loading="lazy" />
+            </div>
+            <div>
+              <img src={`${badgeBase}/siteage.org?style=seal&type=established&format=days`} alt="Seal badge" class="inline-block h-6" loading="lazy" />
+            </div>
+          </div>
+          <ul class="text-sm text-ink-muted font-light space-y-2 text-left">
+            <li class="flex items-start gap-2">
+              <span class="text-seal-dark mt-0.5">&#x2713;</span>
+              <span>Gold "Established" seal</span>
+            </li>
+            <li class="flex items-start gap-2">
+              <span class="text-seal-dark mt-0.5">&#x2713;</span>
+              <span>5 exclusive premium styles</span>
+            </li>
+            <li class="flex items-start gap-2">
+              <span class="text-seal-dark mt-0.5">&#x2713;</span>
+              <span>Multiple date formats (month, date, age, days)</span>
+            </li>
+            <li class="flex items-start gap-2">
+              <span class="text-seal-dark mt-0.5">&#x2713;</span>
+              <span>Downloadable HD certificate PNG</span>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- Benefits -->
+    <section>
+      <h2 class="font-display text-2xl text-center mb-10">What You Unlock</h2>
+      <div class="grid sm:grid-cols-3 gap-6">
+        <div class="card-base p-6 text-center">
+          <div class="w-12 h-12 mx-auto mb-4 flex items-center justify-center bg-seal/[0.08] text-seal-dark">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12c0 1.268-.63 2.39-1.593 3.068a3.745 3.745 0 01-1.043 3.296 3.745 3.745 0 01-3.296 1.043A3.745 3.745 0 0112 21c-1.268 0-2.39-.63-3.068-1.593a3.746 3.746 0 01-3.296-1.043 3.745 3.745 0 01-1.043-3.296A3.745 3.745 0 013 12c0-1.268.63-2.39 1.593-3.068a3.745 3.745 0 011.043-3.296 3.746 3.746 0 013.296-1.043A3.746 3.746 0 0112 3c1.268 0 2.39.63 3.068 1.593a3.746 3.746 0 013.296 1.043 3.746 3.746 0 011.043 3.296A3.745 3.745 0 0121 12z"/>
+            </svg>
+          </div>
+          <h3 class="font-display text-lg mb-2">Gold Seal</h3>
+          <p class="text-xs text-ink-muted leading-relaxed font-light">The "Established" gold badge proves authenticated ownership and sets you apart from auto-detected sites.</p>
+        </div>
+
+        <div class="card-base p-6 text-center">
+          <div class="w-12 h-12 mx-auto mb-4 flex items-center justify-center bg-seal/[0.08] text-seal-dark">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M9.53 16.122a3 3 0 00-5.78 1.128 2.25 2.25 0 01-2.4 2.245 4.5 4.5 0 008.4-2.245c0-.399-.078-.78-.22-1.128zm0 0a15.998 15.998 0 003.388-1.62m-5.043-.025a15.994 15.994 0 011.622-3.395m3.42 3.42a15.995 15.995 0 004.764-4.648l3.876-5.814a1.151 1.151 0 00-1.597-1.597L14.146 6.32a15.996 15.996 0 00-4.649 4.763m3.42 3.42a6.776 6.776 0 00-3.42-3.42"/>
+            </svg>
+          </div>
+          <h3 class="font-display text-lg mb-2">Premium Styles</h3>
+          <p class="text-xs text-ink-muted leading-relaxed font-light">Unlock 5 exclusive badge designs: Gold, Vintage, Dark, Seal, and Minimal. Match your site's aesthetic.</p>
+        </div>
+
+        <div class="card-base p-6 text-center">
+          <div class="w-12 h-12 mx-auto mb-4 flex items-center justify-center bg-seal/[0.08] text-seal-dark">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3"/>
+            </svg>
+          </div>
+          <h3 class="font-display text-lg mb-2">HD Certificate</h3>
+          <p class="text-xs text-ink-muted leading-relaxed font-light">Download a high-resolution certificate PNG perfect for presentations, press kits, and social media.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- How to verify -->
+    <section>
+      <h2 class="font-display text-2xl text-center mb-10">How It Works</h2>
+      <div class="grid sm:grid-cols-3 gap-6">
+        <div class="card-base p-6 text-center">
+          <div class="font-display text-3xl text-ink/[0.06] mb-2">1</div>
+          <h3 class="font-display text-base mb-2">Enter Your Email</h3>
+          <p class="text-xs text-ink-muted leading-relaxed font-light">Look up your domain and start verification from the certificate page. Enter an admin email for your domain.</p>
+        </div>
+        <div class="card-base p-6 text-center">
+          <div class="font-display text-3xl text-ink/[0.06] mb-2">2</div>
+          <h3 class="font-display text-base mb-2">Verify Ownership</h3>
+          <p class="text-xs text-ink-muted leading-relaxed font-light">Add a DNS TXT record or HTML meta tag to prove you own the domain. We check automatically.</p>
+        </div>
+        <div class="card-base p-6 text-center">
+          <div class="font-display text-3xl text-ink/[0.06] mb-2">3</div>
+          <h3 class="font-display text-base mb-2">Unlock Premium</h3>
+          <p class="text-xs text-ink-muted leading-relaxed font-light">Once verified, all premium badge styles, formats, and certificate downloads are instantly available.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- CTA -->
+    <section class="text-center">
+      <div class="ornament-line max-w-24 mx-auto mb-8"></div>
+      <h2 class="font-display text-2xl mb-4">Ready to Verify?</h2>
+      <p class="text-ink-muted font-light mb-6 max-w-md mx-auto">
+        Start by looking up your domain. You can begin verification directly from your certificate page.
+      </p>
+      <a href="/" class="btn-seal">
+        Look Up Your Site
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 19.5l15-15m0 0H8.25m11.25 0v11.25"/>
+        </svg>
+      </a>
+    </section>
+  </div>
+</Base>

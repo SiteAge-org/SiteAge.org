@@ -1,0 +1,212 @@
+---
+import Base from "../layouts/Base.astro";
+import JsonLd from "../components/JsonLd.astro";
+
+const breadcrumbSchema = {
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  itemListElement: [
+    { "@type": "ListItem", position: 1, name: "Home", item: "https://siteage.org" },
+    { "@type": "ListItem", position: 2, name: "API Docs" },
+  ],
+};
+
+const techArticleSchema = {
+  "@context": "https://schema.org",
+  "@type": "TechArticle",
+  name: "SiteAge.org API Documentation",
+  url: "https://siteage.org/docs",
+  description: "Public API documentation for SiteAge.org website age certification platform.",
+  publisher: { "@type": "Organization", name: "SiteAge.org" },
+};
+
+const curlExample = `curl https://api.siteage.org/example.com`;
+
+const curlLookup = `curl -X POST https://api.siteage.org/lookup \\
+  -H "Content-Type: application/json" \\
+  -d '{"url": "example.com"}'`;
+
+const fetchExample = `const resp = await fetch("https://api.siteage.org/example.com");
+const data = await resp.json();
+
+console.log(data.domain);            // "example.com"
+console.log(data.best_birth_at);     // "1995-08-15T00:00:00Z"
+console.log(data.verification_status); // "verified"
+console.log(data.sources);           // SourceInfo[]`;
+
+const domainDetailType = `interface DomainDetail {
+  domain: string;
+  birth_at: string | null;         // CDX auto-detected
+  best_birth_at: string | null;    // earliest across all sources
+  verified_birth_at: string | null; // admin-reviewed
+  death_at: string | null;
+  status: "active" | "unreachable" | "dead" | "unknown";
+  verification_status: "detected" | "pending" | "verified";
+  age_days: number | null;
+  rank_percentile: number | null;
+  badge_url: string;
+  badge_embedded: boolean;
+  sources: SourceInfo[];
+  created_at: string;
+}`;
+
+const sourceInfoType = `interface SourceInfo {
+  source: string;        // "cdx" | "crt" | "rdap" | "commoncrawl"
+  source_label: string;  // human-readable name
+  earliest_date: string | null;
+  confidence: "high" | "medium" | "low";
+  detail_url: string | null;
+  summary: Record<string, unknown>;
+  error?: string;
+}`;
+
+const globalStatsType = `interface GlobalStats {
+  total_domains: number;
+  active_domains: number;
+  dead_domains: number;
+  verified_domains: number;
+  oldest_domain: string | null;
+  oldest_birth_at: string | null;
+}`;
+---
+
+<Base
+  title="API Documentation"
+  description="Public API documentation for SiteAge.org. Query domain age, browse certified websites, and generate badges."
+  ogTitle="API Documentation | SiteAge.org"
+  ogDescription="REST API for querying website age, browsing certified domains, and generating SVG badges."
+>
+  <JsonLd data={breadcrumbSchema} />
+  <JsonLd data={techArticleSchema} />
+
+  <!-- Header -->
+  <section class="relative overflow-hidden">
+    <div class="absolute inset-0 bg-gradient-to-b from-parchment-dark/40 to-parchment noise-overlay"></div>
+    <div class="relative max-w-3xl mx-auto px-6 pt-16 pb-10 text-center">
+      <span class="text-xs tracking-[0.3em] uppercase text-seal-dark font-medium">Developer Reference</span>
+      <h1 class="font-display text-3xl sm:text-4xl mt-4 text-ink">API Documentation</h1>
+      <p class="text-ink-muted mt-4 max-w-xl mx-auto font-light leading-relaxed">
+        Query domain ages, browse certified websites, and generate badges programmatically.
+      </p>
+      <p class="text-[10px] tracking-[0.15em] uppercase text-ink-muted/40 font-medium mt-3">Last updated: March 2026</p>
+      <div class="ornament-line max-w-32 mx-auto mt-5"></div>
+    </div>
+  </section>
+
+  <div class="max-w-3xl mx-auto px-6 pb-16 sm:pb-24 space-y-10">
+    <!-- Overview -->
+    <div class="card-base p-8 sm:p-10">
+      <h2 class="card-title">Overview</h2>
+      <div class="space-y-3 text-sm text-ink-muted font-light">
+        <p><strong class="font-medium text-ink">Base URL:</strong> <code class="font-mono text-xs bg-parchment-dark px-1.5 py-0.5">https://api.siteage.org</code></p>
+        <p><strong class="font-medium text-ink">Format:</strong> JSON (request and response)</p>
+        <p><strong class="font-medium text-ink">Auth:</strong> No authentication required for public endpoints</p>
+        <p><strong class="font-medium text-ink">Rate limit:</strong> 30 requests per minute per IP</p>
+      </div>
+    </div>
+
+    <!-- GET /:domain -->
+    <div class="card-base p-8 sm:p-10" id="get-domain">
+      <div class="flex items-center gap-3 mb-4">
+        <span class="text-[10px] tracking-[0.1em] uppercase font-medium bg-azure/10 text-azure px-2 py-0.5">GET</span>
+        <code class="font-mono text-sm text-ink">/:domain</code>
+      </div>
+      <p class="text-sm text-ink-muted font-light mb-4">Get detailed information about a domain, including birth date, sources, and verification status. Returns 404 if the domain hasn't been looked up yet.</p>
+
+      <label class="text-[10px] tracking-[0.15em] uppercase text-ink-muted/50 font-medium block mb-2">Example</label>
+      <pre class="bg-parchment-dark rounded px-4 py-3 text-xs text-ink-muted font-mono overflow-x-auto mb-4">{curlExample}</pre>
+
+      <label class="text-[10px] tracking-[0.15em] uppercase text-ink-muted/50 font-medium block mb-2">Response: <code class="font-mono">DomainDetail</code></label>
+      <pre class="bg-parchment-dark rounded px-4 py-3 text-xs text-ink-muted font-mono overflow-x-auto whitespace-pre-wrap">{domainDetailType}</pre>
+    </div>
+
+    <!-- POST /lookup -->
+    <div class="card-base p-8 sm:p-10" id="post-lookup">
+      <div class="flex items-center gap-3 mb-4">
+        <span class="text-[10px] tracking-[0.1em] uppercase font-medium bg-seal/10 text-seal-dark px-2 py-0.5">POST</span>
+        <code class="font-mono text-sm text-ink">/lookup</code>
+      </div>
+      <p class="text-sm text-ink-muted font-light mb-4">Look up a domain. Queries all data sources in parallel and returns the result. If cached, returns immediately. Use <code class="font-mono text-xs bg-parchment-dark px-1 py-0.5">force: true</code> to refresh (rate limited to once per 5 min per domain).</p>
+
+      <label class="text-[10px] tracking-[0.15em] uppercase text-ink-muted/50 font-medium block mb-2">Request Body</label>
+      <pre class="bg-parchment-dark rounded px-4 py-3 text-xs text-ink-muted font-mono overflow-x-auto mb-4">{`{ "url": "example.com", "force": false }`}</pre>
+
+      <label class="text-[10px] tracking-[0.15em] uppercase text-ink-muted/50 font-medium block mb-2">Example</label>
+      <pre class="bg-parchment-dark rounded px-4 py-3 text-xs text-ink-muted font-mono overflow-x-auto whitespace-pre-wrap">{curlLookup}</pre>
+    </div>
+
+    <!-- GET /browse -->
+    <div class="card-base p-8 sm:p-10" id="get-browse">
+      <div class="flex items-center gap-3 mb-4">
+        <span class="text-[10px] tracking-[0.1em] uppercase font-medium bg-azure/10 text-azure px-2 py-0.5">GET</span>
+        <code class="font-mono text-sm text-ink">/browse</code>
+      </div>
+      <p class="text-sm text-ink-muted font-light mb-4">Browse paginated list of certified domains.</p>
+
+      <label class="text-[10px] tracking-[0.15em] uppercase text-ink-muted/50 font-medium block mb-2">Query Parameters</label>
+      <div class="text-xs text-ink-muted font-light space-y-1 mb-4">
+        <p><code class="font-mono bg-parchment-dark px-1 py-0.5">page</code> — Page number (default: 1)</p>
+        <p><code class="font-mono bg-parchment-dark px-1 py-0.5">limit</code> — Items per page, max 50 (default: 20)</p>
+        <p><code class="font-mono bg-parchment-dark px-1 py-0.5">sort</code> — Sort order: <code class="font-mono">oldest</code>, <code class="font-mono">newest</code>, <code class="font-mono">recent</code> (default: recent)</p>
+        <p><code class="font-mono bg-parchment-dark px-1 py-0.5">verified</code> — Filter verified only: <code class="font-mono">true</code></p>
+      </div>
+
+      <label class="text-[10px] tracking-[0.15em] uppercase text-ink-muted/50 font-medium block mb-2">Response</label>
+      <pre class="bg-parchment-dark rounded px-4 py-3 text-xs text-ink-muted font-mono overflow-x-auto whitespace-pre-wrap">{`{ "domains": [...], "total": 150, "page": 1, "limit": 20 }`}</pre>
+    </div>
+
+    <!-- GET /stats -->
+    <div class="card-base p-8 sm:p-10" id="get-stats">
+      <div class="flex items-center gap-3 mb-4">
+        <span class="text-[10px] tracking-[0.1em] uppercase font-medium bg-azure/10 text-azure px-2 py-0.5">GET</span>
+        <code class="font-mono text-sm text-ink">/stats</code>
+      </div>
+      <p class="text-sm text-ink-muted font-light mb-4">Get global platform statistics. Cached for 1 hour.</p>
+
+      <label class="text-[10px] tracking-[0.15em] uppercase text-ink-muted/50 font-medium block mb-2">Response: <code class="font-mono">GlobalStats</code></label>
+      <pre class="bg-parchment-dark rounded px-4 py-3 text-xs text-ink-muted font-mono overflow-x-auto whitespace-pre-wrap">{globalStatsType}</pre>
+    </div>
+
+    <!-- Badge URLs -->
+    <div class="card-base p-8 sm:p-10" id="badge-urls">
+      <h2 class="card-title">Badge URLs</h2>
+      <p class="text-sm text-ink-muted font-light mb-4">Generate SVG badges via the badge service.</p>
+
+      <label class="text-[10px] tracking-[0.15em] uppercase text-ink-muted/50 font-medium block mb-2">Base URL</label>
+      <pre class="bg-parchment-dark rounded px-4 py-3 text-xs text-ink-muted font-mono overflow-x-auto mb-4">https://badge.siteage.org/:domain</pre>
+
+      <label class="text-[10px] tracking-[0.15em] uppercase text-ink-muted/50 font-medium block mb-2">Query Parameters</label>
+      <div class="text-xs text-ink-muted font-light space-y-2">
+        <p><code class="font-mono bg-parchment-dark px-1 py-0.5">style</code> — Visual style. Public: <code class="font-mono">flat</code>, <code class="font-mono">flat-square</code>, <code class="font-mono">for-the-badge</code>, <code class="font-mono">plastic</code>, <code class="font-mono">social</code>. Verified-only: <code class="font-mono">gold</code>, <code class="font-mono">vintage</code>, <code class="font-mono">dark</code>, <code class="font-mono">seal</code>, <code class="font-mono">minimal</code>.</p>
+        <p><code class="font-mono bg-parchment-dark px-1 py-0.5">type</code> — Message text: <code class="font-mono">since</code> (default) or <code class="font-mono">established</code> (verified-only)</p>
+        <p><code class="font-mono bg-parchment-dark px-1 py-0.5">format</code> — Time display: <code class="font-mono">year</code> (default), <code class="font-mono">month</code>, <code class="font-mono">date</code>, <code class="font-mono">age</code>, <code class="font-mono">days</code>. Non-year formats are verified-only.</p>
+        <p><code class="font-mono bg-parchment-dark px-1 py-0.5">color</code> — Custom color hex (ignored for gold/vintage styles)</p>
+        <p><code class="font-mono bg-parchment-dark px-1 py-0.5">label</code> — Custom left-side label text</p>
+      </div>
+    </div>
+
+    <!-- Code Example -->
+    <div class="card-base p-8 sm:p-10" id="code-example">
+      <h2 class="card-title">JavaScript Example</h2>
+      <pre class="bg-parchment-dark rounded px-4 py-3 text-xs text-ink-muted font-mono overflow-x-auto whitespace-pre-wrap">{fetchExample}</pre>
+    </div>
+
+    <!-- Types -->
+    <div class="card-base p-8 sm:p-10" id="types">
+      <h2 class="card-title">Type Definitions</h2>
+      <div class="space-y-6">
+        <div>
+          <label class="text-[10px] tracking-[0.15em] uppercase text-ink-muted/50 font-medium block mb-2">SourceInfo</label>
+          <pre class="bg-parchment-dark rounded px-4 py-3 text-xs text-ink-muted font-mono overflow-x-auto whitespace-pre-wrap">{sourceInfoType}</pre>
+        </div>
+      </div>
+    </div>
+
+    <!-- Footer link -->
+    <div class="text-center">
+      <div class="ornament-line max-w-24 mx-auto mb-6"></div>
+      <p class="text-ink-muted font-light mb-4">Ready to integrate?</p>
+      <a href="/integrate" class="btn-primary">View Integration Guide</a>
+    </div>
+  </div>
+</Base>
