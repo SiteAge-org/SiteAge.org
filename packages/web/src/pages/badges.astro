@@ -1,0 +1,196 @@
+---
+import Base from "../layouts/Base.astro";
+import JsonLd from "../components/JsonLd.astro";
+import { BADGE_BASE_URL } from "@siteage/shared";
+
+const badgeBase = import.meta.env.PUBLIC_BADGE_URL || BADGE_BASE_URL;
+
+const breadcrumbSchema = {
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  itemListElement: [
+    { "@type": "ListItem", position: 1, name: "Home", item: "https://siteage.org" },
+    { "@type": "ListItem", position: 2, name: "Badges" },
+  ],
+};
+
+const publicStyles = [
+  { value: "flat", name: "Flat", desc: "Clean and modern. The default choice for most websites." },
+  { value: "flat-square", name: "Flat Square", desc: "Sharp corners for a more structured look." },
+  { value: "for-the-badge", name: "For the Badge", desc: "Bold and uppercase. Stands out in any footer." },
+  { value: "plastic", name: "Plastic", desc: "Subtle gradient for a classic badge feel." },
+  { value: "social", name: "Social", desc: "Familiar social-counter style." },
+];
+
+const verifiedStyles = [
+  { value: "gold", name: "Gold", desc: "The signature verified seal. Unmistakable authority." },
+  { value: "vintage", name: "Vintage", desc: "Warm, timeless aesthetic for heritage brands." },
+  { value: "dark", name: "Dark", desc: "Sleek contrast for dark-themed websites." },
+  { value: "seal", name: "Seal", desc: "Compact seal format with the ✦ verified mark." },
+  { value: "minimal", name: "Minimal", desc: "Transparent background. Blends into any design." },
+];
+---
+
+<Base
+  title="Badge Styles & Certificate"
+  description="Explore all 10 SiteAge badge styles and the HD certificate. Display your website's history with a badge that builds trust and credibility."
+  ogTitle="Badge Styles & Certificate | SiteAge.org"
+  ogDescription="10 badge styles, HD certificates, and the trust signal your website deserves."
+>
+  <JsonLd data={breadcrumbSchema} />
+
+  <!-- Hero -->
+  <section class="relative overflow-hidden">
+    <div class="absolute inset-0 bg-gradient-to-b from-parchment-dark/40 to-parchment noise-overlay"></div>
+    <div class="relative max-w-3xl mx-auto px-6 pt-16 pb-10 text-center">
+      <span class="text-xs tracking-[0.3em] uppercase text-seal-dark font-medium">Badge Gallery</span>
+      <h1 class="font-display text-3xl sm:text-4xl lg:text-5xl mt-4 text-ink">Wear Your Website's History</h1>
+      <p class="text-ink-muted mt-4 max-w-xl mx-auto font-light leading-relaxed">
+        A small badge that tells a big story. Show visitors your site has stood the test of time.
+      </p>
+      <div class="ornament-line max-w-32 mx-auto mt-6"></div>
+    </div>
+  </section>
+
+  <div class="max-w-4xl mx-auto px-6 pb-16 sm:pb-24 space-y-16">
+    <!-- Why Display a Badge? -->
+    <section>
+      <h2 class="font-display text-2xl text-center mb-10">Why Display a Badge?</h2>
+      <div class="grid sm:grid-cols-2 gap-6">
+        <div class="card-base p-6">
+          <div class="flex items-start gap-4">
+            <div class="w-10 h-10 flex-shrink-0 flex items-center justify-center bg-seal/[0.08] text-seal-dark">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z"/>
+              </svg>
+            </div>
+            <div>
+              <h3 class="font-display text-base mb-1">Build Trust</h3>
+              <p class="text-xs text-ink-muted font-light leading-relaxed">Visitors trust websites with a proven track record. Showing years of operation increases purchase intent and sign-up rates.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="card-base p-6">
+          <div class="flex items-start gap-4">
+            <div class="w-10 h-10 flex-shrink-0 flex items-center justify-center bg-seal/[0.08] text-seal-dark">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12c0 1.268-.63 2.39-1.593 3.068a3.745 3.745 0 01-1.043 3.296 3.745 3.745 0 01-3.296 1.043A3.745 3.745 0 0112 21c-1.268 0-2.39-.63-3.068-1.593a3.746 3.746 0 01-3.296-1.043 3.745 3.745 0 01-1.043-3.296A3.745 3.745 0 013 12c0-1.268.63-2.39 1.593-3.068a3.745 3.745 0 011.043-3.296 3.746 3.746 0 013.296-1.043A3.746 3.746 0 0112 3c1.268 0 2.39.63 3.068 1.593a3.746 3.746 0 013.296 1.043 3.746 3.746 0 011.043 3.296A3.745 3.745 0 0121 12z"/>
+              </svg>
+            </div>
+            <div>
+              <h3 class="font-display text-base mb-1">Boost Credibility</h3>
+              <p class="text-xs text-ink-muted font-light leading-relaxed">An independent, third-party certification — like an SSL lock or BBB seal — adds professional credibility to your site.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="card-base p-6">
+          <div class="flex items-start gap-4">
+            <div class="w-10 h-10 flex-shrink-0 flex items-center justify-center bg-seal/[0.08] text-seal-dark">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 3v11.25A2.25 2.25 0 006 16.5h2.25M3.75 3h-1.5m1.5 0h16.5m0 0h1.5m-1.5 0v11.25A2.25 2.25 0 0118 16.5h-2.25m-7.5 0h7.5m-7.5 0l-1 3m8.5-3l1 3m0 0l.5 1.5m-.5-1.5h-9.5m0 0l-.5 1.5M9 11.25v1.5M12 9v3.75m3-6v6"/>
+              </svg>
+            </div>
+            <div>
+              <h3 class="font-display text-base mb-1">Strengthen SEO</h3>
+              <p class="text-xs text-ink-muted font-light leading-relaxed">Structured data and a trusted external backlink provide authority signals to search engines.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="card-base p-6">
+          <div class="flex items-start gap-4">
+            <div class="w-10 h-10 flex-shrink-0 flex items-center justify-center bg-seal/[0.08] text-seal-dark">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z"/>
+              </svg>
+            </div>
+            <div>
+              <h3 class="font-display text-base mb-1">Show Commitment</h3>
+              <p class="text-xs text-ink-muted font-light leading-relaxed">Displaying your operational history shows long-term dedication and separates you from fly-by-night sites.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Public Styles -->
+    <section>
+      <h2 class="font-display text-2xl text-center mb-3">Public Styles</h2>
+      <p class="text-xs text-ink-muted/60 text-center tracking-[0.1em] uppercase font-medium mb-8">Available for all domains</p>
+      <div class="space-y-4">
+        {publicStyles.map((s) => (
+          <div class="card-base px-6 py-4 flex items-center gap-6 flex-wrap sm:flex-nowrap">
+            <div class="flex-shrink-0">
+              <img
+                src={`${badgeBase}/siteage.org?style=${s.value}`}
+                alt={`${s.name} badge style`}
+                class={`inline-block ${s.value === "for-the-badge" ? "h-7" : "h-5"}`}
+                loading="lazy"
+              />
+            </div>
+            <div class="flex-1 min-w-0">
+              <span class="text-sm font-display text-ink">{s.name}</span>
+              <p class="text-xs text-ink-muted font-light mt-0.5">{s.desc}</p>
+            </div>
+          </div>
+        ))}
+      </div>
+    </section>
+
+    <!-- Verified Styles -->
+    <section>
+      <h2 class="font-display text-2xl text-center mb-3">Verified-Only Styles</h2>
+      <p class="text-xs text-ink-muted/60 text-center tracking-[0.1em] uppercase font-medium mb-8">Exclusive to verified domain owners</p>
+      <div class="space-y-4">
+        {verifiedStyles.map((s) => (
+          <div class="card-base px-6 py-4 flex items-center gap-6 flex-wrap sm:flex-nowrap border-seal/20">
+            <div class="flex-shrink-0">
+              <img
+                src={`${badgeBase}/siteage.org?style=${s.value}&type=established`}
+                alt={`${s.name} badge style`}
+                class={`inline-block ${s.value === "seal" ? "h-6" : "h-5"}`}
+                loading="lazy"
+              />
+            </div>
+            <div class="flex-1 min-w-0">
+              <span class="text-sm font-display text-ink">{s.name}</span>
+              <p class="text-xs text-ink-muted font-light mt-0.5">{s.desc}</p>
+            </div>
+            <span class="flex-shrink-0 text-[9px] tracking-[0.15em] uppercase text-seal-dark font-medium bg-gradient-to-r from-seal-light/40 to-seal-light/20 px-2 py-0.5">Verified Only</span>
+          </div>
+        ))}
+      </div>
+    </section>
+
+    <!-- Certificate -->
+    <section class="text-center">
+      <h2 class="font-display text-2xl mb-6">HD Certificate</h2>
+      <p class="text-ink-muted font-light mb-6 max-w-md mx-auto text-sm">
+        Verified owners can download a high-resolution certificate PNG — perfect for press kits, presentations, and social media.
+      </p>
+      <div class="card-base p-4 sm:p-6 inline-block border-seal/20">
+        <img
+          src={`${badgeBase}/og/siteage.org`}
+          alt="SiteAge certificate preview"
+          class="max-w-full w-[480px] rounded-sm"
+          loading="lazy"
+        />
+      </div>
+    </section>
+
+    <!-- Dual CTA -->
+    <section class="text-center">
+      <div class="ornament-line max-w-24 mx-auto mb-8"></div>
+      <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
+        <a href="/badge" class="btn-primary">
+          Customize Your Badge
+        </a>
+        <a href="/why-verify" class="btn-seal">
+          Why Verify?
+        </a>
+      </div>
+    </section>
+  </div>
+</Base>

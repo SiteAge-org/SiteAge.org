@@ -124,27 +124,46 @@ const ogImage = `${badgeBase}/og/${domain}`;
           </div>
         )}
 
-        {data.sources && data.sources.length > 0 && (
-          <div class="animate-fade-up delay-350">
-            <DataSources sources={data.sources} bestBirthAt={data.verified_birth_at || data.best_birth_at || data.birth_at} />
+        <!-- Badge value proposition -->
+        <div class="animate-fade-up delay-350">
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 text-center">
+            <div class="flex flex-col items-center gap-1.5 py-3">
+              <svg class="w-4 h-4 text-ink-muted/40" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z"/>
+              </svg>
+              <span class="text-[10px] tracking-[0.1em] uppercase text-ink-muted/50 font-medium leading-tight">Build Trust</span>
+            </div>
+            <div class="flex flex-col items-center gap-1.5 py-3">
+              <svg class="w-4 h-4 text-ink-muted/40" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12c0 1.268-.63 2.39-1.593 3.068a3.745 3.745 0 01-1.043 3.296 3.745 3.745 0 01-3.296 1.043A3.745 3.745 0 0112 21c-1.268 0-2.39-.63-3.068-1.593a3.746 3.746 0 01-3.296-1.043 3.745 3.745 0 01-1.043-3.296A3.745 3.745 0 013 12c0-1.268.63-2.39 1.593-3.068a3.745 3.745 0 011.043-3.296 3.746 3.746 0 013.296-1.043A3.746 3.746 0 0112 3c1.268 0 2.39.63 3.068 1.593a3.746 3.746 0 013.296 1.043 3.746 3.746 0 011.043 3.296A3.745 3.745 0 0121 12z"/>
+              </svg>
+              <span class="text-[10px] tracking-[0.1em] uppercase text-ink-muted/50 font-medium leading-tight">Boost Credibility</span>
+            </div>
+            <div class="flex flex-col items-center gap-1.5 py-3">
+              <svg class="w-4 h-4 text-ink-muted/40" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 3v11.25A2.25 2.25 0 006 16.5h2.25M3.75 3h-1.5m1.5 0h16.5m0 0h1.5m-1.5 0v11.25A2.25 2.25 0 0118 16.5h-2.25m-7.5 0h7.5m-7.5 0l-1 3m8.5-3l1 3m0 0l.5 1.5m-.5-1.5h-9.5m0 0l-.5 1.5M9 11.25v1.5M12 9v3.75m3-6v6"/>
+              </svg>
+              <span class="text-[10px] tracking-[0.1em] uppercase text-ink-muted/50 font-medium leading-tight">Strengthen SEO</span>
+            </div>
+            <div class="flex flex-col items-center gap-1.5 py-3">
+              <svg class="w-4 h-4 text-ink-muted/40" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z"/>
+              </svg>
+              <span class="text-[10px] tracking-[0.1em] uppercase text-ink-muted/50 font-medium leading-tight">Show Commitment</span>
+            </div>
           </div>
-        )}
+        </div>
 
         <div class="animate-fade-up delay-400">
           <BadgePreview domain={data.domain} isVerified={data.verification_status === "verified"} />
         </div>
 
-        <div class="animate-fade-up delay-500">
-          <Timeline domain={data.domain} firstSnapshotUrl={data.first_snapshot_url} birthAt={data.verified_birth_at || data.best_birth_at || data.birth_at} sources={data.sources} />
-        </div>
-
         <!-- Claim / Manage section -->
-        <div class="animate-fade-up delay-600 text-center pt-6">
-          <div class="ornament-line max-w-64 mx-auto mb-6"></div>
+        <div class="animate-fade-up delay-450">
           {data.verification_status === "verified" ? (
-            <Fragment>
-              <p class="text-ink-muted mb-4 font-light">This website has a verified owner. Use the Magic Link sent to your email to manage this domain.</p>
-              <p class="text-sm mt-3 font-light">
+            <div class="text-center pt-2">
+              <p class="text-ink-muted mb-4 font-light">This website has a verified owner.</p>
+              <p class="text-sm font-light">
                 <a
                   href={`/resend/${data.domain}`}
                   class="text-azure hover:text-azure-light transition-colors tracking-wide font-medium"
@@ -159,25 +178,50 @@ const ogImage = `${badgeBase}/og/${domain}`;
                   Re-verify ownership
                 </a>
               </p>
-            </Fragment>
+            </div>
           ) : (
-            <Fragment>
-              <p class="text-ink-muted mb-4 font-light">Own this website?</p>
+            <div class="card-base p-6 border-l-3 border-l-seal/50">
+              <h3 class="font-display text-lg text-ink mb-3">Unlock the Gold Seal</h3>
+              <ul class="text-sm text-ink-muted font-light space-y-2 mb-5">
+                <li class="flex items-start gap-2">
+                  <span class="text-seal-dark mt-0.5">&#x2713;</span>
+                  <span>Gold "Established" badge with verified status</span>
+                </li>
+                <li class="flex items-start gap-2">
+                  <span class="text-seal-dark mt-0.5">&#x2713;</span>
+                  <span>5 exclusive premium styles</span>
+                </li>
+                <li class="flex items-start gap-2">
+                  <span class="text-seal-dark mt-0.5">&#x2713;</span>
+                  <span>Downloadable HD certificate</span>
+                </li>
+              </ul>
               <a
                 href={`/verify/${data.domain}`}
-                class="inline-flex items-center gap-2 px-8 py-3 bg-seal text-ink font-medium tracking-wider uppercase text-sm hover:bg-seal-light transition-colors duration-200"
+                class="inline-flex items-center gap-2 btn-seal"
               >
                 Claim & Verify
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
                   <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 19.5l15-15m0 0H8.25m11.25 0v11.25"/>
                 </svg>
               </a>
-            </Fragment>
+            </div>
           )}
+        </div>
+
+        {data.sources && data.sources.length > 0 && (
+          <div class="animate-fade-up delay-500">
+            <DataSources sources={data.sources} bestBirthAt={data.verified_birth_at || data.best_birth_at || data.birth_at} />
+          </div>
+        )}
+
+        <div class="animate-fade-up delay-600">
+          <Timeline domain={data.domain} firstSnapshotUrl={data.first_snapshot_url} birthAt={data.verified_birth_at || data.best_birth_at || data.birth_at} sources={data.sources} />
         </div>
 
         <!-- Growth CTA -->
         <div class="animate-fade-up delay-600 text-center pt-8">
+          <div class="ornament-line max-w-24 mx-auto mb-6"></div>
           <p class="text-ink-muted font-light mb-4">Curious about your own website?</p>
           <a href="/" class="btn-primary">Look Up Your Website</a>
         </div>

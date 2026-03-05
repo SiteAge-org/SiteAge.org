@@ -133,7 +133,16 @@ const datasetSchema = {
     <!-- Top oldest -->
     {topOldest.length > 0 && (
       <section class="card-base p-8 sm:p-10">
-        <h2 class="card-title">Oldest Websites</h2>
+        <div class="flex items-center justify-between flex-wrap gap-3">
+          <h2 class="card-title !mb-0">Oldest Websites</h2>
+          <button
+            id="share-oldest-btn"
+            class="inline-flex items-center gap-1.5 text-[10px] tracking-[0.1em] uppercase font-medium text-ink-muted/60 hover:text-ink-muted transition-colors"
+          >
+            <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+            Share on X
+          </button>
+        </div>
         <div class="space-y-3 mt-6">
           {topOldest.map((d, i) => {
             const year = new Date(d.birth_at).getUTCFullYear();
@@ -159,8 +168,20 @@ const datasetSchema = {
     <!-- CTA -->
     <div class="text-center">
       <div class="ornament-line max-w-24 mx-auto mb-6"></div>
-      <p class="text-ink-muted font-light mb-4">Want to add your website to the record?</p>
+      <p class="text-ink-muted font-light mb-4">Is your site old enough to make the list?</p>
       <a href="/" class="btn-primary">Look Up Your Website</a>
     </div>
   </div>
+
+  <script define:vars={{ topOldest }}>
+    const btn = document.getElementById("share-oldest-btn");
+    if (btn && topOldest.length > 0) {
+      btn.addEventListener("click", () => {
+        const top = topOldest[0];
+        const year = new Date(top.birth_at).getUTCFullYear();
+        const text = `The oldest website on @SiteAgeOrg is ${top.domain}, online since ${year}! Check your site → siteage.org`;
+        window.open(`https://x.com/intent/tweet?text=${encodeURIComponent(text)}`, "_blank", "noopener");
+      });
+    }
+  </script>
 </Base>

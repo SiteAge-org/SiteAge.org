@@ -9,7 +9,7 @@ const staticPages = [
   { url: "/browse", priority: "0.8", changefreq: "daily" },
   { url: "/why-verify", priority: "0.7", changefreq: "monthly" },
   { url: "/integrate", priority: "0.6", changefreq: "monthly" },
-  { url: "/docs", priority: "0.6", changefreq: "monthly" },
+  { url: "/badges", priority: "0.7", changefreq: "monthly" },
   { url: "/stats", priority: "0.7", changefreq: "weekly" },
 ];
 
